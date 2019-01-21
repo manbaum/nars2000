@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function/operator for monadic derived function from the rank dyadic operator
@@ -38,41 +39,41 @@
 
 static LPAPLCHAR MonBody[] =
 {
-  L"YR←(1↑⌽3⍴⌽Y)⌊⍴⍴R",
-  L":if 0>YR ⋄ YR←0⌈YR+⍴⍴R ⋄ :end",
-  L"Z←⎕EC 'LO¨⊂[(-YR)↑⍳⍴⍴R] R'",
-  L":select ⎕IO⊃Z",
+  L""S L"YR←(1↑⌽3⍴⌽"S L"Y)⌊⍴⍴"S L"R",
+  L":if 0>"S L"YR ⋄ "S L"YR←0⌈"S L"YR+⍴⍴"S L"R ⋄ :end",
+  L""S L"Z←⎕EC '"S L"LO¨⊂[(-"S L"YR)↑⍳⍴⍴"S L"R] "S L"R'",
+  L":select ⎕IO⊃"S L"Z",
   L":case 0",
-  L"  YR←(2+⎕IO)⊃Z",
-  L"  ⎕ERROR (∧\\YR≠⎕TCNL)/YR",
+  L"  "S L"YR←(2+⎕IO)⊃"S L"Z",
+  L"  ⎕ERROR (∧\\"S L"YR≠⎕TCNL)/"S L"YR",
   L":case 3",
-  L"  ⎕EX 'Z'",
+  L"  ⎕EX '"S L"Z'",
   L":else",
-  L"  Z←(2+⎕IO)⊃Z",
-  L"  :if 0=⎕NC 'X' ⋄ Z←⊃Z",
-  L"  :else         ⋄ Z←⊃[X] Z ⋄ :end",
+  L"  "S L"Z←(2+⎕IO)⊃"S L"Z",
+  L"  :if 0=⎕NC '"S L"X' ⋄ "S L"Z←⊃"S L"Z",
+  L"  :else         ⋄ "S L"Z←⊃["S L"X] "S L"Z ⋄ :end",
   L":end",
   L"→0 ",
   
-  L"⎕PRO:YR←(1↑⌽3⍴⌽Y)⌊⍴⍴R",
-  L":if 0>YR ⋄ YR←0⌈YR+⍴⍴R ⋄ :end",
-  L"Z←⎕EC 'LO¨¨⊂[(-YR)↑⍳⍴⍴R]¨0⍴⊂R'",
-  L":select ⎕IO⊃Z",
+  L"⎕PRO:"S L"YR←(1↑⌽3⍴⌽"S L"Y)⌊⍴⍴"S L"R",
+  L":if 0>"S L"YR ⋄ "S L"YR←0⌈"S L"YR+⍴⍴"S L"R ⋄ :end",
+  L""S L"Z←⎕EC '"S L"LO¨¨⊂[(-"S L"YR)↑⍳⍴⍴"S L"R]¨0⍴⊂"S L"R'",
+  L":select ⎕IO⊃"S L"Z",
   L":case 0",
-  L"  YR←(2+⎕IO)⊃Z",
-  L"  ⎕ERROR (∧\\YR≠⎕TCNL)/YR",
+  L"  "S L"YR←(2+⎕IO)⊃"S L"Z",
+  L"  ⎕ERROR (∧\\"S L"YR≠⎕TCNL)/"S L"YR",
   L":case 3",
-  L"  ⎕EX 'Z'",
+  L"  ⎕EX '"S L"Z'",
   L":else",
-  L"  Z←⊃(2+⎕IO)⊃Z",
-  L"  :if 0=⎕NC 'X' ⋄ Z←⊃Z",
-  L"  :else         ⋄ Z←⊃[X] Z ⋄ :end",
+  L"  "S L"Z←⊃(2+⎕IO)⊃"S L"Z",
+  L"  :if 0=⎕NC '"S L"X' ⋄ "S L"Z←⊃"S L"Z",
+  L"  :else         ⋄ "S L"Z←⊃["S L"X] "S L"Z ⋄ :end",
   L":end",
 };
 
 MAGIC_FCNOPR MFO_MonRank =
 {
-  L"Z←(LO " MFON_MonRank L"[X] Y) R;YR",
+  L""S L"Z←("S L"LO " MFON_MonRank L"["S L"X] "S L"Y) "S L"R;"S L"YR",
   MonBody,
   countof (MonBody),
 };
@@ -89,46 +90,48 @@ MAGIC_FCNOPR MFO_MonRank =
 
 static LPAPLCHAR DydBody[] =
 {
-  L"(YL YR)←(1↓⌽3⍴⌽Y)⌊(⍴⍴L),⍴⍴R",
-  L":if 0>YL ⋄ YL←0⌈YL+⍴⍴L ⋄ :end",
-  L":if 0>YR ⋄ YR←0⌈YR+⍴⍴R ⋄ :end",
-  L"Z←⎕EC '(⊂[(-YL)↑⍳⍴⍴L] L) LO¨⊂[(-YR)↑⍳⍴⍴R] R'",
-  L":select ⎕IO⊃Z",
+  L"("S L"YL "S L"YR)←(1↓⌽3⍴⌽"S L"Y)⌊(⍴⍴"S L"L),⍴⍴"S L"R",
+  L":if 0>"S L"YL ⋄ "S L"YL←0⌈"S L"YL+⍴⍴"S L"L ⋄ :end",
+  L":if 0>"S L"YR ⋄ "S L"YR←0⌈"S L"YR+⍴⍴"S L"R ⋄ :end",
+  L""S L"Z←⎕EC '(⊂[(-"S L"YL)↑⍳⍴⍴"S L"L] "S L"L) "S L"LO¨⊂[(-"S L"YR)↑⍳⍴⍴"S L"R] "S L"R'",
+  L":select ⎕IO⊃"S L"Z",
   L":case 0",
-  L"  YR←(2+⎕IO)⊃Z",
-  L"  ⎕ERROR (∧\\YR≠⎕TCNL)/YR",
+  L"  "S L"YR←(2+⎕IO)⊃"S L"Z",
+  L"  ⎕ERROR (∧\\"S L"YR≠⎕TCNL)/"S L"YR",
   L":case 3",
-  L"  ⎕EX 'Z'",
+  L"  ⎕EX '"S L"Z'",
   L":else",
-  L"  Z←(2+⎕IO)⊃Z",
-  L"  :if 0=⎕NC 'X' ⋄ Z←⊃Z",
-  L"  :else         ⋄ Z←⊃[X] Z ⋄ :end",
+  L"  "S L"Z←(2+⎕IO)⊃"S L"Z",
+  L"  :if 0=⎕NC '"S L"X' ⋄ "S L"Z←⊃"S L"Z",
+  L"  :else         ⋄ "S L"Z←⊃["S L"X] "S L"Z ⋄ :end",
   L":end",
   L"→0 ",
 
-  L"⎕PRO:(YL YR)←(1↓⌽3⍴⌽Y)⌊(⍴⍴L),⍴⍴R",
-  L":if 0>YL ⋄ YL←0⌈YL+⍴⍴L ⋄ :end",
-  L":if 0>YR ⋄ YR←0⌈YR+⍴⍴R ⋄ :end",
-  L"Z←⎕EC '(⊂[(-YL)↑⍳⍴⍴L]¨0⍴⊂L) LO¨¨⊂[(-YR)↑⍳⍴⍴R]¨0⍴⊂R'",
-  L":select ⎕IO⊃Z",
+  L"⎕PRO:("S L"YL "S L"YR)←(1↓⌽3⍴⌽"S L"Y)⌊(⍴⍴"S L"L),⍴⍴"S L"R",
+  L":if 0>"S L"YL ⋄ "S L"YL←0⌈"S L"YL+⍴⍴"S L"L ⋄ :end",
+  L":if 0>"S L"YR ⋄ "S L"YR←0⌈"S L"YR+⍴⍴"S L"R ⋄ :end",
+  L""S L"Z←⎕EC '(⊂[(-"S L"YL)↑⍳⍴⍴"S L"L]¨0⍴⊂"S L"L) "S L"LO¨¨⊂[(-"S L"YR)↑⍳⍴⍴"S L"R]¨0⍴⊂"S L"R'",
+  L":select ⎕IO⊃"S L"Z",
   L":case 0",
-  L"  YR←(2+⎕IO)⊃Z",
-  L"  ⎕ERROR (∧\\YR≠⎕TCNL)/YR",
+  L"  "S L"YR←(2+⎕IO)⊃"S L"Z",
+  L"  ⎕ERROR (∧\\"S L"YR≠⎕TCNL)/"S L"YR",
   L":case 3",
-  L"  ⎕EX 'Z'",
+  L"  ⎕EX '"S L"Z'",
   L":else",
-  L"  Z←⊃(2+⎕IO)⊃Z",
-  L"  :if 0=⎕NC 'X' ⋄ Z←⊃Z",
-  L"  :else         ⋄ Z←⊃[X] Z ⋄ :end",
+  L"  "S L"Z←⊃(2+⎕IO)⊃"S L"Z",
+  L"  :if 0=⎕NC '"S L"X' ⋄ "S L"Z←⊃"S L"Z",
+  L"  :else         ⋄ "S L"Z←⊃["S L"X] "S L"Z ⋄ :end",
   L":end",
 };  
 
 MAGIC_FCNOPR MFO_DydRank =
 {
-  L"Z←L (LO " MFON_DydRank L"[X] Y) R;YL;YR",
+  L""S L"Z←"S L"L ("S L"LO " MFON_DydRank L"["S L"X] "S L"Y) "S L"R;"S L"YL "S L"YR",
   DydBody,
   countof (DydBody),
 };
+
+#undef  S
 
 
 //***************************************************************************

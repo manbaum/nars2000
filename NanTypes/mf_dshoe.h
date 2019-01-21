@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
   
 //***************************************************************************
 //  Magic function for dyadic DownShoe
@@ -35,21 +36,17 @@
 //  Return the elements in L or in R.
 //***************************************************************************
 
-static APLCHAR DydHeader[] =
-  L"Z←L " MFON_DydDnShoe L" R";
-
-static APLCHAR DydLine1[] = 
-  L"Z←L,R~L";
-  
 static LPAPLCHAR DydBody[] =
-{DydLine1,
+{L""S L"Z←"S L"L,"S L"R~"S L"L",
 };
 
 MAGIC_FCNOPR MFO_DydDnShoe =
-{DydHeader,
+{L""S L"Z←"S L"L " MFON_DydDnShoe L" "S L"R",
  DydBody,
  countof (DydBody),
 };
+
+#undef  S
 
 
 //***************************************************************************

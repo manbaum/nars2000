@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function for Dyadic Squad
@@ -37,47 +38,49 @@
 
 static LPAPLCHAR DydBody[] =
 {// Emulate L⌷[X] R or L⌷R
- L"Pro←0",
- L"L1:"
- L"⎕ERROR (1<⍴⍴L)/'RANK ERROR'",
- L":if 0=⎕NC 'X'",
- L":andif (≢L)<⍴⍴R",        // This feature was designed and implemented by Dyalog
- L"  X←⍳≢L",
+ L""S L"Pro←0",
+ L""S L"L1:"
+ L"⎕ERROR (1<⍴⍴"S L"L)/'RANK ERROR'",
+ L":if 0=⎕NC '"S L"X'",
+ L":andif (≢"S L"L)<⍴⍴"S L"R",        // This feature was designed and implemented by Dyalog
+ L"  "S L"X←⍳≢"S L"L",
  L":end",
- L":if 0≠⎕NC 'X'",
- L"  ⎕ERROR (1<⍴⍴X)/'AXIS ERROR'",
- L"  ⎕ERROR ((≢L)≢≢X)/'LENGTH ERROR'",
- L"  ⎕ERROR (~∧/X∊⍳⍴⍴R)/'AXIS ERROR'",
- L"  ⎕ERROR ((≢X)≢≢∪X)/'AXIS ERROR'",
- L"  A←((⍳⍴⍴R)∊X)\\L[⍋X]",  // Double the \ to avoid it being confused with a character escape sequence
- L"  B←(⍳⍴⍴R)~X",
- L"  A[B]←⍳¨(⍴1/R)[B]",
+ L":if 0≠⎕NC '"S L"X'",
+ L"  ⎕ERROR (1<⍴⍴"S L"X)/'AXIS ERROR'",
+ L"  ⎕ERROR ((≢"S L"L)≢≢"S L"X)/'LENGTH ERROR'",
+ L"  ⎕ERROR (~∧/"S L"X∊⍳⍴⍴"S L"R)/'AXIS ERROR'",
+ L"  ⎕ERROR ((≢"S L"X)≢≢∪"S L"X)/'AXIS ERROR'",
+ L"  "S L"A←((⍳⍴⍴"S L"R)∊"S L"X)\\"S L"L[⍋"S L"X]",  // Double the \ to avoid it being confused with a character escape sequence
+ L"  "S L"B←(⍳⍴⍴"S L"R)~"S L"X",
+ L"  "S L"A["S L"B]←⍳¨(⍴1/"S L"R)["S L"B]",
  L":else",
- L"  A←L",
+ L"  "S L"A←"S L"L",
  L":end",
  
- L"⎕ERROR((⍴1/A)≢⍴⍴R)/'RANK ERROR'",
+ L"⎕ERROR((⍴1/"S L"A)≢⍴⍴"S L"R)/'RANK ERROR'",
  
  // If ∘.,/A would fail, ...
- L":if 0=≡↑↑A",
- L"  fn←{⊃∘.,/1/¨¨⍵}",
+ L":if 0=≡↑↑"S L"A",
+ L"  "S L"fn←{⊃∘.,/1/¨¨⍵}",
  L":else",
- L"  fn←{⊃∘.,/⍵}",
+ L"  "S L"fn←{⊃∘.,/⍵}",
  L":end",
 
- L":if Pro ⋄ Z←(⍴fn A)⍴R",
- L":else   ⋄ Z←R[fn A]",
+ L":if "S L"Pro ⋄ "S L"Z←(⍴"S L"fn "S L"A)⍴"S L"R",
+ L":else   ⋄ "S L"Z←"S L"R["S L"fn "S L"A]",
  L":end    ⋄ →0",
  
- L"⎕PRO:Pro←1",
- L"→L1",
+ L"⎕PRO:"S L"Pro←1",
+ L"→"S L"L1",
 };
 
 MAGIC_FCNOPR MFO_DydSquad =
-{L"Z←L " MFON_DydSquad L"[X] R;A B Pro fn",
+{L""S L"Z←"S L"L " MFON_DydSquad L"["S L"X] "S L"R;"S L"A "S L"B "S L"Pro "S L"fn",
  DydBody,
  countof (DydBody),
 };
+
+#undef  S
 
 
 //***************************************************************************

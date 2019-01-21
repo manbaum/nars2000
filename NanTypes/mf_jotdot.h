@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function/operator for identity function from the
@@ -33,21 +34,17 @@
 //   f/0{rho} R.
 //***************************************************************************
 
-static APLCHAR IdnHeader[] =
-  L"Z←(LO " MFON_IdnJotDot L") R";
-
-static APLCHAR IdnLine1[] = 
-  L"⎕ID:Z←LO/0⍴R";
-
 static LPAPLCHAR IdnBody[] =
-{IdnLine1,
+{L"⎕ID:"S L"Z←"S L"LO/0⍴"S L"R",
 };
 
 MAGIC_FCNOPR MFO_IdnJotDot =
-{IdnHeader,
+{L""S L"Z←("S L"LO " MFON_IdnJotDot L") "S L"R",
  IdnBody,
  countof (IdnBody),
 };
+
+#undef  S
 
 
 //***************************************************************************

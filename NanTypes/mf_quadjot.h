@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function/operator for Domino with a function right operand
@@ -35,17 +36,19 @@
 static LPAPLCHAR MatOprBody[] =
 {L"⎕PRO:",
  // Calculate the {L} LO of the (square) matrix R
- L":if 0=⎕NC 'L' ⋄ L←⊢ ⋄ :endif",
- L"(Eval Evec)←⌹⍠3 R",
- L"⎕ERROR ((⍴Eval)≠⍴∪Eval)/'EIGENVALUES NOT DISTINCT'",
- L"Z←Evec+.×(∘⌻L LO Eval)+.×⌹Evec",
+ L":if 0=⎕NC '"S L"L' ⋄ "S L"L←⊢ ⋄ :endif",
+ L"("S L"Eval "S L"Evec)←⌹⍠3 "S L"R",
+ L"⎕ERROR ((⍴"S L"Eval)≠⍴∪"S L"Eval)/'EIGENVALUES NOT DISTINCT'",
+ L""S L"Z←"S L"Evec+.×(∘⌻"S L"L "S L"LO "S L"Eval)+.×⌹"S L"Evec",
 };
 
 MAGIC_FCNOPR MFO_MatOpr =
-{L"Z←{L} (LO " MFON_MatOpr L") R;Eval Evec T",
+{L""S L"Z←{"S L"L} ("S L"LO " MFON_MatOpr L") "S L"R;"S L"Eval "S L"Evec "S L"T",
  MatOprBody,
  countof (MatOprBody),
 };
+
+#undef  S
 
 
 //***************************************************************************

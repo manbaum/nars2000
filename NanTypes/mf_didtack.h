@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,24 +26,19 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function/operator for identity function from the
 //    Convolution operator
 //***************************************************************************
 
-static APLCHAR IdnHeader[] =
-  L"Z←(LO " MFON_IdnConv L" RO) R";
-
-static APLCHAR IdnLine1[] = 
-  L"⎕ID:Z←LO/RO/⍬";
-
 static LPAPLCHAR IdnBody[] =
-{IdnLine1,
+{L"⎕ID:Z←"S L"LO/"S L"RO/⍬",
 };
 
 MAGIC_FCNOPR MFO_IdnConv =
-{IdnHeader,
+{L""S L"Z←("S L"LO " MFON_IdnConv L" "S L"RO) "S L"R",
  IdnBody,
  countof (IdnBody),
 };
@@ -55,104 +50,40 @@ MAGIC_FCNOPR MFO_IdnConv =
 //  This operator is based upon design from the original NARS system.
 //***************************************************************************
 
-static APLCHAR DydHeader[] =
-  L"Z←L (LO " MFON_DydConv L" RO) R;LN;RN";
-
 //  ⍝ Convolution of LO and RO between L and R
-static APLCHAR DydLine1[] = 
-  L"L←1/L ⋄ R←1/R ⋄ Z←⍬";
-
-static APLCHAR DydLine2[] = 
-  L"⎕ERROR ((1≠≢⍴L)∨1≠≢⍴R)/'RANK ERROR'";
-
-static APLCHAR DydLine3[] = 
-  L"LN←≢L ⋄ RN←≢R";
-
-//  ⍝ Short leading
-
-static APLCHAR DydLine4[] = 
-  L":if 1<LN⌊RN";
-
-static APLCHAR DydLine5[] = 
-  L"  :forlcl I :in 1..¯1+LN⌊RN";
-
-static APLCHAR DydLine6[] = 
-  L"    Z←Z,(I↑L) LO.RO ⌽I↑R";
-
-static APLCHAR DydLine7[] =
-  L"  :end";
-
-static APLCHAR DydLine8[] =
-  L":end";
-
-//  ⍝ Full middle
-
-static APLCHAR DydLine9[] =
-  L"  :forlcl I :in 0..|LN-RN";
-
-static APLCHAR DydLine10[] =
-  L"    :if LN≥RN";
-
-static APLCHAR DydLine11[] =
-  L"      Z←Z,(RN↑I↓L) LO.RO ⌽R";
-
-static APLCHAR DydLine12[] =
-  L"    :else";
-
-static APLCHAR DydLine13[] =
-  L"      Z←Z,L LO.RO ⌽LN↑I↓R";
-
-static APLCHAR DydLine14[] =
-  L"    :end";
-
-static APLCHAR DydLine15[] =
-  L"  :end";
-
-//  ⍝ Short trailing
-
-static APLCHAR DydLine16[] =
-  L":if 1<LN⌊RN";
-
-static APLCHAR DydLine17[] =
-  L"  :forlcl I :in -⌽1..¯1+LN⌊RN";
-
-static APLCHAR DydLine18[] =
-  L"    Z←Z,(I↑L) LO.RO ⌽I↑R";
-
-static APLCHAR DydLine19[] =
-  L"  :end";
-
-static APLCHAR DydLine20[] =
-  L":end";
-
 static LPAPLCHAR DydBody[] =
-{DydLine1,
- DydLine2,
- DydLine3,
- DydLine4,
- DydLine5,
- DydLine6,
- DydLine7,
- DydLine8,
- DydLine9,
- DydLine10,
- DydLine11,
- DydLine12,
- DydLine13,
- DydLine14,
- DydLine15,
- DydLine16,
- DydLine17,
- DydLine18,
- DydLine19,
- DydLine20,
+{L""S L"L←1/"S L"L ⋄ "S L"R←1/"S L"R ⋄ "S L"Z←⍬",
+ L"⎕ERROR ((1≠≢⍴"S L"L)∨1≠≢⍴"S L"R)/'RANK ERROR'",
+ L""S L"LN←≢"S L"L ⋄ "S L"RN←≢"S L"R",
+ //  ⍝ Short leading
+ L":if 1<"S L"LN⌊"S L"RN",
+ L"  :forlcl "S L"I :in 1..¯1+"S L"LN⌊"S L"RN",
+ L"    "S L"Z←"S L"Z,("S L"I↑"S L"L) "S L"LO."S L"RO ⌽"S L"I↑"S L"R",
+ L"  :end",
+ L":end",
+ //  ⍝ Full middle
+ L"  :forlcl "S L"I :in 0..|"S L"LN-"S L"RN",
+ L"    :if "S L"LN≥"S L"RN",
+ L"      "S L"Z←"S L"Z,("S L"RN↑"S L"I↓"S L"L) "S L"LO."S L"RO ⌽"S L"R",
+ L"    :else",
+ L"      "S L"Z←"S L"Z,"S L"L "S L"LO."S L"RO ⌽"S L"LN↑"S L"I↓"S L"R",
+ L"    :end",
+ L"  :end",
+ //  ⍝ Short trailing
+ L":if 1<"S L"LN⌊"S L"RN",
+ L"  :forlcl "S L"I :in -⌽1..¯1+"S L"LN⌊"S L"RN",
+ L"    "S L"Z←"S L"Z,("S L"I↑"S L"L) "S L"LO."S L"RO ⌽"S L"I↑"S L"R",
+ L"  :end",
+ L":end",
 };
 
 MAGIC_FCNOPR MFO_DydConv =
-{DydHeader,
+{L""S L"Z←"S L"L ("S L"LO " MFON_DydConv L" "S L"RO) "S L"R;"S L"LN "S L"RN",
  DydBody,
  countof (DydBody),
 };
+
+#undef  S
 
 
 //***************************************************************************

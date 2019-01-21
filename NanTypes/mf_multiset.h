@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function for Multiset Asymmetric Difference
@@ -35,22 +36,13 @@
 //  On scalar or vector args, return the elements in L~R.
 //***************************************************************************
 
-static APLCHAR DydHeaderMAD[] =
-  L"Z←L " MFON_MAD L" R";
-
-static APLCHAR DydLineMAD1[] = 
-  L"⎕MS:Z←(~L∊⍦R)/L ⋄ →0";
-
-static APLCHAR DydLineMAD2[] = 
-  L"⎕PRO:Z←⊤(⊤L) " MFON_MAD L" ⊤R";
-
 static LPAPLCHAR DydBodyMAD[] =
-{DydLineMAD1,
- DydLineMAD2,
+{L"⎕MS:"S L"Z←(~"S L"L∊⍦"S L"R)/"S L"L ⋄ →0",
+ L"⎕PRO:"S L"Z←⊤(⊤"S L"L) " MFON_MAD L" ⊤"S L"R",
 };
 
 MAGIC_FCNOPR MFO_MAD =
-{DydHeaderMAD,
+{L""S L"Z←"S L"L " MFON_MAD L" "S L"R",
  DydBodyMAD,
  countof (DydBodyMAD),
 };
@@ -63,22 +55,13 @@ MAGIC_FCNOPR MFO_MAD =
 //  On scalar or vector args, return the elements in (L~$R),R~$L.
 //***************************************************************************
 
-static APLCHAR DydHeaderMSD[] =
-  L"Z←L " MFON_MSD L" R";
-
-static APLCHAR DydLineMSD1[] = 
-  L"⎕MS:Z←(L " MFON_MAD L" R),R " MFON_MAD L" L ⋄ →0";
-
-static APLCHAR DydLineMSD2[] = 
-  L"⎕PRO:Z←⊤(⊤L) " MFON_MSD L" ⊤R";
-
 static LPAPLCHAR DydBodyMSD[] =
-{DydLineMSD1,
- DydLineMSD2,
+{L"⎕MS:"S L"Z←("S L"L " MFON_MAD L" "S L"R),"S L"R " MFON_MAD L" "S L"L ⋄ →0",
+ L"⎕PRO:"S L"Z←⊤(⊤"S L"L) " MFON_MSD L" ⊤"S L"R",
 };
 
 MAGIC_FCNOPR MFO_MSD =
-{DydHeaderMSD,
+{L""S L"Z←"S L"L " MFON_MSD L" "S L"R",
  DydBodyMSD,
  countof (DydBodyMSD),
 };
@@ -91,22 +74,13 @@ MAGIC_FCNOPR MFO_MSD =
 //  On scalar or vector args, return the multiset union of the two args
 //***************************************************************************
 
-static APLCHAR DydHeaderMU[] =
-  L"Z←L " MFON_MU L" R";
-
-static APLCHAR DydLineMU1[] = 
-  L"⎕MS:Z←L,R " MFON_MAD L" L ⋄ →0";
-
-static APLCHAR DydLineMU2[] = 
-  L"⎕PRO:Z←⊤(⊤L) " MFON_MU L" ⊤R";
-
 static LPAPLCHAR DydBodyMU[] =
-{DydLineMU1,
- DydLineMU2,
+{L"⎕MS:"S L"Z←"S L"L,"S L"R " MFON_MAD L" "S L"L ⋄ →0",
+ L"⎕PRO:"S L"Z←⊤(⊤"S L"L) " MFON_MU L" ⊤"S L"R",
 };
 
 MAGIC_FCNOPR MFO_MU =
-{DydHeaderMU,
+{L""S L"Z←"S L"L " MFON_MU L" "S L"R",
  DydBodyMU,
  countof (DydBodyMU),
 };
@@ -119,22 +93,13 @@ MAGIC_FCNOPR MFO_MU =
 //  On scalar or vector args, return the multiset intersection of the two args
 //***************************************************************************
 
-static APLCHAR DydHeaderMI[] =
-  L"Z←L " MFON_MI L" R";
-
-static APLCHAR DydLineMI1[] = 
-  L"⎕MS:Z←(L∊⍦R)/L ⋄ →0";
-
-static APLCHAR DydLineMI2[] = 
-  L"⎕PRO:Z←⊤(⊤L) " MFON_MI L" ⊤R";
-
 static LPAPLCHAR DydBodyMI[] =
-{DydLineMI1,
- DydLineMI2,
+{L"⎕MS:"S L"Z←("S L"L∊⍦"S L"R)/"S L"L ⋄ →0",
+ L"⎕PRO:"S L"Z←⊤(⊤"S L"L) " MFON_MI L" ⊤"S L"R",
 };
 
 MAGIC_FCNOPR MFO_MI =
-{DydHeaderMI,
+{L""S L"Z←"S L"L " MFON_MI L" "S L"R",
  DydBodyMI,
  countof (DydBodyMI),
 };
@@ -147,22 +112,13 @@ MAGIC_FCNOPR MFO_MI =
 //  On scalar or vector args, return TRUE iff L is a proper multisubset of R.
 //***************************************************************************
 
-static APLCHAR DydHeaderMLRS[] =
-  L"Z←L " MFON_MLRS L" R";
-
-static APLCHAR DydLineMLRS1[] = 
-  L"⎕MS:Z←(L " MFON_MLRSU L" R)^L≢⍦R ⋄ →0";
-
-static APLCHAR DydLineMLRS2[] = 
-  L"⎕PRO:Z←⊤(⊤L) " MFON_MLRS L" ⊤R";
-
 static LPAPLCHAR DydBodyMLRS[] =
-{DydLineMLRS1,
- DydLineMLRS2,
+{L"⎕MS:"S L"Z←("S L"L " MFON_MLRSU L" "S L"R)^"S L"L≢⍦"S L"R ⋄ →0",
+ L"⎕PRO:"S L"Z←⊤(⊤"S L"L) " MFON_MLRS L" ⊤"S L"R",
 };
 
 MAGIC_FCNOPR MFO_MLRS =
-{DydHeaderMLRS,
+{L""S L"Z←"S L"L " MFON_MLRS L" "S L"R",
  DydBodyMLRS,
  countof (DydBodyMLRS),
 };
@@ -175,22 +131,13 @@ MAGIC_FCNOPR MFO_MLRS =
 //  On scalar or vector args, return TRUE iff L is a multisubset of R.
 //***************************************************************************
 
-static APLCHAR DydHeaderMLRSU[] =
-  L"Z←L " MFON_MLRSU L" R";
-
-static APLCHAR DydLineMLRSU1[] = 
-  L"⎕MS:Z←~0∊L " MFON_MEO L" R ⋄ →0";
-
-static APLCHAR DydLineMLRSU2[] = 
-  L"⎕PRO:Z←⊤(⊤L) " MFON_MLRSU L" ⊤R";
-
 static LPAPLCHAR DydBodyMLRSU[] =
-{DydLineMLRSU1,
- DydLineMLRSU2,
+{L"⎕MS:"S L"Z←~0∊"S L"L " MFON_MEO L" "S L"R ⋄ →0",
+ L"⎕PRO:"S L"Z←⊤(⊤"S L"L) " MFON_MLRSU L" ⊤"S L"R",
 };
 
 MAGIC_FCNOPR MFO_MLRSU =
-{DydHeaderMLRSU,
+{L""S L"Z←"S L"L " MFON_MLRSU L" "S L"R",
  DydBodyMLRSU,
  countof (DydBodyMLRSU),
 };
@@ -203,22 +150,13 @@ MAGIC_FCNOPR MFO_MLRSU =
 //  On scalar or vector args, return the elements in L⍳⍦R.
 //***************************************************************************
 
-static APLCHAR DydHeaderMIO[] =
-  L"Z←L " MFON_MIO L" R";
-
-static APLCHAR DydLineMIO1[] = 
-  L"⎕MS:L←1/L⋄Z←((⍴L)⍴⍋⍋L⍳L,R)⍳(⍴R)⍴⍋⍋L⍳R,L ⋄ →0";
-
-static APLCHAR DydLineMIO2[] = 
-  L"⎕PRO:Z←⊤(⊤L) " MFON_MIO L" ⊤R";
-  
 static LPAPLCHAR DydBodyMIO[] =
-{DydLineMIO1,
- DydLineMIO2,
+{L"⎕MS:"S L"L←1/"S L"L⋄"S L"Z←((⍴"S L"L)⍴⍋⍋"S L"L⍳"S L"L,"S L"R)⍳(⍴"S L"R)⍴⍋⍋"S L"L⍳"S L"R,"S L"L ⋄ →0",
+ L"⎕PRO:"S L"Z←⊤(⊤"S L"L) " MFON_MIO L" ⊤"S L"R",
 };
 
 MAGIC_FCNOPR MFO_MIO =
-{DydHeaderMIO,
+{L""S L"Z←"S L"L " MFON_MIO L" "S L"R",
  DydBodyMIO,
  countof (DydBodyMIO),
 };
@@ -231,22 +169,13 @@ MAGIC_FCNOPR MFO_MIO =
 //  On scalar or vector args, return the elements in L∊⍦R.
 //***************************************************************************
 
-static APLCHAR DydHeaderMEO[] =
-  L"Z←L " MFON_MEO L" R";
-
-static APLCHAR DydLineMEO1[] = 
-  L"⎕MS:L←1/L⋄Z←((⍴L)⍴⍋⍋L⍳L,R)∊(⍴R)⍴⍋⍋L⍳R,L ⋄ →0";
-
-static APLCHAR DydLineMEO2[] = 
-  L"⎕PRO:Z←⊤(⊤L) " MFON_MEO L" ⊤R";
-
 static LPAPLCHAR DydBodyMEO[] =
-{DydLineMEO1,
- DydLineMEO2,
+{L"⎕MS:"S L"L←1/"S L"L⋄"S L"Z←((⍴"S L"L)⍴⍋⍋"S L"L⍳"S L"L,"S L"R)∊(⍴"S L"R)⍴⍋⍋"S L"L⍳"S L"R,"S L"L ⋄ →0",
+ L"⎕PRO:"S L"Z←⊤(⊤"S L"L) " MFON_MEO L" ⊤"S L"R",
 };
 
 MAGIC_FCNOPR MFO_MEO =
-{DydHeaderMEO,
+{L""S L"Z←"S L"L " MFON_MEO L" "S L"R",
  DydBodyMEO,
  countof (DydBodyMEO),
 };
@@ -259,26 +188,14 @@ MAGIC_FCNOPR MFO_MEO =
 //  On scalar or vector args, return the elements in L≡⍦R.
 //***************************************************************************
 
-static APLCHAR DydHeaderMM[] =
-  L"Z←L " MFON_MM L" R";
-
-static APLCHAR DydLineMM1[] = 
-  L"⎕MS:Z←(⍴1/L)≡⍴1/R ⋄ →Z↓0";
-
-static APLCHAR DydLineMM2[] = 
-  L"Z←∧/L∊⍦R ⋄ →0";
-
-static APLCHAR DydLineMM3[] = 
-  L"⎕PRO:Z←⊤(⊤L) " MFON_MM L" ⊤R";
-
 static LPAPLCHAR DydBodyMM[] =
-{DydLineMM1,
- DydLineMM2,
- DydLineMM3,
+{L"⎕MS:"S L"Z←(⍴1/"S L"L)≡⍴1/"S L"R ⋄ →"S L"Z↓0",
+ L""S L"Z←∧/"S L"L∊⍦"S L"R ⋄ →0",
+ L"⎕PRO:"S L"Z←⊤(⊤"S L"L) " MFON_MM L" ⊤"S L"R",
 };
 
 MAGIC_FCNOPR MFO_MM =
-{DydHeaderMM,
+{L""S L"Z←"S L"L " MFON_MM L" "S L"R",
  DydBodyMM,
  countof (DydBodyMM),
 };
@@ -292,22 +209,13 @@ MAGIC_FCNOPR MFO_MM =
 //    in the same order as the unique elements.
 //***************************************************************************
 
-static APLCHAR DydHeaderMMUL[] =
-  L"Z←" MFON_MMUL L" R";
-
-static APLCHAR DydLineMMUL1[] = 
-  L"⎕MS:Z←¯2-/⍸1,(2≠/R[⍋(1/R)⍳R]),1⋄→0";
-
-static APLCHAR DydLineMMUL2[] = 
-  L"⎕PRO:Z←⊤ " MFON_MMUL L" ⊤R";
-
 static LPAPLCHAR DydBodyMMUL[] =
-{DydLineMMUL1,
- DydLineMMUL2,
+{L"⎕MS:"S L"Z←¯2-/⍸1,(2≠/"S L"R[⍋(1/"S L"R)⍳"S L"R]),1⋄→0",
+ L"⎕PRO:"S L"Z←⊤ " MFON_MMUL L" ⊤"S L"R",
 };
 
 MAGIC_FCNOPR MFO_MMUL =
-{DydHeaderMMUL,
+{L""S L"Z←" MFON_MMUL L" "S L"R",
  DydBodyMMUL,
  countof (DydBodyMMUL),
 };
@@ -323,21 +231,18 @@ MAGIC_FCNOPR MFO_MMUL =
 //    vector of trailing subarrays from the left arg.
 //***************************************************************************
 
-static APLCHAR DydHeaderMDIU[] =
-  L"Z←L " MFON_MDIU L" R";
-
-static APLCHAR DydLineMDIU1[] = 
-  L"⎕MS:Z←(⊂⍤¯1 L)⍳⍦⊂⍤(¯1+⍴⍴L) R ⋄ →0";
-
 static LPAPLCHAR DydBodyMDIU[] =
-{DydLineMDIU1,
+{L"⎕MS:"S L"Z←(⊂⍤¯1 "S L"L)⍳⍦⊂⍤(¯1+⍴⍴"S L"L) "S L"R ⋄ →0",
+ L"⎕PRO:"S L"Z←⊤(⊤"S L"L) " MFON_MDIU L" ⊤"S L"R",
 };
 
 MAGIC_FCNOPR MFO_MDIU =
-{DydHeaderMDIU,
+{L""S L"Z←"S L"L " MFON_MDIU L" "S L"R",
  DydBodyMDIU,
  countof (DydBodyMDIU),
 };
+
+#undef  S
   
 
 //***************************************************************************

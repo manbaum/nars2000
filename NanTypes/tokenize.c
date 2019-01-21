@@ -56,6 +56,10 @@ extern TOKEN_SO tokenSo[];
 #define scAlpInit   scAlpha
 #define fnAlpAccum  fnAlpha
 #define scAlpAccum  scAlpha
+#define fnLclInit   fnMFOLcl
+#define scLclInit   scMFOLcl
+#define fnLclAccum  fnMFOLcl
+#define scLclAccum  scMFOLcl
 #define fnSysInit   fnAlpha
 #define scSysInit   scAlpha
 #define fnSysAccum  fnAlpha
@@ -72,6 +76,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
  {{TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '0123456789'
   {TKROW_DOTAMBIG  , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '.'
   {TKROW_ALPHA     , NULL        , fnAlpInit   , NULL        , scAlpInit   },     // 'a..zA..Z'
+  {TKROW_ALPHA     , NULL        , fnLclInit   , NULL        , scLclInit   },     // MFO local
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Overbar
   {TKROW_INIT      , NULL        , fnDirIdent  , NULL        , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , NULL        , fnSysInit   , NULL        , scSysInit   },     // Quad
@@ -101,12 +106,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , NULL        , fnDelDone   , NULL        , scDelDone   },     // Del
   {TKROW_EXIT      , NULL        , NULL        , NULL        , NULL        },     // EOL
   {TKROW_INIT      , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // Unknown symbols
-  {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // PoM symbol
  },
     // TKROW_INIT     Initial state ('')
  {{TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '0123456789'
   {TKROW_DOTAMBIG  , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '.'
   {TKROW_ALPHA     , NULL        , fnAlpInit   , NULL        , scAlpInit   },     // 'a..zA..Z'
+  {TKROW_ALPHA     , NULL        , fnLclInit   , NULL        , scLclInit   },     // MFO local
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Overbar
   {TKROW_INIT      , NULL        , fnDirIdent  , NULL        , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , NULL        , fnSysInit   , NULL        , scSysInit   },     // Quad
@@ -136,12 +141,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , NULL        , fnDelDone   , NULL        , scDelDone   },     // Del
   {TKROW_EXIT      , NULL        , NULL        , NULL        , NULL        },     // EOL
   {TKROW_INIT      , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // Unknown symbols
-  {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // PoM symbol
  },
     // TKROW_POINTNOT0 Point Notation, Initial state (After white space)
  {{TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '0123456789'
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '.'
   {TKROW_ALPHA     , fnPointDone , fnAlpInit   , scPointDone , scAlpInit   },     // 'a..zA..Z'
+  {TKROW_ALPHA     , fnPointDone , fnLclInit   , scPointDone , scLclInit   },     // MFO local
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnPointDone , fnDirIdent  , scPointDone , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnPointDone , fnSysInit   , scPointDone , scSysInit   },     // Quad
@@ -171,12 +176,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnPointDone , fnDelDone   , scPointDone , scDelDone   },     // Del
   {TKROW_EXIT      , fnPointDone , NULL        , scPointDone , NULL        },     // EOL
   {TKROW_INIT      , fnPointDone , fnUnkDone   , scPointDone , scUnkDone   },     // Unknown symbols
-  {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // PoM symbol
  },
     // TKROW_POINTNOT1 Point Notation, Initial state (First char)
  {{TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '0123456789'
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '.'
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // 'a..zA..Z'
+  {TKROW_POINTNOT1 , NULL        , fnLclInit   , NULL        , scLclInit   },     // MFO local
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnPointDone , fnDirIdent  , scPointDone , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnPointDone , fnSysInit   , scPointDone , scSysInit   },     // Quad
@@ -206,12 +211,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnPointDone , fnDelDone   , scPointDone , scDelDone   },     // Del
   {TKROW_EXIT      , fnPointDone , NULL        , scPointDone , NULL        },     // EOL
   {TKROW_INIT      , fnPointDone , fnUnkDone   , scPointDone , scUnkDone   },     // Unknown symbols
-  {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // PoM symbol
  },
     // TKROW_ALPHA    Alphabetic char
  {{TKROW_ALPHA     , fnAlpAccum  , NULL        , scAlpAccum  , NULL        },     // '0123456789'
   {TKROW_DOTAMBIG  , fnAlpDone   , fnPointAcc  , scAlpDone   , scPointAcc  },     // '.'
   {TKROW_ALPHA     , fnAlpAccum  , NULL        , scAlpAccum  , NULL        },     // 'a..zA..Z'
+  {TKROW_ALPHA     , fnLclAccum  , NULL        , scLclAccum  , NULL        },     // MFO local
   {TKROW_ALPHA     , fnAlpAccum  , NULL        , scAlpAccum  , NULL        },     // Overbar
   {TKROW_INIT      , fnAlpDone   , fnDirIdent  , scAlpDone   , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnAlpDone   , fnSysInit   , scAlpDone   , scSysInit   },     // Quad
@@ -241,12 +246,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnAlpDone   , fnDelDone   , scAlpDone   , scDelDone   },     // Del
   {TKROW_EXIT      , fnAlpDone   , NULL        , scAlpDone   , NULL        },     // EOL
   {TKROW_INIT      , fnAlpDone   , fnUnkDone   , scAlpDone   , scUnkDone   },     // Unknown symbols
-  {TKROW_POINTNOT1 , fnAlpDone   , fnPointAcc  , scAlpDone   , scPointAcc  },     // PoM symbol
  },
     // TKROW_SYSNAME  System name (begins with a Quad or Quote-quad)
  {{TKROW_SYSNAME   , fnSysAccum  , NULL        , scSysAccum  , NULL        },     // '0123456789'
   {TKROW_DOTAMBIG  , fnSysDone   , fnPointAcc  , scSysDone   , scPointAcc  },     // '.'
   {TKROW_SYSNAME   , fnSysAccum  , NULL        , scSysAccum  , NULL        },     // 'a..zA..Z'
+  {TKROW_INIT      , fnSysDone   , fnUnkDone   , scSysDone   , scUnkDone   },     // MFO local
   {TKROW_POINTNOT1 , fnSysDone   , fnPointAcc  , scSysDone   , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnSysDone   , fnDirIdent  , scSysDone   , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnSysDone   , fnSysInit   , scSysDone   , scSysInit   },     // Quad
@@ -276,12 +281,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnSysDone   , fnDelDone   , scSysDone   , scDelDone   },     // Del
   {TKROW_EXIT      , fnSysDone   , NULL        , scSysDone   , NULL        },     // EOL
   {TKROW_INIT      , fnSysDone   , fnUnkDone   , scSysDone   , scUnkDone   },     // Unknown symbols
-  {TKROW_POINTNOT1 , fnSysDone   , fnPointAcc  , scSysDone   , scPointAcc  },     // PoM symbol
  },
     // TKROW_QUOTE1A  Start of or within single quoted char or char vector
  {{TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // '0123456789'
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // '.'
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // 'a..zA..Z'
+  {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // MFO local
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Overbar
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Alpha or Omega
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Quad
@@ -311,12 +316,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Del
   {TKROW_EXIT      , fnQuo1Exit  , fnUnkDone   , scQuo1Exit  , scUnkDone   },     // EOL
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Unknown symbols
-  {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // PoM symbol
  },
     // TKROW_QUOTE1Z  End of single quoted char or char vector
  {{TKROW_POINTNOT1 , fnQuo1Done  , fnPointAcc  , scQuo1Done  , scPointAcc  },     // '0123456789'
   {TKROW_DOTAMBIG  , fnQuo1Done  , fnPointAcc  , scQuo1Done  , scPointAcc  },     // '.'
   {TKROW_ALPHA     , fnQuo1Done  , fnAlpInit   , scQuo1Done  , scAlpInit   },     // 'a..zA..Z'
+  {TKROW_ALPHA     , fnQuo1Done  , fnLclInit   , scQuo1Done  , scLclInit   },     // MFO local
   {TKROW_POINTNOT1 , fnQuo1Done  , fnPointAcc  , scQuo1Done  , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnQuo1Done  , fnDirIdent  , scQuo1Done  , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnQuo1Done  , fnSysInit   , scQuo1Done  , scSysInit   },     // Quad
@@ -346,12 +351,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnQuo1Done  , fnDelDone   , scQuo1Done  , scDelDone   },     // Del
   {TKROW_EXIT      , fnQuo1Done  , NULL        , scQuo1Done  , NULL        },     // EOL
   {TKROW_INIT      , fnQuo1Done  , fnUnkDone   , scQuo1Done  , scUnkDone   },     // Unknown symbols
-  {TKROW_POINTNOT1 , fnQuo1Done  , fnPointAcc  , scQuo1Done  , scPointAcc  },     // PoM symbol
  },
     // TKROW_QUOTE2A  Start of or within double quoted char or char vector
  {{TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // '0123456789'
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // '.'
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // 'a..zA..Z'
+  {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // MFO local
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Overbar
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Alpha or Omega
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Quad
@@ -381,12 +386,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Del
   {TKROW_EXIT      , fnQuo2Exit  , fnUnkDone   , scQuo2Exit  , scUnkDone   },     // EOL
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Unknown symbols
-  {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // PoM symbol
  },
     // TKROW_QUOTE2Z  End of double quoted char or char vector
  {{TKROW_POINTNOT1 , fnQuo2Done  , fnPointAcc  , scQuo2Done  , scPointAcc  },     // '0123456789'
   {TKROW_DOTAMBIG  , fnQuo2Done  , fnPointAcc  , scQuo2Done  , scPointAcc  },     // '.'
   {TKROW_ALPHA     , fnQuo2Done  , fnAlpInit   , scQuo2Done  , scAlpInit   },     // 'a..zA..Z'
+  {TKROW_ALPHA     , fnQuo2Done  , fnLclInit   , scQuo2Done  , scLclInit   },     // MFO local
   {TKROW_POINTNOT1 , fnQuo2Done  , fnPointAcc  , scQuo2Done  , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnQuo2Done  , fnDirIdent  , scQuo2Done  , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnQuo2Done  , fnSysInit   , scQuo2Done  , scSysInit   },     // Quad
@@ -416,12 +421,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnQuo2Done  , fnDelDone   , scQuo2Done  , scDelDone   },     // Del
   {TKROW_EXIT      , fnQuo2Done  , NULL        , scQuo2Done  , NULL        },     // EOL
   {TKROW_INIT      , fnQuo2Done  , fnUnkDone   , scQuo2Done  , scUnkDone   },     // Unknown symbols
-  {TKROW_POINTNOT1 , fnQuo2Done  , fnPointAcc  , scQuo2Done  , scPointAcc  },     // PoM symbol
  },
     // TKROW_DOTAMBIG Ambiguous dot:  either TKROW_POINTNOT or TKROW_INIT w/fnOp2Done ('+.' or 'name.' or '[]name.')
  {{TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '0123456789'
   {TKROW_DOTAMBIG  , fnDotDone   , fnPointAcc  , scDotDone   , scPointAcc  },     // '.'
   {TKROW_ALPHA     , fnDotDone   , fnAlpInit   , scDotDone   , scAlpInit   },     // 'a..zA..Z'
+  {TKROW_ALPHA     , fnDotDone   , fnLclInit   , scDotDone   , scLclInit   },     // MFO local
   {TKROW_POINTNOT1 , fnDotDone   , fnPointAcc  , scDotDone   , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnDotDone   , fnDirIdent  , scDotDone   , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnDotDone   , fnSysInit   , scDotDone   , scSysInit   },     // Quad
@@ -451,12 +456,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnDotDone   , fnDelDone   , scDotDone   , scDelDone   },     // Del
   {TKROW_EXIT      , fnDotDone   , NULL        , scDotDone   , NULL        },     // EOL
   {TKROW_INIT      , fnDotDone   , fnUnkDone   , scDotDone   , scUnkDone   },     // Unknown symbols
-  {TKROW_POINTNOT1 , fnDotDone   , fnPointAcc  , scDotDone   , scPointAcc  },     // PoM symbol
  },
     // TKROW_JOTAMBIG Ambiguous jot:  either TKROW_OUTAMBIG or normal w/fnJotDone ('J')
  {{TKROW_POINTNOT1 , fnJotDone   , fnPointAcc  , scJotDone   , scPointAcc  },     // '0123456789'
   {TKROW_OUTAMBIG  , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '.'
   {TKROW_ALPHA     , fnJotDone   , fnAlpInit   , scJotDone   , scAlpInit   },     // 'a..zA..Z'
+  {TKROW_ALPHA     , fnJotDone   , fnLclInit   , scJotDone   , scLclInit   },     // MFO local
   {TKROW_POINTNOT1 , fnJotDone   , fnPointAcc  , scJotDone   , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnJotDone   , fnDirIdent  , scJotDone   , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnJotDone   , fnSysInit   , scJotDone   , scSysInit   },     // Quad
@@ -486,12 +491,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnJotDone   , fnDelDone   , scJotDone   , scDelDone   },     // Del
   {TKROW_EXIT      , fnJotDone   , NULL        , scJotDone   , NULL        },     // EOL
   {TKROW_INIT      , fnJotDone   , fnUnkDone   , scJotDone   , scUnkDone   },     // Unknown symbols
-  {TKROW_POINTNOT1 , fnJotDone   , fnPointAcc  , scJotDone   , scPointAcc  },     // PoM symbol
  },
     // TKROW_OUTAMBIG Ambiguous outer product:  either TKROW_INIT w/fnOutDone or TKROW_POINTNOT w/fnOutDone ('J.')
  {{TKROW_POINTNOT1 , fnJotDone0  , fnPointAcc  , scJotDone0  , scPointAcc  },     // '0123456789'
   {TKROW_JOTAMBIG  , fnOutDone   , fnPointAcc  , scOutDone   , scPointAcc  },     // '.'
   {TKROW_ALPHA     , fnOutDone   , fnAlpInit   , scOutDone   , scAlpInit   },     // 'a..zA..Z'
+  {TKROW_ALPHA     , fnOutDone   , fnLclInit   , scOutDone   , scLclInit   },     // MFO local
   {TKROW_POINTNOT1 , fnOutDone   , fnPointAcc  , scOutDone   , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnOutDone   , fnDirIdent  , scOutDone   , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnOutDone   , fnSysInit   , scOutDone   , scSysInit   },     // Quad
@@ -521,12 +526,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnOutDone   , fnDelDone   , scOutDone   , scDelDone   },     // Del
   {TKROW_EXIT      , fnOutDone   , NULL        , scOutDone   , NULL        },     // EOL
   {TKROW_INIT      , fnOutDone   , fnUnkDone   , scOutDone   , scUnkDone   },     // Unknown symbols
-  {TKROW_POINTNOT1 , fnOutDone   , fnPointAcc  , scOutDone   , scPointAcc  },     // PoM symbol
  },
     // TKROW_SYS_NS System namespace
  {{TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '0123456789'
   {TKROW_INIT      , NULL        , fnSysNSDone , NULL        , scSysNSDone },     // '.'
   {TKROW_ALPHA     , NULL        , fnAlpInit   , NULL        , scAlpInit   },     // 'a..zA..Z'
+  {TKROW_ALPHA     , NULL        , fnLclInit   , NULL        , scLclInit   },     // MFO local
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Overbar
   {TKROW_INIT      , NULL        , fnDirIdent  , NULL        , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , NULL        , fnSysInit   , NULL        , scSysInit   },     // Quad
@@ -556,12 +561,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , NULL        , fnDelDone   , NULL        , scDelDone   },     // Del
   {TKROW_EXIT      , NULL        , NULL        , NULL        , NULL        },     // EOL
   {TKROW_INIT      , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // Unknown symbols
-  {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // PoM symbol
  },
     // TKROW_LBR_INIT Left brace initial state
  {{TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // '0123456789'
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // '.'
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // 'a..zA..Z'
+  {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // MFO local
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Overbar
   {TKROW_LBR_INIT  , NULL        , fnLbrAlpha  , NULL        , scLbrAlpha  },     // Alpha or Omega
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Quad
@@ -591,12 +596,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Del
   {TKROW_EXIT      , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // EOL
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Unknown symbols
-  {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // PoM symbol
  },
     // TKROW_LBR_Q1   Left brace single quote
  {{TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // '0123456789'
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // '.'
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // 'a..zA..Z'
+  {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // MFO local
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Overbar
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Alpha or Omega
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Quad
@@ -626,12 +631,12 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Del
   {TKROW_EXIT      , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // EOL
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Unknown symbols
-  {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // PoM symbol
  },
     // TKROW_LBR_Q2   Left brace double quote
  {{TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // '0123456789'
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // '.'
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // 'a..zA..Z'
+  {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // MFO local
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Overbar
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Alpha or Omega
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Quad
@@ -661,7 +666,6 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Del
   {TKROW_EXIT      , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // EOL
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Unknown symbols
-  {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // PoM symbol
  },
 }
 #endif
@@ -1332,6 +1336,56 @@ ERROR_EXIT:
 
     return bRet;
 } // End scAlpha
+
+
+//***************************************************************************
+//  $fnMFOLcl
+//
+//  Start of or next char in name with WC_MFOLCL
+//***************************************************************************
+
+UBOOL fnMFOLcl
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
+
+{
+    // If we are tokenizing inside an MFO, ...
+    if (lptkLocalVars->bMFO)
+        // Treat WC_MFOLCL as a normal alphabetic char
+        return fnAlpha (lptkLocalVars);
+    else
+    {
+        // Set the next row
+        lptkLocalVars->State[0] = TKROW_INIT;
+
+        // Call the UnkDone function
+        return fnUnkDone (lptkLocalVars);
+    } // End IF/ELSE
+} // End fnMFOLcl
+
+
+//***************************************************************************
+//  $scMFOLcl
+//
+//  Start of or next char in name with WC_MFOLCL
+//***************************************************************************
+
+UBOOL scMFOLcl
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
+
+{
+    // If we are tokenizing inside an MFO, ...
+    if (lptkLocalVars->bMFO)
+        // Treat WC_MFOLCL as a normal alphabetic char
+        return scAlpha (lptkLocalVars);
+    else
+    {
+        // Set the next row
+        lptkLocalVars->State[0] = TKROW_INIT;
+
+        // Call the UnkDone function
+        return scUnkDone (lptkLocalVars);
+    } // End IF/ELSE
+} // End scMFOLcl
 
 
 //***************************************************************************
@@ -2306,7 +2360,7 @@ UBOOL fnPrmDone
     tkData.tkChar = *lptkLocalVars->lpwszCur;
 
     // For reasons which escape me now, this is
-    //   where we handle {zilde}/{NaN}
+    //   where we handle {zilde}
     if (tkData.tkChar EQ UTF16_ZILDE)
     {
         // Mark the data as a variable
@@ -2314,14 +2368,6 @@ UBOOL fnPrmDone
 ////////tkFlags.ImmType   = IMMTYPE_ERROR;  // Already zero from {0}
 ////////tkFlags.NoDisplay = FALSE;          // Already zero from {0}
         tkData.tkVoid     = MakePtrTypeGlb (hGlbZilde);
-    } else
-    if (tkData.tkChar EQ UTF16_NAN)
-    {
-        // Mark the data as an immediate
-        tkFlags.TknType   = TKT_VARIMMED;
-        tkFlags.ImmType   = IMMTYPE_FLOAT;  // Already zero from {0}
-////////tkFlags.NoDisplay = FALSE;          // Already zero from {0}
-        tkData.tkFloat    = fltNaN;
     } else
     {
         // If {goto} of any form in AFO, ...
@@ -2449,7 +2495,7 @@ UBOOL fnPointSub
      WCHAR         wchCur)              // The char to accumulate
 
 {
-    LPCHAR       lpszNum;               // Ptr to Num global memory
+    LPUCHAR      lpszNum;               // Ptr to Num global memory
     UBOOL        bRet;                  // TRUE iff result is valid
 
     // Lock the memory to get a ptr to it
@@ -2479,7 +2525,7 @@ UBOOL fnPointDone
 
 {
     UBOOL        bRet;                  // TRUE iff result is valid
-    LPCHAR       lpszNum;               // Ptr to Num global memory
+    LPUCHAR      lpszNum;               // Ptr to Num global memory
     PNLOCALVARS  pnLocalVars = {0};     // PN Local vars
     TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
     TOKEN_DATA   tkData = {0};          // Token data  ...
@@ -2852,7 +2898,7 @@ UBOOL scPointDone
         // If the current char is Complex Angle ('a'),
         //   and the next char is Degrees ('d') or Radians ('r'),
         //   or Unit Normalized ('u'), ...
-        if (lpszNum[uVar] EQ 'a'
+        if ( lpszNum[uVar    ] EQ 'a'
          && (lpszNum[uVar + 1] EQ 'd'
           || lpszNum[uVar + 1] EQ 'r'
           || lpszNum[uVar + 1] EQ 'u'))
@@ -2866,7 +2912,7 @@ UBOOL scPointDone
 
         // If the current char is Octonion Digraph ('o'),
         //   and the next char is 's', 'i', 'j', or 'k', ...
-        if (lpszNum[uVar] EQ 'o'
+        if ( lpszNum[uVar    ] EQ 'o'
          && (lpszNum[uVar + 1] EQ 's'
           || lpszNum[uVar + 1] EQ 'i'
           || lpszNum[uVar + 1] EQ 'j'
@@ -6463,9 +6509,15 @@ TKCOLINDICES CharTransTK
             else
                 return TKCOL_SYS_NS;
 
+        case WC_MFOLCL:
+            if (lptkLocalVars->bMFO)
+                return TKCOL_ALPHA;
+            else
+                return TKCOL_UNK;
+
         case L'`':
         case L'@':
-        case L'$':
+////////case L'$':          // == WC_MFOLCL
         case L'%':
         case L'&':
         case WC_EOS:
@@ -6553,36 +6605,36 @@ static COLNAMES colNames[] =
 {{L"DIGIT"       , TKCOL_DIGIT       }, // 00: Digit
  {L"DOT"         , TKCOL_DOT         }, // 01: Decimal number, inner & outer product separator
  {L"ALPHA"       , TKCOL_ALPHA       }, // 02: Alphabetic
- {L"OVERBAR"     , TKCOL_OVERBAR     }, // 03: Overbar
- {L"DIRIDENT"    , TKCOL_DIRIDENT    }, // 04: Alpha or Omega
- {L"Q_QQ"        , TKCOL_Q_QQ        }, // 05: Quad
- {L"NaN"         , TKCOL_NAN         }, // 06: NaN
- {L"INFINITY"    , TKCOL_INFINITY    }, // 07: Infinity
- {L"ASSIGN"      , TKCOL_ASSIGN      }, // 08: Assignment symbol
- {L"SEMICOLON"   , TKCOL_SEMICOLON   }, // 09: Semicolon symbol
- {L"COLON"       , TKCOL_COLON       }, // 0A: Colon symbol
- {L"CTRLSTRUC"   , TKCOL_CTRLSTRUC   }, // 0B: Control Structure
- {L"PRIM_FN"     , TKCOL_PRIM_FN     }, // 0C: Primitive monadic or dyadic function
- {L"PRIM_FN0"    , TKCOL_PRIM_FN0    }, // 0D: ...       niladic function
- {L"PRIM_OP1"    , TKCOL_PRIM_OP1    }, // 0E: ...       monadic operator
- {L"PRIM_OP2"    , TKCOL_PRIM_OP2    }, // 0F: ...       dyadic  ...
- {L"JOT"         , TKCOL_JOT         }, // 10: Jot symbol
- {L"LEFTPAREN"   , TKCOL_LEFTPAREN   }, // 11: Left paren
- {L"RIGHTPAREN"  , TKCOL_RIGHTPAREN  }, // 12: Right ...
- {L"LEFTBRACKET" , TKCOL_LEFTBRACKET }, // 13: Left bracket
- {L"RIGHTBRACKET", TKCOL_RIGHTBRACKET}, // 14: Right ...
- {L"LEFTBRACE"   , TKCOL_LEFTBRACE   }, // 15: Left brace
- {L"RIGHTBRACE"  , TKCOL_RIGHTBRACE  }, // 16: Right ...
- {L"SPACE"       , TKCOL_SPACE       }, // 17: White space (' ' or '\t')
- {L"QUOTE1"      , TKCOL_QUOTE1      }, // 18: Single quote symbol
- {L"QUOTE2"      , TKCOL_QUOTE2      }, // 19: Double ...
- {L"DIAMOND"     , TKCOL_DIAMOND     }, // 1A: Diamond symbol
- {L"LAMP"        , TKCOL_LAMP        }, // 1B: Comment symbol
- {L"SYS_NS"      , TKCOL_SYS_NS      }, // 1C: System namespace
- {L"DEL"         , TKCOL_DEL         }, // 1D: Del
- {L"EOL"         , TKCOL_EOL         }, // 1E: End-Of-Line
- {L"UNK"         , TKCOL_UNK         }, // 1F: Unknown symbols
- {L"PoM"         , TKCOL_PoM         }, // 20: Plus or minus symbol
+ {L"MFOLCL"      , TKCOL_MFOLCL      }, // 03: MFO local
+ {L"OVERBAR"     , TKCOL_OVERBAR     }, // 04: Overbar
+ {L"DIRIDENT"    , TKCOL_DIRIDENT    }, // 05: Alpha or Omega
+ {L"Q_QQ"        , TKCOL_Q_QQ        }, // 06: Quad
+ {L"NaN"         , TKCOL_NAN         }, // 07: NaN
+ {L"INFINITY"    , TKCOL_INFINITY    }, // 08: Infinity
+ {L"ASSIGN"      , TKCOL_ASSIGN      }, // 09: Assignment symbol
+ {L"SEMICOLON"   , TKCOL_SEMICOLON   }, // 0A: Semicolon symbol
+ {L"COLON"       , TKCOL_COLON       }, // 0B: Colon symbol
+ {L"CTRLSTRUC"   , TKCOL_CTRLSTRUC   }, // 0C: Control Structure
+ {L"PRIM_FN"     , TKCOL_PRIM_FN     }, // 0D: Primitive monadic or dyadic function
+ {L"PRIM_FN0"    , TKCOL_PRIM_FN0    }, // 0E: ...       niladic function
+ {L"PRIM_OP1"    , TKCOL_PRIM_OP1    }, // 0F: ...       monadic operator
+ {L"PRIM_OP2"    , TKCOL_PRIM_OP2    }, // 10: ...       dyadic  ...
+ {L"JOT"         , TKCOL_JOT         }, // 11: Jot symbol
+ {L"LEFTPAREN"   , TKCOL_LEFTPAREN   }, // 12: Left paren
+ {L"RIGHTPAREN"  , TKCOL_RIGHTPAREN  }, // 13: Right ...
+ {L"LEFTBRACKET" , TKCOL_LEFTBRACKET }, // 14: Left bracket
+ {L"RIGHTBRACKET", TKCOL_RIGHTBRACKET}, // 15: Right ...
+ {L"LEFTBRACE"   , TKCOL_LEFTBRACE   }, // 16: Left brace
+ {L"RIGHTBRACE"  , TKCOL_RIGHTBRACE  }, // 17: Right ...
+ {L"SPACE"       , TKCOL_SPACE       }, // 18: White space (' ' or '\t')
+ {L"QUOTE1"      , TKCOL_QUOTE1      }, // 19: Single quote symbol
+ {L"QUOTE2"      , TKCOL_QUOTE2      }, // 1A: Double ...
+ {L"DIAMOND"     , TKCOL_DIAMOND     }, // 1B: Diamond symbol
+ {L"LAMP"        , TKCOL_LAMP        }, // 1C: Comment symbol
+ {L"SYS_NS"      , TKCOL_SYS_NS      }, // 1D: System namespace
+ {L"DEL"         , TKCOL_DEL         }, // 1E: Del
+ {L"EOL"         , TKCOL_EOL         }, // 1F: End-Of-Line
+ {L"UNK"         , TKCOL_UNK         }, // 20: Unknown symbols
 };
     if (TKCOL_LENGTH > colIndex)
         return colNames[colIndex].lpwsz;

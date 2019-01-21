@@ -1,0 +1,35 @@
+Build #2042 -- Version 0.6.0.xx
+-------------------------------
+
+* Rename MFO Locals To Avoid Conflict With User Variables
+
+Directory branches/bsmith/NanTypes:
+
+DEFINES.H:
+MF_DIDTACK.H:
+MF_DIJOT.H:
+MF_DOMINO.H:
+MF_DOT.H:
+MF_DOTDOT.H:
+MF_DSHOE.H:
+MF_DYDSCAN.H:
+MF_EPSUND.H:
+MF_IOTA.H:
+MF_IOTAUND.H:
+MF_JOTDOT.H:
+MF_LSHOEUND.H:
+MF_MULTISET.H:
+MF_QUADFMT.H:
+MF_QUADJOT.H:
+MF_QUADVR.H:
+MF_ROS.H:
+MF_SECTION.H:
+MF_SHRIEK.H:
+MF_SLOPE.H:
+MF_SQUAD.H:
+MF_USHOE.H:
+MF_VARIANT.H:
+PF_UTACKJOT.C:
+TOKENIZE.C:
+TOKENIZE.H:
+  Rename MFO locals to avoid conflict with user variables.

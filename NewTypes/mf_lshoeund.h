@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function for dyadic Left/RightShoeUnderbar
@@ -37,21 +38,17 @@
 //         or R iff L is a superset of R (RightShoeUnderbar).
 //***************************************************************************
 
-static APLCHAR DydHeader[] =
-  L"Z←L " MFON_DydLRShoeUnd L" R";
-
-static APLCHAR DydLine1[] = 
-  L"Z←∧/L∊R";
-
 static LPAPLCHAR DydBody[] =
-{DydLine1,
+{L""S L"Z←∧/"S L"L∊"S L"R",
 };
 
 MAGIC_FCNOPR MFO_DydLRShoeUnd =
-{DydHeader,
+{L""S L"Z←"S L"L " MFON_DydLRShoeUnd L" "S L"R",
  DydBody,
  countof (DydBody),
 };
+
+#undef  S
 
 
 //***************************************************************************

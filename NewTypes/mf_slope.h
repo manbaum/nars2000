@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function for Dyadic Slope
@@ -37,14 +38,16 @@
 
 static LPAPLCHAR DydBody[] =
 {// Emulate L\[X] R for Integer L
- L"Z←(1⌈|L)/[X] (L>0)\\[X] R",	// Double the \ to avoid it being confused with a character escape sequence
+ L""S L"Z←(1⌈|"S L"L)/["S L"X] ("S L"L>0)\\["S L"X] "S L"R",	// Double the \ to avoid it being confused with a character escape sequence
 };
 
 MAGIC_FCNOPR MFO_DydSlope =			
-{L"Z←L " MFON_DydSlope L"[X] R",
+{L""S L"Z←"S L"L " MFON_DydSlope L"["S L"X] "S L"R",
  DydBody,
  countof (DydBody),
 };
+
+#undef  S
 
 
 //***************************************************************************

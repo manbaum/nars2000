@@ -423,10 +423,16 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
     LPTOKEN        lptkCSBeg;           // Ptr to next token on the CS stack
     CSLOCALVARS    csLocalVars = {0};   // CS local vars
     LPTOKEN_HEADER lpMemTknHdr;         // Ptr to tokenized line header global memory
+    UBOOL          bMFO;                // TRUE iff we're tokenizing an MFO
 
     // Save the ptr to the next token on the CS stack
     //   as our beginning
     lptkCSBeg = lpMemPTD->lptkCSNxt;
+
+    bMFO = (lpMemPTD->lpSISCur NE NULL
+         && lpMemPTD->lpSISCur->bItsEC
+         && lpMemPTD->lpSISCur->lpSISPrv NE NULL
+         && lpMemPTD->lpSISCur->lpSISPrv->bMFO);
 
     // Tokenize, parse, and untokenize the line
 
@@ -438,7 +444,7 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
                    1,                           // Logical function line # (0 = header)
                   &ErrorMessageDirect,          // Ptr to error handling function (may be NULL)
                    NULL,                        // Ptr to common struc (may be NULL if unused)
-                   FALSE);                      // TRUE iff we're tokenizing a Magic Function/Operator
+                   bMFO);                       // TRUE iff we're tokenizing a Magic Function/Operator
     // If it's invalid, ...
     if (hGlbTknHdr EQ NULL)
     {

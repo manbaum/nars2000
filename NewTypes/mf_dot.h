@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function/operator for identity function from the
@@ -33,11 +34,11 @@
 //***************************************************************************
 
 static LPAPLCHAR IdnBody[] =
-{L"⎕ID:Z←∘⌻((¯1*⎕LR='r')↑⍴1/R)⍴1",
+{L"⎕ID:"S L"Z←∘⌻((¯1*⎕LR='r')↑⍴1/"S L"R)⍴1",
 };
 
 MAGIC_FCNOPR MFO_IdnDot =
-{L"Z←" MFON_IdnDot L" R",
+{L""S L"Z←" MFON_IdnDot L" "S L"R",
  IdnBody,
  countof (IdnBody),
 };
@@ -48,13 +49,13 @@ MAGIC_FCNOPR MFO_IdnDot =
 //***************************************************************************
 
 static LPAPLCHAR DydBody[] =
-{L":if 0=⍴⍴L ⋄ L←⊂L ⋄ :else ⋄ L←⊂[(⎕IO-1)+⍴⍴L] L ⋄ :end",
- L":if 0=⍴⍴R ⋄ R←⊂R ⋄ :else ⋄ R←⊂[ ⎕IO       ] R ⋄ :end",
- L"Z←LO/¨L∘.RO R",
+{L":if 0=⍴⍴"S L"L ⋄ "S L"L←⊂"S L"L ⋄ :else ⋄ "S L"L←⊂[(⎕IO-1)+⍴⍴"S L"L] "S L"L ⋄ :end",
+ L":if 0=⍴⍴"S L"R ⋄ "S L"R←⊂"S L"R ⋄ :else ⋄ "S L"R←⊂[ ⎕IO       ] "S L"R ⋄ :end",
+ L""S L"Z←"S L"LO/¨"S L"L∘."S L"RO "S L"R",
 };
 
 MAGIC_FCNOPR MFO_DydDot2 =
-{L"Z←L (LO " MFON_DydDot2 L" RO) R",
+{L""S L"Z←"S L"L ("S L"LO " MFON_DydDot2 L" "S L"RO) "S L"R",
  DydBody,
  countof (DydBody),
 };
@@ -102,12 +103,12 @@ MAGIC_FCNOPR MFO_MonDotInit =
 //L"⍝ Generalized determinant operator";
 
 static LPAPLCHAR MonBody[] =
-{L"Z←⊃LO " MFON_MonDotCr L" RO/" MFON_MonDotAll L"⍪R ⋄ →0",
- L"⎕PRO:Z←⊃LO/⍬",
+{L""S L"Z←⊃"S L"LO " MFON_MonDotCr L" "S L"RO/" MFON_MonDotAll L"⍪"S L"R ⋄ →0",
+ L"⎕PRO:"S L"Z←⊃"S L"LO/⍬",
 };
 
 MAGIC_FCNOPR MFO_MonDot =
-{L"Z←(LO " MFON_MonDot L" RO) R",
+{L""S L"Z←("S L"LO " MFON_MonDot L" "S L"RO) "S L"R",
  MonBody,
  countof (MonBody),
 };
@@ -122,11 +123,11 @@ MAGIC_FCNOPR MFO_MonDot =
 //***************************************************************************
 
 static LPAPLCHAR DetSingBody[] =
-{L"Z←⊃LO/⊃RO/R",
+{L""S L"Z←⊃"S L"LO/⊃"S L"RO/"S L"R",
 };
 
 MAGIC_FCNOPR MFO_DetSing =
-{L"Z←(LO " MFON_DetSing L" RO) R",
+{L""S L"Z←("S L"LO " MFON_DetSing L" "S L"RO) "S L"R",
  DetSingBody,
  countof (DetSingBody),
 };
@@ -143,22 +144,24 @@ MAGIC_FCNOPR MFO_DetSing =
 //***************************************************************************
 
 static LPAPLCHAR DetPermBody[] =
-{L"⎕IO←0 ⋄ (m n)←⍴R",
- L":if m>n ⋄ Z←+/∇¨⊂[1 2] R[10 1‼n m;]",
+{L"⎕IO←0 ⋄ ("S L"m "S L"n)←⍴"S L"R",
+ L":if "S L"m>"S L"n ⋄ "S L"Z←+/∇¨⊂[1 2] "S L"R[10 1‼"S L"n "S L"m;]",
  L":else",
- L"  B←(n⍴2)⊤(¯1+2*n)..0",
- L"  S←n-+⌿B",
- L"  SS←(n+1)⍴0 ⋄ SS[S]+←×/¨+/¨(⊂[0] B)/¨⊂R",
- L"  I←⍳m ⋄ J←I!I+n-m",
- L"  Z←-/J×SS[(n-m)+⍳m]",
+ L"  "S L"B←("S L"n⍴2)⊤(¯1+2*"S L"n)..0",
+ L"  "S L"S←"S L"n-+⌿"S L"B",
+ L"  "S L"SS←("S L"n+1)⍴0 ⋄ "S L"SS["S L"S]+←×/¨+/¨(⊂[0] "S L"B)/¨⊂"S L"R",
+ L"  "S L"I←⍳"S L"m ⋄ "S L"J←"S L"I!"S L"I+"S L"n-"S L"m",
+ L"  "S L"Z←-/"S L"J×"S L"SS[("S L"n-"S L"m)+⍳"S L"m]",
  L":endif",
 };
 
 MAGIC_FCNOPR MFO_DetPerm =
-{L"Z←" MFON_DetPerm L" R;m n B S ⎕IO I J SS",
+{L""S L"Z←" MFON_DetPerm L" "S L"R;"S L"m "S L"n "S L"B "S L"S ⎕IO "S L"I "S L"J "S L"SS",
  DetPermBody,
  countof (DetPermBody),
 };
+
+#undef  S
 
 
 //***************************************************************************

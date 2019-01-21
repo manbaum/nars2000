@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function/operator for Extended Dyadic Iota Underbar
@@ -37,25 +38,18 @@
 //    vector of trailing subarrays from the left arg.
 //***************************************************************************
 
-static APLCHAR DydHeader[] =
-  L"Z←L " MFON_DydIotaUnderbar L" R";
-
-static APLCHAR DydLine1[] = 
-  L"Z←(⊂⍤¯1 L)⍳⊂⍤(¯1+⍴⍴L) R ⋄ →0";
-
-static APLCHAR DydLine2[] = 
-  L"⎕MS:Z←(⊂⍤¯1 L)⍳⊂⍤(¯1+⍴⍴L) R";
-
 static LPAPLCHAR DydBody[] =
-{DydLine1,
- DydLine2,
+{L""S L"Z←(⊂⍤¯1 "S L"L)⍳⊂⍤(¯1+⍴⍴"S L"L) "S L"R ⋄ →0",
+ L"⎕MS:"S L"Z←(⊂⍤¯1 "S L"L)⍳⊂⍤(¯1+⍴⍴"S L"L) "S L"R",
 };
 
 MAGIC_FCNOPR MFO_DydIotaUnderbar =
-{DydHeader,
+{L""S L"Z←"S L"L " MFON_DydIotaUnderbar L" "S L"R",
  DydBody,
  countof (DydBody),
 };
+
+#undef  S
   
 
 //***************************************************************************

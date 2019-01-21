@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function/operator for rising/falling factorials
@@ -34,12 +35,12 @@
 static LPAPLCHAR DydVOFactBody[] =
 {L"⎕PRO:",
  L"⎕IO←0",
- L"→(2=≢X)/L1 ⋄ X←X,1",
- L"L1:Z←×/¨R+((×X[0])×|X[1])×⊂⍳|X[0]",
+ L"→(2=≢"S L"X)/"S L"L1 ⋄ "S L"X←"S L"X,1",
+ L""S L"L1:"S L"Z←×/¨"S L"R+((×"S L"X[0])×|"S L"X[1])×⊂⍳|"S L"X[0]",
 };
 
 MAGIC_FCNOPR MFO_DydVOFact =
-{L"Z←" MFON_DydVOFact L"[X] R;⎕IO",
+{L""S L"Z←" MFON_DydVOFact L"["S L"X] "S L"R;⎕IO",
  DydVOFactBody,
  countof (DydVOFactBody),
 };
@@ -51,15 +52,17 @@ MAGIC_FCNOPR MFO_DydVOFact =
 
 static LPAPLCHAR MonExecuteBody[] =
 {L"⎕PRO:",
- L"⎕FPC←L",
- L"Z←##.⍎R",
+ L"⎕FPC←"S L"L",
+ L""S L"Z←##.⍎"S L"R",
 };
 
 MAGIC_FCNOPR MFO_MonExecute =
-{L"Z←L " MFON_MonExecute L" R;⎕FPC",
+{L""S L"Z←"S L"L " MFON_MonExecute L" "S L"R;⎕FPC",
  MonExecuteBody,
  countof (MonExecuteBody),
 };
+
+#undef  S
 
 
 //***************************************************************************

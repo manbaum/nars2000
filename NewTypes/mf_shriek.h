@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function/operator for Monadic Shriek for Quaternions
@@ -33,15 +34,17 @@
 
 static LPAPLCHAR DydBody[] =
 { L"⎕CT←0",
-  L"⎕ERROR ((⍴R)≠⍴∪R)/'EIGENVALUES NOT DISTINCT'",
-  L"Z←<9○(L+.×(∘⌻!R)+.×⌹L)[;⎕IO]",
+  L"⎕ERROR ((⍴"S L"R)≠⍴∪"S L"R)/'EIGENVALUES NOT DISTINCT'",
+  L""S L"Z←<9○("S L"L+.×(∘⌻!"S L"R)+.×⌹"S L"L)[;⎕IO]",
  };
 
 MAGIC_FCNOPR MFO_MonShriek =
-{L"Z←L " MFON_MonShriek L" R;⎕CT",
+{L""S L"Z←"S L"L " MFON_MonShriek L" "S L"R;⎕CT",
  DydBody,
  countof (DydBody),
 };
+
+#undef  S
 
 
 //***************************************************************************

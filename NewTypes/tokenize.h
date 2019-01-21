@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,37 +33,38 @@ typedef enum tagTKCOL_INDICES       // FSA column indices for Tokenize
 {TKCOL_DIGIT = 0    ,               // 00:  Digit
  TKCOL_DOT          ,               // 01:  Decimal number, inner & outer product separator
  TKCOL_ALPHA        ,               // 02:  Alphabetic
- TKCOL_OVERBAR      ,               // 03:  Overbar
- TKCOL_DIRIDENT     ,               // 04:  Alpha or Omega
- TKCOL_Q_QQ         ,               // 05:  Quad
- TKCOL_NAN          ,               // 06:  NaN
- TKCOL_INFINITY     ,               // 07:  Infinity
- TKCOL_ASSIGN       ,               // 08:  Assignment symbol
- TKCOL_SEMICOLON    ,               // 09:  Semicolon symbol
- TKCOL_COLON        ,               // 0A:  Colon symbol
- TKCOL_CTRLSTRUC    ,               // 0B:  Control Structure
- TKCOL_PRIM_FN      ,               // 0C:  Primitive monadic or dyadic function
- TKCOL_PRIM_FN0     ,               // 0D:  ...       niladic function
- TKCOL_PRIM_OP1     ,               // 0E:  ...       monadic/ambiguous operator
- TKCOL_PRIM_OP2     ,               // 0F:  ...       dyadic  ...
- TKCOL_JOT          ,               // 10:  Jot symbol
- TKCOL_LEFTPAREN    ,               // 11:  Left paren
- TKCOL_RIGHTPAREN   ,               // 12:  Right ...
- TKCOL_LEFTBRACKET  ,               // 13:  Left bracket
- TKCOL_RIGHTBRACKET ,               // 14:  Right ...
- TKCOL_LEFTBRACE    ,               // 15:  Left brace
- TKCOL_RIGHTBRACE   ,               // 16:  Right ...
- TKCOL_SPACE        ,               // 17:  White space (' ' or '\t')
- TKCOL_QUOTE1       ,               // 18:  Single quote symbol
- TKCOL_QUOTE2       ,               // 19:  Double ...
- TKCOL_DIAMOND      ,               // 1A:  Diamond symbol
- TKCOL_LAMP         ,               // 1B:  Comment symbol
- TKCOL_SYS_NS       ,               // 1C:  System namespace
- TKCOL_DEL          ,               // 1D:  Del
- TKCOL_EOL          ,               // 1E:  End-Of-Line
- TKCOL_UNK          ,               // 1F:  Unknown symbols
+ TKCOL_MFOLCL       ,               // 03:  MFO local
+ TKCOL_OVERBAR      ,               // 04:  Overbar
+ TKCOL_DIRIDENT     ,               // 05:  Alpha or Omega
+ TKCOL_Q_QQ         ,               // 06:  Quad
+ TKCOL_NAN          ,               // 07:  NaN
+ TKCOL_INFINITY     ,               // 08:  Infinity
+ TKCOL_ASSIGN       ,               // 09:  Assignment symbol
+ TKCOL_SEMICOLON    ,               // 0A:  Semicolon symbol
+ TKCOL_COLON        ,               // 0B:  Colon symbol
+ TKCOL_CTRLSTRUC    ,               // 0C:  Control Structure
+ TKCOL_PRIM_FN      ,               // 0D:  Primitive monadic or dyadic function
+ TKCOL_PRIM_FN0     ,               // 0E:  ...       niladic function
+ TKCOL_PRIM_OP1     ,               // 0F:  ...       monadic/ambiguous operator
+ TKCOL_PRIM_OP2     ,               // 10:  ...       dyadic  ...
+ TKCOL_JOT          ,               // 11:  Jot symbol
+ TKCOL_LEFTPAREN    ,               // 12:  Left paren
+ TKCOL_RIGHTPAREN   ,               // 13:  Right ...
+ TKCOL_LEFTBRACKET  ,               // 14:  Left bracket
+ TKCOL_RIGHTBRACKET ,               // 15:  Right ...
+ TKCOL_LEFTBRACE    ,               // 16:  Left brace
+ TKCOL_RIGHTBRACE   ,               // 17:  Right ...
+ TKCOL_SPACE        ,               // 18:  White space (' ' or '\t')
+ TKCOL_QUOTE1       ,               // 19:  Single quote symbol
+ TKCOL_QUOTE2       ,               // 1A:  Double ...
+ TKCOL_DIAMOND      ,               // 1B:  Diamond symbol
+ TKCOL_LAMP         ,               // 1C:  Comment symbol
+ TKCOL_SYS_NS       ,               // 1D:  System namespace
+ TKCOL_DEL          ,               // 1E:  Del
+ TKCOL_EOL          ,               // 1F:  End-Of-Line
+ TKCOL_UNK          ,               // 20:  Unknown symbols
 
- TKCOL_LENGTH       ,               // 20:  # column indices (cols in fsaActTableTK)
+ TKCOL_LENGTH       ,               // 21:  # column indices (cols in fsaActTableTK)
                                     //      Because this enum is origin-0, this value is the # valid columns.
 } TKCOLINDICES, *LPTKCOLINDICES;
 

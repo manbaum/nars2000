@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function/operator for Monadic []VR
@@ -35,41 +36,22 @@
 //  Return a visual representation of a user-defined function/operator
 //***************************************************************************
 
-static APLCHAR MonHeaderVR[] =
-  L"Z←" MFON_MonVR L" R;L;⎕IO";
-
-static APLCHAR MonLineVR1[] =  
-  L"⎕IO←0 ⋄ Z←1 ##.⎕CR R";
-  
-static APLCHAR MonLineVR2[] =  
-  L"→(0≠⍴Z)/L1 ⋄ Z←'' ⋄ →0";
-  
-static APLCHAR MonLineVR3[] =  
-  L"L1:→(1=≡Z)/0";
-  
-static APLCHAR MonLineVR4[] =  
-  L"L←'∇'∊0⊃Z";
-  
-static APLCHAR MonLineVR5[] =  
-  L"Z←(∊((⊂[1]'LO<    ∇>P<[>Q<]>I6' ⎕FMT⍳⍴Z),¨Z),¨⎕TCNL),'    ∇'";
-  
-static APLCHAR MonLineVR6[] =  
-  L"→L/0 ⋄ Z←Z,(' ',⍕2 ##.⎕AT R),' (UTC)'";
-
 static LPAPLCHAR MonBodyVR[] =
-{MonLineVR1,
- MonLineVR2,
- MonLineVR3,
- MonLineVR4,
- MonLineVR5,
- MonLineVR6,
+{L"⎕IO←0 ⋄ "S L"Z←1 ##.⎕CR "S L"R",
+ L"→(0≠⍴"S L"Z)/"S L"L1 ⋄ "S L"Z←'' ⋄ →0",
+ L""S L"L1:→(1=≡"S L"Z)/0",
+ L""S L"L←'∇'∊0⊃"S L"Z",
+ L""S L"Z←(∊((⊂[1]'LO<    ∇>P<[>Q<]>I6' ⎕FMT⍳⍴"S L"Z),¨"S L"Z),¨⎕TCNL),'    ∇'",
+ L"→"S L"L/0 ⋄ "S L"Z←"S L"Z,(' ',⍕2 ##.⎕AT "S L"R),' (UTC)'",
 };
 
 MAGIC_FCNOPR MFO_MonVR =
-{MonHeaderVR,
+{L""S L"Z←" MFON_MonVR L" "S L"R;"S L"L ⎕IO",
  MonBodyVR,
  countof (MonBodyVR),
 };
+
+#undef  S
 
 
 //***************************************************************************

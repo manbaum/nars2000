@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function/operator for Extended Monadic Iota
@@ -39,11 +40,11 @@
 //***************************************************************************
 
 static LPAPLCHAR MonBody[] =
-{L"Z←⊃∘.,/⍳¨R",
+{L""S L"Z←⊃∘.,/⍳¨"S L"R",
 };
 
 MAGIC_FCNOPR MFO_MonIota =
-{L"Z←" MFON_MonIota L" R",
+{L""S L"Z←" MFON_MonIota L" "S L"R",
  MonBody,
  countof (MonBody),
 };
@@ -59,21 +60,23 @@ MAGIC_FCNOPR MFO_MonIota =
 //***************************************************************************
 
 static LPAPLCHAR DydBody[] =
-{L"O←⎕IO ⋄ ⎕IO←0",
- L":if 0=⍴⍴L ⋄ Z←(⍴R)⍴⊂⍬",
+{L""S L"O←⎕IO ⋄ ⎕IO←0",
+ L":if 0=⍴⍴"S L"L ⋄ Z←(⍴"S L"R)⍴⊂⍬",
  L":else",
- L"  Z←(0,⍴L)⊤(,L)⍳R",
- L"  A←⍸1=0⌷[0] Z",
- L"  Z[(⍳1+⍴⍴L)∘.,A]←⊃[0] (⍴A)⍴⊂0,⍴L",
- L"  Z←⊂[0] O+1↓[0] Z",
+ L"  "S L"Z←(0,⍴"S L"L)⊤(,"S L"L)⍳"S L"R",
+ L"  "S L"A←⍸1=0⌷[0] "S L"Z",
+ L"  "S L"Z[(⍳1+⍴⍴"S L"L)∘.,"S L"A]←⊃[0] (⍴"S L"A)⍴⊂0,⍴"S L"L",
+ L"  "S L"Z←⊂[0] "S L"O+1↓[0] "S L"Z",
  L":endif",
 };
 
 MAGIC_FCNOPR MFO_DydIota =
-{L"Z←L " MFON_DydIota L" R;⎕IO;O;A",
+{L""S L"Z←"S L"L " MFON_DydIota L" "S L"R;⎕IO "S L"O "S L"A",
  DydBody,
  countof (DydBody),
 };
+
+#undef  S
   
 
 //***************************************************************************

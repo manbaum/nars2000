@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function/operator for Extended Dyadic DotDot
@@ -35,37 +36,21 @@
 //  This algorithm is a generalization of 2..5 proposed by John Scholes.
 //***************************************************************************
 
-static APLCHAR DydHeader[] =
-  L"Z←L " MFON_DydDotDot L" R;⎕IO;⎕CT";
-  
-static APLCHAR DydLine1[] = 
-  L"⎕IO←0 ⋄ ⎕CT←3E¯15";
-  
-static APLCHAR DydLine2[] = 
-  L"L←2↑L,1";
-
-static APLCHAR DydLine3[] = 
-  L"Z←((⊃R)-0⊃L)÷|1⊃L";
-
-static APLCHAR DydLine4[] = 
-  L"L[1]←⊂(|1⊃L)××Z";
-  
-static APLCHAR DydLine5[] = 
-  L"Z←L[0]+L[1]×⍳1+⊃⌊|Z";
-
-  static LPAPLCHAR DydBody[] =
-{DydLine1,
- DydLine2,
- DydLine3,
- DydLine4,
- DydLine5,
+static LPAPLCHAR DydBody[] =
+{L"⎕IO←0 ⋄ ⎕CT←3E¯15",
+ L""S L"L←2↑"S L"L,1",
+ L""S L"Z←((⊃"S L"R)-0⊃"S L"L)÷|1⊃"S L"L",
+ L""S L"L[1]←⊂(|1⊃"S L"L)××"S L"Z",
+ L""S L"Z←"S L"L[0]+"S L"L[1]×⍳1+⊃⌊|"S L"Z",
 };
 
 MAGIC_FCNOPR MFO_DydDotDot =
-{DydHeader,
+{L""S L"Z←"S L"L " MFON_DydDotDot L" "S L"R;⎕IO ⎕CT",
  DydBody,
  countof (DydBody),
 };
+
+#undef  S
 
 
 //***************************************************************************

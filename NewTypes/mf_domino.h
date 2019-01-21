@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
+#define S   WS_MFOLCL
 
 //***************************************************************************
 //  Magic function/operator for Monadic Domino for Global Numerics
@@ -34,10 +35,10 @@
 //***************************************************************************
 
 static APLCHAR MonHeader[] =
-  L"Z←" MFON_MonDomino L" R";
+  L""S L"Z←" MFON_MonDomino L" "S L"R";
 
 static APLCHAR MonLine1[] =
-  L"Z←(⌽⍴R)⍴(⌹(⍉Z)+.×Z)+.×⍉Z←⍪R";
+  L""S L"Z←(⌽⍴"S L"R)⍴(⌹(⍉"S L"Z)+.×"S L"Z)+.×⍉"S L"Z←⍪"S L"R";
 
 static LPAPLCHAR MonBody[] =
 {MonLine1,
@@ -57,10 +58,10 @@ MAGIC_FCNOPR MFO_MonDomino =
 //***************************************************************************
 
 static APLCHAR DydHeader[] =
-  L"Z←L " MFON_DydDomino L" R";
+  L""S L"Z←"S L"L " MFON_DydDomino L" "S L"R";
 
 static APLCHAR DydLine1[] =
-  L"Z←(⌹R)+.×L";
+  L""S L"Z←(⌹"S L"R)+.×"S L"L";
 
 static LPAPLCHAR DydBody[] =
 {DydLine1,
@@ -71,6 +72,8 @@ MAGIC_FCNOPR MFO_DydDomino =
  DydBody,
  countof (DydBody),
 };
+
+#undef  S
 
 
 //***************************************************************************

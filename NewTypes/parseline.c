@@ -4846,10 +4846,14 @@ PARSELINE_REDUCE:
 
                 // Point to the PL_REDSTR
                 lpplCurStr = &plRedStr[curSynObj][lpplYYLstRht->tkToken.tkSynObj];
-#ifdef DEBUG
                 if (lpplCurStr->lpplRedFcn EQ NULL)
                 {
+#ifdef DEBUG
                     WCHAR wszTemp[128];
+
+                    // If we already know about this one, ...
+                    if (curSynObj EQ soFR && lstSynObj EQ soHY)
+                        goto PARSELINE_SYNTERR;
 
                     MySprintfW (wszTemp,
                                 sizeof (wszTemp),
@@ -4860,8 +4864,12 @@ PARSELINE_REDUCE:
                                  lpwszAppName,
                                  MB_OK | MB_ICONWARNING | MB_SYSTEMMODAL);
                     DbgBrk ();      // ***FINISHME*** -- Missing reduction in 2by2
+#endif
+                    goto PARSELINE_SYNTERR;
                 } // End IF
 
+#ifdef DEBUG
+                if (bDebugPLTrace)
                 {
                     WCHAR EVENT[64];
 
@@ -4871,9 +4879,8 @@ PARSELINE_REDUCE:
                                 soNames[curSynObj],
                                 soNames[lstSynObj],
                                 soNames[lpplCurStr->soType]);
-                    if (bDebugPLTrace)
-                        TRACE2 (L"Reducing:", EVENT, lpplCurStr->soType, lstSynObj);
-                }
+                    TRACE2 (L"Reducing:", EVENT, lpplCurStr->soType, lstSynObj);
+                } // End IF
 
                 // I know about these cases, so don't bother me with them
                 if (!(lpplCurStr->lpplRedFcn EQ plRedPseudo

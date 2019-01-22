@@ -1,6 +1,17 @@
 Version 0.5.9.xx consists of the following Builds:
 
 
+Build #2045 -- Version 0.5.9.xx
+-------------------------------
+
+* Trap NULL Reductions As SYNTAX ERRORs
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  Trap NULL reductions as SYNTAX ERRORs.
+
+
 Build #2043 -- Version 0.5.9.xx
 -------------------------------
 

@@ -1,0 +1,9 @@
+Build #2044 -- Version 0.6.0.xx
+-------------------------------
+
+* Trap NULL Reductions As SYNTAX ERRORs
+
+Directory branches/bsmith/NanTypes:
+
+PARSELINE.C:
+  Trap NULL reductions as SYNTAX ERRORs.

@@ -1,6 +1,12 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2048 -- Version 0.6.0.xx
+-------------------------------
+
+* Sync With Version Control
+
+
 Build #2046 -- Version 0.6.0.xx
 -------------------------------
 
@@ -257,9 +263,9 @@ SYMTAB.C:
 
 
 Build #2024a -- Version 0.6.0.xx
--------------------------------
+--------------------------------
 
-* Synch With Version Control
+* Sync With Version Control
 
 
 Build #2024 -- Version 0.6.0.xx

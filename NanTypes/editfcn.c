@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -4627,7 +4627,6 @@ void PasteAPLChars_EM
      UNI_TRANS uIndex)              // UNI_TRANS index
 
 {
-    SIZE_T     dwSize;
     HGLOBAL    hGlbFmts = NULL,     // Clipboard formats global memory handle
                hGlbClip = NULL,
                hGlbText = NULL;
@@ -4693,8 +4692,7 @@ void PasteAPLChars_EM
 
     if (hGlbClip NE NULL)
     {
-        // Get the clipboard memory size
-        dwSize = MyGlobalSize (hGlbClip);
+        SIZE_T dwSize;      // GlobalSize of clipboard contents
 
         // Split off braces case
         if (uIndex EQ UNITRANS_BRACES)
@@ -4735,6 +4733,9 @@ void PasteAPLChars_EM
             CopyMemory (lpMemText, lpMemClip, dwSize);
         } else
         {
+            // Get the clipboard memory size
+            dwSize = MyGlobalSize (hGlbClip);
+
             // Allocate space for the new object
             // Note that we can't use MyGlobalAlloc or DbgGlobalAlloc
             //   because after we pass this handle to the clipboard
@@ -4762,9 +4763,7 @@ void PasteAPLChars_EM
             GlobalUnlock (hGlbClip); lpMemClip = NULL;
 
             // Get the string length
-            uLenClip = (dwSize / sizeof (WCHAR)) - 1;
-
-            Assert (uLenClip EQ lstrlenW (lpMemText));
+            uLenClip = lstrlenW (lpMemText);
 
             // If the parent of the Edit Ctrl is SM and the last character
             //   in the string is CR/LF, delete it so the cursor appears

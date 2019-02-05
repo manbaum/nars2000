@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -74,6 +74,108 @@ LPPL_YYSTYPE PrimProtoFnSlash_EM_YY
                                     lptkRhtArg,         // Ptr to right arg token
                                     lptkAxis);          // Ptr to axis token (may be NULL)
 } // End PrimProtoFnSlash_EM_YY
+
+
+//***************************************************************************
+//  $PrimIdentFnSlash_EM_YY
+//
+//  Generate an identity element for the dyadic derived function from the
+//    primitive operator Slash
+//***************************************************************************
+
+LPPL_YYSTYPE PrimIdentFnSlash_EM_YY
+    (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxisOpr)           // Ptr to axis token (may be NULL)
+
+{
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    LPPRIMFLAGS  lpPrimFlagsLft;    // Ptr to left operand PrimFlags entry
+    APLRANK      aplRankRht;        // Right arg rank
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig NE NULL);
+    Assert (lptkFunc    NE NULL);
+    Assert (lptkRhtArg  NE NULL);
+
+    // The left identity function for dyadic function Slash
+    //   (L /[X] R) ("replicate") is
+    //   1 if 1.  X (if present) is a valid axis to R
+    //        2.  R is non-scalar (because L/R always returns a vector or higher rank array)
+    //            Note that we are called only from //0{rho}R and we can't see the
+    //            original R.
+
+    // Ensure the right operand is a function
+    if (lptkFunc  EQ NULL
+     || !IsTknFcnOpr (lptkFunc)
+     || IsTknFillJot (lptkFunc))
+        goto LEFT_OPERAND_SYNTAX_EXIT;
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfToken (lptkRhtOrig, NULL, NULL, &aplRankRht, NULL);
+
+    // Ensure the right arg is non-scalar
+    if (IsScalar (aplRankRht))
+        goto DOMAIN_EXIT;
+
+    // Check for axis present
+    if (lptkAxisOpr NE NULL)
+    {
+        // Reduction allows a single integer axis value only
+        if (!CheckAxis_EM (lptkAxisOpr,     // The derived function axis token
+                           aplRankRht,      // All values less than this
+                           TRUE,            // TRUE iff scalar or one-element vector only
+                           FALSE,           // TRUE iff want sorted axes
+                           FALSE,           // TRUE iff axes must be contiguous
+                           FALSE,           // TRUE iff duplicate axes are allowed
+                           NULL,            // Return TRUE iff fractional values present
+                           NULL,            // Return last axis value (may be NULL)
+                           NULL,            // Return # elements in axis vector
+                           NULL))           // Return HGLOBAL with APLINT axis values
+            goto AXIS_SYNTAX_EXIT;
+    } // End IF
+
+    // Get a ptr to the Primitive Function Flags
+    lpPrimFlagsLft = GetPrimFlagsPtr (lptkFunc);
+
+    // If the flags are not present,
+    //   or there's no identity element, ...
+    if (lpPrimFlagsLft EQ NULL
+     || !lpPrimFlagsLft->bIdentElem)
+        return NULL;
+
+    // Return the scalar 1 as the result
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
+    lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;
+    lpYYRes->tkToken.tkData.tkBoolean  = 1;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtOrig);
+    return NULL;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxisOpr);
+    return NULL;
+
+LEFT_OPERAND_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+} // End PrimIdentFnSlash_EM_YY
 
 
 //***************************************************************************

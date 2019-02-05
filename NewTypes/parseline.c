@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -4401,6 +4401,10 @@ PARSELINE_SCAN:
             if (lftSynObj EQ soHY
              && curSynObj EQ soHY)
             {
+#ifdef DEBUG
+                if (bDebugPLTrace)
+                    TRACE (L"ConvHY2PO", L"", curSynObj, rhtSynObj);
+#endif
                 // Convert the current HY to a primitive operator
                 ConvertHY2PFO (lpplYYCurObj,
                                TKT_OP1IMMED,
@@ -4409,6 +4413,10 @@ PARSELINE_SCAN:
                                soMOP);
                 // Reset the value as it has changed
                 curSynObj = CURSYNOBJ;
+#ifdef DEBUG
+                if (bDebugPLTrace)
+                    TRACE (L"Converted", L"", CURSYNOBJ, RHTSYNOBJ);
+#endif
             } // End IF
 
 #ifdef DEBUG
@@ -4492,6 +4500,29 @@ PARSELINE_SCAN1:
             // Check for left & right EOS
             if (lftSynObj EQ soEOS && rhtSynObj EQ soEOS)
                 goto PARSELINE_MP_DONE;
+
+            // Check for (/\) here
+            if (lftSynObj EQ soLP
+             && curSynObj EQ soHY)
+            {
+#ifdef DEBUG
+                if (bDebugPLTrace)
+                    TRACE (L"ConvHY2PF", L"", curSynObj, rhtSynObj);
+#endif
+                // Convert the HY to a primitive function
+                ConvertHY2PFO (lpplYYCurObj,
+                               TKT_FCNIMMED,
+                               IMMTYPE_PRIMFCN,
+                               NAMETYPE_FN12,
+                               soF);
+                // Change the soType
+                curSynObj = soF;
+#ifdef DEBUG
+                if (bDebugPLTrace)
+                    TRACE (L"Converted", L"", CURSYNOBJ, RHTSYNOBJ);
+#endif
+                goto PARSELINE_SCAN;
+            } // End IF
 
             // Check for shift
             if (curSynObj NE soEOS)
@@ -4762,6 +4793,10 @@ PARSELINE_REDUCE:
                 if (curSynObj EQ soA
                  && lstSynObj EQ soHY)
                 {
+#ifdef DEBUG
+                if (bDebugPLTrace)
+                    TRACE (L"ConvHY2PF", L"", curSynObj, rhtSynObj);
+#endif
                     // Convert the HY to a primitive function
                     ConvertHY2PFO (lpplYYLstRht,
                                    TKT_FCNIMMED,
@@ -4770,7 +4805,10 @@ PARSELINE_REDUCE:
                                    soF);
                     // Change the soType
                     lstSynObj = soF;
-
+#ifdef DEBUG
+                    if (bDebugPLTrace)
+                        TRACE (L"Converted", L"", CURSYNOBJ, RHTSYNOBJ);
+#endif
                     // Push it back onto RSTACK
                     PUSHRIGHT (lpplYYLstRht);
 
@@ -5058,11 +5096,19 @@ LEFTSHIFT:
                 goto PARSELINE_SYNTERR;
 
 PARSELINE_VALUEERR:
+#ifdef DEBUG
+            if (bDebugPLTrace)
+                TRACE (L"VALUERR: ", L"", CURSYNOBJ, RHTSYNOBJ);
+#endif
             ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
                                       &lpplYYCurObj->tkToken);
             goto PARSELINE_ERROR;
 
 PARSELINE_SYNTERR:
+#ifdef DEBUG
+            if (bDebugPLTrace)
+                TRACE (L"SYNTERR: ", L"", CURSYNOBJ, RHTSYNOBJ);
+#endif
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                       &lpplYYCurObj->tkToken);
             goto PARSELINE_ERROR;

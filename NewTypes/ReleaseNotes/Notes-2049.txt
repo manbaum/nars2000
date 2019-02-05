@@ -1,0 +1,30 @@
+Build #2049 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bug In Syntax for "(/\)A"
+
+Directory branches/bsmith/NewTypes:
+
+IDENTFNS.C:
+  In <GetIdentityElement_EM>, pass original and prototype of right arg to the Identity Function.
+
+INITDATA.C:
+  Include in the <PrimFlags> table the Identity Function for dyadic slash function (Replicate).
+  Include in the <PrimFlags> table the Identity Function for dyadic slash operator (N-wise Reduction).
+
+PARSELINE.C:
+  If <bDebugPLTrace>, display conversions from "HY" to "OP1" or "FN".
+  At the end of PARSELINE_SCAN, test for "(/" and convert the "/" from "HY" to"FN".
+  If <bDebugPLTrace>, at PARSELINE_VALUEERR and PARSELINE_SYNTERR display a TRACE message to mark those events.
+
+PF_SLASH.C:
+  Define the Identity Function for dyadic slash function (Replicate).
+
+PO_SLASH.C:
+  Define the Identity Function for dyadic slash operator (N-wise Reduction).
+
+PRIMSPEC.C:
+  For DEBUG purposes, distinguish between <MyGlobalLock000> and <MyGlobalLockInt>.
+
+VER.RC:
+  Increment version # to 0.5.10.xx.

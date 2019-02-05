@@ -1,5 +1,5 @@
-Build #2047 -- Version 0.5.9.xx
--------------------------------
+Build #2047 -- Version 0.5.10.xx
+--------------------------------
 
 * Fix Bug When Pasting APL Chars
 

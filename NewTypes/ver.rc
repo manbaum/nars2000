@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,8 +35,8 @@
 #define VER_MAJOR_STR               "0"
 #define VER_MINOR                   5   // x.0.x.x
 #define VER_MINOR_STR               "5"
-#define VER_BETA                    9   // x.x.0.x
-#define VER_BETA_STR                "9"
+#define VER_BETA                    10  // x.x.0.x
+#define VER_BETA_STR                "10"
 
 #define VERSION_BETA                VER_BETA_STR "." VER_MODULE_STR
 //#if BUILD_BETA

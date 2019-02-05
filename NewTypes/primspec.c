@@ -5854,8 +5854,13 @@ UBOOL PrimFnDydSimpSimp_EM
             if (hGlbWVec EQ NULL)
                 goto WSFULL_EXIT;
 
-            // Lock the memory to get a ptr to it
-            lpMemWVec = MyGlobalLock000 (hGlbWVec);
+            // Split cases based upon zero byte allocation or not
+            if (ByteRes NE 0)
+                // Lock the memory to get a ptr to it
+                lpMemWVec = MyGlobalLock000 (hGlbWVec);
+            else
+                // Lock the memory to get a ptr to it
+                lpMemWVec = MyGlobalLockInt (hGlbWVec);
 
             // Loop through the dimensions of the result in reverse
             //   order {backscan} and compute the cumulative product
@@ -5884,8 +5889,13 @@ UBOOL PrimFnDydSimpSimp_EM
             if (hGlbOdo EQ NULL)
                 goto WSFULL_EXIT;
 
-            // Lock the memory to get a ptr to it
-            lpMemOdo = MyGlobalLock000 (hGlbOdo);
+            // Split cases based upon zero byte allocation or not
+            if (ByteRes NE 0)
+                // Lock the memory to get a ptr to it
+                lpMemOdo = MyGlobalLock000 (hGlbOdo);
+            else
+                // Lock the memory to get a ptr to it
+                lpMemOdo = MyGlobalLockInt (hGlbOdo);
         } // End IF
 
         // Is either arg hetero?

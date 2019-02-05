@@ -165,9 +165,6 @@ GLBSYM GetIdentityElement_EM
     if (lpYYRes2 EQ NULL)
         goto ERROR_EXIT;
 
-    // Copy the result as the new right arg token
-    lptkRhtArg = &lpYYRes2->tkToken;
-
     // Execute the left operand identity function on the right arg
 
     // Check for left operand axis operator
@@ -184,7 +181,7 @@ GLBSYM GetIdentityElement_EM
       (*lpPrimFlagsLft->lpPrimOps)
                         (lptkRhtArg,            // Ptr to original right arg token
                          lpYYFcnStrLft,         // Ptr to operator or function strand
-                         lptkRhtArg,            // Ptr to right arg token
+                        &lpYYRes2->tkToken,     // Ptr to right arg token
                          lptkAxisLft);          // Ptr to axis token (may be NULL)
     // Check for error
     if (lpYYRes EQ NULL)

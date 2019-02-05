@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1073,7 +1073,8 @@ void InitPrimFlags
     Init1PrimFlag (UTF16_RIGHTTACK           , 0                                             | PF_ID | PF_LI                              , (LPPRIMOPS) PrimIdentFnRightTack_EM_YY        );
     Init1PrimFlag (UTF16_ROOT                , 0                             | PF_MS | PF_DS | PF_ID | PF_LI         | PF_INDEX_ROOT      , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
     Init1PrimFlag (UTF16_SECTION             , 0                                             | PF_ID         | PF_RI                      , (LPPRIMOPS) PrimIdentFnSection_EM_YY          );
-    Init1PrimFlag (UTF16_SLASH               , 0                                                                                          ,             NULL ); // PrimIdentOpSlash_EM_YY            );
+    Init1PrimFlag (INDEX_OPSLASH             , 0                                             | PF_ID | PF_LI                              , (LPPRIMOPS) PrimIdentOpSlash_EM_YY            );
+    Init1PrimFlag (UTF16_SLASH               , 0                                             | PF_ID | PF_LI                              , (LPPRIMOPS) PrimIdentFnSlash_EM_YY            );
     Init1PrimFlag (UTF16_SLASHBAR            , 0                                                                                          ,             NULL ); // PrimIdentOpSlash_EM_YY            );
     Init1PrimFlag (UTF16_SLOPE               , 0                                                                                          ,             NULL ); // PrimIdentOpSlope_EM_YY            );
     Init1PrimFlag (UTF16_SLOPEBAR            , 0                                                                                          ,             NULL ); // PrimIdentOpSlope_EM_YY            );

@@ -91,6 +91,114 @@ LPPL_YYSTYPE PrimProtoOpSlash_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentOpSlash_EM_YY
+//
+//  Generate an identity element for the dyadic derived function from the
+//    primitive operator Slash
+//***************************************************************************
+
+LPPL_YYSTYPE PrimIdentOpSlash_EM_YY
+    (LPTOKEN      lptkRhtOrig,      // Ptr to original right arg token
+     LPPL_YYSTYPE lpYYFcnStrOpr,    // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,       // Ptr to right arg token
+     LPTOKEN      lptkAxisOpr)      // Ptr to axis token (may be NULL)
+
+{
+    LPPL_YYSTYPE lpYYFcnStrLft,     // Ptr to left operand function strand
+                 lpYYRes;           // Ptr to the result
+    LPPRIMFLAGS  lpPrimFlagsLft;    // Ptr to left operand PrimFlags entry
+    APLRANK      aplRankRht;        // Right arg rank
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig   NE NULL);
+    Assert (lpYYFcnStrOpr NE NULL);
+    Assert (lptkRhtArg    NE NULL);
+
+    // The left identity function for dyadic operator Slash
+    //   (L f/[X] R) ("n-wise reduction") is
+    //   1 if 1.  f has an Identity Element and
+    //        2.  X (if present) is a valid axis to R
+    //        3.  R is non-scalar (because L f/ R always returns a vector or higher rank array)
+    //            Note that we are called only from f/0{rho}R and we can't see the
+    //            original R.
+
+    // Set ptr to left operand,
+    //   skipping over the operator and axis token (if present)
+    lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr); Assert (lpYYFcnStrLft NE NULL);
+
+    // Ensure the right operand is a function
+    if (lpYYFcnStrLft EQ NULL
+     || !IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+     || IsTknFillJot (&lpYYFcnStrLft->tkToken))
+        goto LEFT_OPERAND_SYNTAX_EXIT;
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfToken (lptkRhtOrig, NULL, NULL, &aplRankRht, NULL);
+
+    // Ensure the right arg is non-scalar
+    if (IsScalar (aplRankRht))
+        goto DOMAIN_EXIT;
+
+    // Check for axis present
+    if (lptkAxisOpr NE NULL)
+    {
+        // Reduction allows a single integer axis value only
+        if (!CheckAxis_EM (lptkAxisOpr,     // The derived function axis token
+                           aplRankRht,      // All values less than this
+                           TRUE,            // TRUE iff scalar or one-element vector only
+                           FALSE,           // TRUE iff want sorted axes
+                           FALSE,           // TRUE iff axes must be contiguous
+                           FALSE,           // TRUE iff duplicate axes are allowed
+                           NULL,            // Return TRUE iff fractional values present
+                           NULL,            // Return last axis value (may be NULL)
+                           NULL,            // Return # elements in axis vector
+                           NULL))           // Return HGLOBAL with APLINT axis values
+            goto AXIS_SYNTAX_EXIT;
+    } // End IF
+
+    // Get a ptr to the Primitive Function Flags
+    lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
+
+    // If the flags are not present,
+    //   or there's no identity element, ...
+    if (lpPrimFlagsLft EQ NULL
+     || !lpPrimFlagsLft->bIdentElem)
+        return NULL;
+
+    // Return the scalar 1 as the result
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
+    lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;
+    lpYYRes->tkToken.tkData.tkBoolean  = 1;
+    lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+
+    return lpYYRes;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtOrig);
+    return NULL;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxisOpr);
+    return NULL;
+
+LEFT_OPERAND_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    return NULL;
+} // End PrimIdentOpSlash_EM_YY
+
+
+//***************************************************************************
 //  $PrimOpMonSlash_EM_YY
 //
 //  Primitive operator for monadic derived function from Slash ("reduction")

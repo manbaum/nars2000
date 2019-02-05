@@ -799,8 +799,8 @@ LRESULT APIENTRY FEWndProc
             // Draw the line #s
             DrawLineNumsFE (hWndEC);
 
-            // Get the length of the function header block
-            uLineLen = GetBlockLength (hWndEC, 0);
+            // Get the length of the function header line
+            uLineLen = GetLineLength (hWndEC, 0);
 
             // If it's an AFO, ...
             if (bAFO)
@@ -4627,7 +4627,6 @@ void PasteAPLChars_EM
      UNI_TRANS uIndex)              // UNI_TRANS index
 
 {
-    SIZE_T     dwSize;
     HGLOBAL    hGlbFmts = NULL,     // Clipboard formats global memory handle
                hGlbClip = NULL,
                hGlbText = NULL;
@@ -4693,8 +4692,7 @@ void PasteAPLChars_EM
 
     if (hGlbClip NE NULL)
     {
-        // Get the clipboard memory size
-        dwSize = MyGlobalSize (hGlbClip);
+        SIZE_T dwSize;      // GlobalSize of clipboard contents
 
         // Split off braces case
         if (uIndex EQ UNITRANS_BRACES)
@@ -4735,6 +4733,9 @@ void PasteAPLChars_EM
             CopyMemory (lpMemText, lpMemClip, dwSize);
         } else
         {
+            // Get the clipboard memory size
+            dwSize = MyGlobalSize (hGlbClip);
+
             // Allocate space for the new object
             // Note that we can't use MyGlobalAlloc or DbgGlobalAlloc
             //   because after we pass this handle to the clipboard

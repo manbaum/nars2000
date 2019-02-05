@@ -1,0 +1,9 @@
+Build #2047 -- Version 0.5.9.xx
+-------------------------------
+
+* Fix Bug When Pasting APL Chars
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+  When pasting APL chars, don't use GlobalSize as we can't rely on its value due to Windows rounding up to a 4- or 8-byte boundary.

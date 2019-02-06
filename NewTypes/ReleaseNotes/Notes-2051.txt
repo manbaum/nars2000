@@ -1,0 +1,12 @@
+Build #2051 -- Version 0.5.10.xx
+--------------------------------
+
+* Update Web Documentation
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+CONTRIBUTORS-BODY.AHTML:
+  Update year of publication for TAoCP, Vol 4A.
+
+INDEX-BODY.AHTML:
+  Update the minimum version of Windows we run on.

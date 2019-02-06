@@ -1,6 +1,20 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2052 -- Version 0.6.0.xx
+-------------------------------
+
+* Update Web Documentation
+
+Directory branches/bsmith/NanTypes/htdocs:
+
+CONTRIBUTORS-BODY.AHTML:
+  Update year of publication for TAoCP, Vol 4A.
+
+INDEX-BODY.AHTML:
+  Update the minimum version of Windows we run on.
+
+
 Build #2050 -- Version 0.6.0.xx
 -------------------------------
 

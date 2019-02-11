@@ -1,6 +1,25 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2053 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bugs In Syntax Analysis Of Trains With Variables
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+PARSELINE.C:
+  Define aliases for routines to handle more Train syntax such as (F A F) A.
+
+PARSELINE.H:
+  Reformat the Binding Strengths and Reductions tables to be more readable.
+  Define more Binding Strengths so as to handle more Train syntax.
+  Define more pesudo-Reductions so as to handle more Train syntax.
+
+SYNOBJ.H:
+  Reformat the Syntax Object Names table to be more readable.
+
+
 Build #2051 -- Version 0.5.10.xx
 --------------------------------
 

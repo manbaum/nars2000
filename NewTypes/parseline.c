@@ -212,6 +212,7 @@
 #define plRedLP_HR      plRedLP_Com
 
 #define plRedLP_AFR     plRedLP_FFR
+#define plRedF_AFR      plRedF_FFR
 
 #define plRedAFOG_SA    plRedAFOG_A
 #define plRedAFOG_SPA   plRedAFOG_A
@@ -247,6 +248,39 @@
 #define plRedRBK_MOP    plRedPseudo
 #define plRedRBK_MOPN   plRedPseudo
 #define plRedRBK_HY     plRedPseudo
+
+#define plRedMOP_FR     plRedPseudo
+#define plRedMOPN_FR    plRedPseudo
+
+#define plRedAFR_AFR    plRedPseudo
+#define plRedAFR_FR     plRedPseudo
+#define plRedAFR_MR     plRedPseudo
+#define plRedAFR_HR     plRedPseudo
+#define plRedAFR_FFR    plRedPseudo
+
+#define plRedFR_AFR     plRedPseudo
+#define plRedFR_FR      plRedPseudo
+#define plRedFR_MR      plRedPseudo
+#define plRedFR_HR      plRedPseudo
+#define plRedFR_FFR     plRedPseudo
+
+#define plRedMR_AFR     plRedPseudo
+#define plRedMR_FR      plRedPseudo
+#define plRedMR_MR      plRedPseudo
+#define plRedMR_HR      plRedPseudo
+#define plRedMR_FFR     plRedPseudo
+
+#define plRedHR_AFR     plRedPseudo
+#define plRedHR_FR      plRedPseudo
+#define plRedHR_MR      plRedPseudo
+#define plRedHR_HR      plRedPseudo
+#define plRedHR_FFR     plRedPseudo
+
+#define plRedFFR_AFR    plRedPseudo
+#define plRedFFR_FR     plRedPseudo
+#define plRedFFR_MR     plRedPseudo
+#define plRedFFR_HR     plRedPseudo
+#define plRedFFR_FFR    plRedPseudo
 
 #define plRedSP_RP      plRedSYNR
 #define plRedSP_RBK     plRedSYNR

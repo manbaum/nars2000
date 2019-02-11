@@ -212,6 +212,7 @@
 #define plRedLP_HR      plRedLP_Com
 
 #define plRedLP_AFR     plRedLP_FFR
+#define plRedF_AFR      plRedF_FFR
 
 #define plRedAFOG_SA    plRedAFOG_A
 #define plRedAFOG_SPA   plRedAFOG_A
@@ -247,6 +248,39 @@
 #define plRedRBK_MOP    plRedPseudo
 #define plRedRBK_MOPN   plRedPseudo
 #define plRedRBK_HY     plRedPseudo
+
+#define plRedMOP_FR     plRedPseudo
+#define plRedMOPN_FR    plRedPseudo
+
+#define plRedAFR_AFR    plRedPseudo
+#define plRedAFR_FR     plRedPseudo
+#define plRedAFR_MR     plRedPseudo
+#define plRedAFR_HR     plRedPseudo
+#define plRedAFR_FFR    plRedPseudo
+
+#define plRedFR_AFR     plRedPseudo
+#define plRedFR_FR      plRedPseudo
+#define plRedFR_MR      plRedPseudo
+#define plRedFR_HR      plRedPseudo
+#define plRedFR_FFR     plRedPseudo
+
+#define plRedMR_AFR     plRedPseudo
+#define plRedMR_FR      plRedPseudo
+#define plRedMR_MR      plRedPseudo
+#define plRedMR_HR      plRedPseudo
+#define plRedMR_FFR     plRedPseudo
+
+#define plRedHR_AFR     plRedPseudo
+#define plRedHR_FR      plRedPseudo
+#define plRedHR_MR      plRedPseudo
+#define plRedHR_HR      plRedPseudo
+#define plRedHR_FFR     plRedPseudo
+
+#define plRedFFR_AFR    plRedPseudo
+#define plRedFFR_FR     plRedPseudo
+#define plRedFFR_MR     plRedPseudo
+#define plRedFFR_HR     plRedPseudo
+#define plRedFFR_FFR    plRedPseudo
 
 #define plRedSP_RP      plRedSYNR
 #define plRedSP_RBK     plRedSYNR
@@ -729,7 +763,7 @@ LPPL_YYSTYPE plRedA_RBK
         lpYYVar = NULL;
     } else
         // Unstrand the current object if necessary
-        UnVarStrand (lpplYYCurObj, FALSE);
+        UnVarStrand (lpplYYCurObj);
 
     // Initialize a list with the arg
     lpYYRes =
@@ -785,7 +819,7 @@ LPPL_YYSTYPE plRedA_SRBK
         lpYYVar = NULL;
     } else
         // Unstrand the current object if necessary
-        UnVarStrand (lpplYYCurObj, FALSE);
+        UnVarStrand (lpplYYCurObj);
 
     // Push an item onto the list
     lpYYRes =
@@ -824,11 +858,6 @@ LPPL_YYSTYPE plRedLBK_ARBK
 
     lpYYRes =
       MakeList_EM_YY (lpplYYLstRht, TRUE);
-
-////// If this last right object is an Intermediate List, ...
-////if (IsTknIntList (&lpplYYLstRht->tkToken))
-////    // Free the last right object as it has been copied to <lpYYRes>
-////    FreeListResult (lpplYYLstRht);
 
     // YYFree the last right & current objects
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
@@ -1134,7 +1163,7 @@ LPPL_YYSTYPE plRedA_F
         lpYYVar = NULL;
     } else
         // Unstrand the current object if necessary
-        UnVarStrand (lpplYYCurObj, TRUE);
+        UnVarStrand (lpplYYCurObj);
 
     Assert (lpplYYLstRht->lpplYYArgCurry EQ NULL);
 
@@ -1422,7 +1451,7 @@ LPPL_YYSTYPE plRedDOP_RhtOper
             lpYYRes = NULL;
         } else
             // Unstrand the last right object if necessary
-            UnVarStrand (lpplYYLstRht, TRUE);
+            UnVarStrand (lpplYYLstRht);
     } // End IF
 
     // The result is always the root of the function tree
@@ -1522,7 +1551,7 @@ LPPL_YYSTYPE plRedGO_A
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
-        UnVarStrand (lpplYYLstRht, TRUE);
+        UnVarStrand (lpplYYLstRht);
 
     // Check for Ctrl-Break
     if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -1674,7 +1703,7 @@ LPPL_YYSTYPE plRedA_FFR
         lpYYRes = NULL;
     } else
         // Unstrand the current object if necessary
-        UnVarStrand (lpplYYCurObj, TRUE);
+        UnVarStrand (lpplYYCurObj);
 
     // Start with the root
     lpYYRes = lpplYYLstRht;
@@ -1736,7 +1765,7 @@ LPPL_YYSTYPE plRedCSI_A
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
-        UnVarStrand (lpplYYLstRht, TRUE);
+        UnVarStrand (lpplYYLstRht);
 
     // Check for Ctrl Strucs in AFO
     if (lpplLocalVars->bAfoCtrlStruc)  // FOR
@@ -2010,7 +2039,7 @@ LPPL_YYSTYPE plRedMF_A
     } else
     {
         // Unstrand the last right object if necessary
-        UnVarStrand (lpplYYLstRht, TRUE);
+        UnVarStrand (lpplYYLstRht);
 
         // If this is a named var, ...
         if (IsTknNamedVar (&lpplYYLstRht->tkToken))
@@ -2193,7 +2222,7 @@ LPPL_YYSTYPE plRedCS1_A
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
-        UnVarStrand (lpplYYLstRht, TRUE);
+        UnVarStrand (lpplYYLstRht);
 
     // Split cases based upon the token type
     switch (tkToken.tkFlags.TknType)
@@ -2389,7 +2418,7 @@ LPPL_YYSTYPE plRedF_IDX
         lpYYRes = NULL;
     } else
         // Unstrand the last right object if necessary
-        UnVarStrand (lpplYYLstRht, TRUE);
+        UnVarStrand (lpplYYLstRht);
 
     // The result is the current object
     lpYYRes = lpplYYCurObj;
@@ -2639,7 +2668,7 @@ LPPL_YYSTYPE plRedLftOper_MOP
             lpYYRes = NULL;
         } else
             // Unstrand the current object if necessary
-            UnVarStrand (lpplYYCurObj, TRUE);
+            UnVarStrand (lpplYYCurObj);
     } // End IF
 
     // The result is always the root of the function tree
@@ -3110,7 +3139,7 @@ LPPL_YYSTYPE plRedMOP_IDX
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
-        UnVarStrand (lpplYYLstRht, TRUE);
+        UnVarStrand (lpplYYLstRht);
 
     // Make it into an axis operand
     lpYYVar = MakeAxis_EM_YY (lpplYYLstRht);
@@ -3171,7 +3200,7 @@ LPPL_YYSTYPE plRedSP_A
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
-        UnVarStrand (lpplYYLstRht, TRUE);
+        UnVarStrand (lpplYYLstRht);
 
     // Change the tkSynObj
     lpplYYLstRht->tkToken.tkSynObj = soType;
@@ -3687,7 +3716,7 @@ LPPL_YYSTYPE CoalesceIdx_EM
             lpYYVar2 = NULL;
         } else
             // Unstrand the result object if necessary
-            UnVarStrand (lpYYRes, TRUE);
+            UnVarStrand (lpYYRes);
 
         if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
             lpYYRes2 = NULL;
@@ -3775,7 +3804,7 @@ LPPL_YYSTYPE plRedNAM_SPCom
             lpYYRes = NULL;
         } else
             // Unstrand the last right object if necessary
-            UnVarStrand (lpplYYLstRht, TRUE);
+            UnVarStrand (lpplYYLstRht);
     } else
     // If the last right object is a function/operator, ...
     if (IsTknTypeFcnOpr (lpplYYLstRht->tkToken.tkFlags.TknType))
@@ -3950,7 +3979,7 @@ LPPL_YYSTYPE plRedAFOG_A
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
-        UnVarStrand (lpplYYLstRht, TRUE);
+        UnVarStrand (lpplYYLstRht);
 
     // Check the guard value
     if (!AfoGuard (lpplLocalVars, &lpplYYLstRht->tkToken))
@@ -4027,7 +4056,7 @@ LPPL_YYSTYPE plRedAFOR_A
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
-        UnVarStrand (lpplYYLstRht, TRUE);
+        UnVarStrand (lpplYYLstRht);
 
     // Check the return value
     AfoReturn (lpplLocalVars, lpplYYLstRht);
@@ -4585,7 +4614,7 @@ PARSELINE_MP_PAREN:
              || lpplYYCurObj->tkToken.tkFlags.TknType EQ TKT_CHRSTRAND
              || lpplYYCurObj->tkToken.tkFlags.TknType EQ TKT_NUMSCALAR)
                 // Unstrand the current object
-                UnVarStrand (lpplYYCurObj, TRUE);
+                UnVarStrand (lpplYYCurObj);
 
             // If we came from PARSELINE_MP_BRACKET, ...
             if (bPLBracket)
@@ -4765,7 +4794,7 @@ PARSELINE_MP_DONE:
                 lpYYRes = NULL;
             } else
                 // Unstrand the current object if necessary
-                UnVarStrand (lpplYYCurObj, TRUE);
+                UnVarStrand (lpplYYCurObj);
 
             goto PARSELINE_DONE;
 
@@ -5294,7 +5323,7 @@ PARSELINE_DONE:
                         lpYYRes = NULL;
                     } else
                         // Unstrand the current object if necessary
-                        UnVarStrand (lpplYYCurObj, TRUE);
+                        UnVarStrand (lpplYYCurObj);
                 } // End IF
 
                 // Get ptr to current SI stack
@@ -6037,7 +6066,7 @@ void FreeStackTemps
     if (IsTknTypeVar (lpYYRes->tkToken.tkFlags.TknType))
     {
         // Unstrand the temp if necessary
-        UnVarStrand (lpYYRes, TRUE);
+        UnVarStrand (lpYYRes);
 
         if (IsTknValid (lpYYRes->tkToken))
         {

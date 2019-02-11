@@ -122,7 +122,7 @@ LPPL_YYSTYPE PushVarStrand_YY
     // Can't UnVarStrand here as then {zilde} 1 2
     //   is a two-element vector instead of three.
 ////// UnVarStrand the current object if necessary
-////UnVarStrand (lpYYArg, TRUE);
+////UnVarStrand (lpYYArg);
 
     // Mark as in the process of stranding
     lpYYArg->YYStranding = TRUE;
@@ -3374,8 +3374,7 @@ LPPL_YYSTYPE CopyPL_YYSTYPE_YY
 //***************************************************************************
 
 void UnVarStrand
-    (LPPL_YYSTYPE lpplYYObj,       // Ptr to object to UnStrand
-     UBOOL        bIncrRefCnt)     // TRUE iff we should increment the RefCnt
+    (LPPL_YYSTYPE lpplYYObj)
 
 {
     // Split cases based upon the token type
@@ -3387,15 +3386,10 @@ void UnVarStrand
             // Set the correct token type
             lpplYYObj->tkToken.tkFlags.TknType = TKT_VARARRAY;
 
-            // If we should increment the RefCnt, ..
-////        if (bIncrRefCnt)
-                // Increment the refcnt (EXAMPLE: 1 2 3 4)
-                // The above token types are, by definition, unnamed
-                DbgIncrRefCntTkn (&lpplYYObj->tkToken);
-#ifdef DEBUG
-////        else
-////            nop ();
-#endif
+            // Increment the refcnt (EXAMPLE: 1 2 3 4)
+            // The above token types are, by definition, unnamed
+            DbgIncrRefCntTkn (&lpplYYObj->tkToken);
+
             break;
 
         default:

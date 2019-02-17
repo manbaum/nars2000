@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -889,8 +889,7 @@ UBOOL LoadWorkspace_EM
                 EXIT_TEMP_OPEN
             } // End FOR
         } // End FOR
-    } __except (CheckVirtAlloc (GetExceptionInformation (),
-                                L"LoadWorkspace_EM"))
+    } __except (CheckVirtAlloc (GetExceptionInformation (), WFCN))
     {
         // Display message for unhandled exception
         DisplayException ();
@@ -1086,13 +1085,17 @@ UBOOL ParseSavedWsFcn_EM
         // Save in the result
         lpSymObj->stData.stGlbData = hGlbObj;
 
-        // If the object didn't already exist, ...
-        if (!bExists)
+        // If the object didn't already exist, and
+        //   it's not a Direct Function, ...
+        if (!bExists
+         && !lpSymObj->stFlags.FcnDir)
             // Increment the reference count
             DbgIncrRefCntDir_PTB (hGlbObj); // MATCH:  DeleteGlobalLinks
 
         // Transfer the STE values to the new STE
 
+        // If it's NOT a Direct Function, ...
+        if (!lpSymObj->stFlags.FcnDir)
         // Split cases based upon the signature
         switch (GetSignatureGlb_PTB (hGlbObj))
         {
@@ -1495,6 +1498,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
     SYSTEMTIME        systemTime;           // Current system (UTC) time
     UBOOL             bUserDefined = FALSE, // TRUE iff the current function is User-Defined
                       bAFO         = FALSE, // TRUE iff the current function is an AFO
+                      bFcnDir = FALSE,      // TRUE iff the SYMENTRY is a FcnDir
                       bQuadFEATURE,         // TRUE iff the symbol is []FEATURE
                       bDispMPSuf,           // Save area for OptionFlags value
                       bJ4i,                 // ...
@@ -2391,6 +2395,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 // Copy the HGLOBAL
                 hGlbObj = lpSymEntry->stData.stGlbData;
 
+            // Set the FcnDir flag
+            bFcnDir = lpSymEntry->stFlags.FcnDir;
+
             // Ensure it's a function/operator/train.
             Assert (IsNameTypeFnOp (lpSymEntry->stFlags.stNameType));
 
@@ -2411,6 +2418,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
       SymTabAppendName_EM (lpwGlbName, &stFlags);
     if (lpSymEntry EQ NULL)
         goto ERROR_EXIT;
+
+    // Set the FcnDir flag
+    lpSymEntry->stFlags.FcnDir |= bFcnDir;
 
     // Set the handle
     lpSymEntry->stData.stGlbData = hGlbObj;

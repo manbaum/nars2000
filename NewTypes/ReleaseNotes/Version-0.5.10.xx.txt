@@ -1,6 +1,39 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2057 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bug When Saving f{is}{quad}NL In Workspace
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+DISPDBG.C:
+  Fix bug when creating f{is}'a'{jot}{quad}NL as f{is]a{jot}{quad}NL.
+
+MACROS.H:
+  Define macros to detect when a token is free-able.
+
+PARSELINE.C:
+  In <FreeStackTemps>, free the token if it is free-able even if not valid.
+
+QF_CR.C:
+  In <CopySteName>, handle Direct Functions.
+
+SC_COPY.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  In <DeleteGlobalLinks>, don't free Direct Functions.
+
+SC_LOAD.C:
+  Use WFCN instead of the literal function name.
+  In <ParseSavedWsFcn_EM>, don't increment RefCnt and don't check the function signature if Direct Function.
+  In <LoadWorkspaceGlobal_EM>, pass on the Direct Function flag from a Workspace Global to the actual workspace object.
+
+SC_SAVE.C:
+  In <SavedWsFormGlbFcn>, handle Direct Functions.
+  In <SavedWsFormGlbVar>, check for NULL variable before referencing it.
+
+
 Build #2055 -- Version 0.5.10.xx
 --------------------------------
 

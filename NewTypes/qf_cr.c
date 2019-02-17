@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -725,22 +725,29 @@ LPAPLCHAR CopySteName
 
 {
     LPAPLCHAR lpMemName;        // Ptr to function name global memory
-    UINT      uNameLen;         // Length of STE name
+    APLNELM   uNameLen;         // Length of STE name
 
     Assert (IsValidPtr    (lpSymEntry                       , sizeof (lpSymEntry)            ));
     Assert (IsValidPtr    (lpSymEntry->stHshEntry           , sizeof (lpSymEntry->stHshEntry)));
     Assert (IsValidHandle (lpSymEntry->stHshEntry->htGlbName                                 ));
 
-    Assert (!lpSymEntry->stFlags.FcnDir);
+    if (lpSymEntry->stFlags.FcnDir)
+        // Append the function name from the symbol table
+        CopyFcnName (lpMemRes, lpSymEntry, &uNameLen);
+    else
+    {
+        // Lock the memory to get a ptr to it
+        lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
 
-    // Lock the memory to get a ptr to it
-    lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
+        // Get the name length
+        uNameLen = lstrlenW (lpMemName);
 
-    // Get the name length
-    uNameLen = lstrlenW (lpMemName);
+        // Copy the name to the output area
+        CopyMemoryW (lpMemRes, lpMemName, (APLU3264) uNameLen);
 
-    // Copy the name to the output area
-    CopyMemoryW (lpMemRes, lpMemName, uNameLen);
+        // We no longer need this ptr
+        MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
+    } // End IF/ELSE
 
     // Skip over the name
     lpMemRes += uNameLen;
@@ -748,9 +755,6 @@ LPAPLCHAR CopySteName
     // Return the name length, if requested
     if (lpaplNELM NE NULL)
         *lpaplNELM = uNameLen;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
 
     return lpMemRes;
 } // End CopySteName

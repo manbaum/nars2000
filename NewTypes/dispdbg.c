@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2138,13 +2138,27 @@ LPWCHAR DisplayFcnSub
             break;
 
         case TKT_VARIMMED:
+        {
+            IMM_TYPES immType;
+
+            // Get the immediate data type
+            immType = lpYYMem[0].tkToken.tkFlags.ImmType;
+
+            // If the immediate type is Char, ...
+            if (IsImmChr (immType))
+                *lpaplChar++ = WC_SQ;
+            // Format the immediate value
             lpaplChar =
               FormatImmed (lpaplChar,           // ***FIXME*** Use FormatImmedFC ??
                            lpYYMem[0].tkToken.tkFlags.ImmType,
                            GetPtrTknLongest (&lpYYMem[0].tkToken));
             if (lpaplChar[-1] EQ L' ')
                 lpaplChar--;            // Back over the trailing blank
+            // If the immediate type is Char, ...
+            if (IsImmChr (immType))
+                *lpaplChar++ = WC_SQ;
             break;
+        } // End TKT_VARIMMED
 
         case TKT_CHRSTRAND:
         case TKT_NUMSTRAND:

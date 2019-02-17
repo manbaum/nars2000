@@ -1,7 +1,7 @@
 Build #2053 -- Version 0.5.10.xx
 --------------------------------
 
-* Fix Bugs In Syntax Analysis
+* Fix Bugs In Syntax Analysis Of Trains With Variables
 
 Directory branches/bsmith/NewTypes/htdocs:
 

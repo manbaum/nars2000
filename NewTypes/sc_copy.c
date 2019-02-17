@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -98,7 +98,7 @@ UBOOL CmdCopy_EM
         // Skip over the field
         lpwCmd = SkipToCharDQW (lpwszTail, L' ');
         wcTmp = *lpwCmd; *lpwCmd++ = WC_EOS;
-        if (wcTmp)
+        if (wcTmp NE 0)
             lpwCmd = SkipWhiteW (lpwCmd);
 
         // Get the matching source tab index
@@ -132,7 +132,7 @@ UBOOL CmdCopy_EM
         // Skip over the workspace name
         lpwCmd = SkipToCharDQW (lpwszTail, L' ');
         wcTmp = *lpwCmd; *lpwCmd++ = WC_EOS;
-        if (wcTmp)
+        if (wcTmp NE 0)
             lpwCmd = SkipWhiteW (lpwCmd);
 
         // Convert the given workspace name into a canonical form (without WS_WKSEXT)
@@ -229,7 +229,7 @@ UBOOL CmdCopy_EM
         } else
         {
             // Loop through the names starting at <lpwCmd>
-            while (*lpwCmd)
+            while (*lpwCmd NE 0)
             {
                 LPWCHAR lpwNameInCmd;           // Ptr to the name in the command line
 
@@ -353,7 +353,7 @@ ERRMSG_EXIT:
 ERROR_EXIT:
 NORMAL_EXIT:
     // If there's a dictionary, ...
-    if (lpDict)
+    if (lpDict NE NULL)
     {
         // Free the dictionary
         ProfileUnload (lpDict); lpDict = NULL;
@@ -378,10 +378,12 @@ void DeleteGlobalLinks
 {
     LPSYMENTRY lpSymLast;       // Temporary ptr to previous stSymLink
 
-    while (lpSymLink)
+    while (lpSymLink NE NULL)
     {
-        // Free the global var/fcn/opr
-        FreeResultGlobalDFLV (lpSymLink->stData.stGlbData);
+        // If the SYMENTRY is NOT a Direct Function, ...
+        if (!lpSymLink->stFlags.FcnDir)
+            // Free the global var/fcn/opr
+            FreeResultGlobalDFLV (lpSymLink->stData.stGlbData);
 
         // Point to the next entry and zap it
         lpSymLast = lpSymLink->stSymLink;
@@ -428,7 +430,7 @@ int CopyWsVars
     STFLAGS      stFlags = {0};             // STE flags
 
     // In case <lpwNameInCmd> is that of a system var, ...
-    if (lpwNameInCmd
+    if (lpwNameInCmd NE NULL
      && IsSysName (lpwNameInCmd))
         // Convert it to lowercase
         CharLowerBuffW (lpwNameInCmd, lstrlenW (lpwNameInCmd));

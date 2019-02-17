@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -822,384 +822,448 @@ LPAPLCHAR SavedWsFormGlbFcn
     SAVEDWSGLBVARPARM SavedWsGlbVarParm;        // Extra parms for SavedWsGlbVarConv
     SAVEDWSGLBFCNPARM SavedWsGlbFcnParm;        // Extra parms for SavedWsGlbFcnConv
 
-    Assert (IsGlbTypeFcnDir_PTB (hGlbObj)
+    // stData is an internal function or a HGLOBAL function array
+    //   or user-defined function/operator
+    Assert (lpSymEntry->stFlags.FcnDir
+         || IsGlbTypeFcnDir_PTB (hGlbObj)
          || IsGlbTypeDfnDir_PTB (hGlbObj));
-
-    // Save ptr to start of buffer
-    lpaplCharStart = lpaplChar;
-
-    // Format the hGlbObj
-    MySprintfW (wszGlbObj,
-                sizeof (wszGlbObj),
-                FMTSTR_GLBOBJ,
-                hGlbObj);
-    // Save as ptr to the profile keyname
-    lpMemProKeyName = lpaplChar;
-
-    // Check to see if this global has already been saved
-    //   in the [TempGlobals] section
-    if (ProfileCopyString (SECTNAME_TEMPGLOBALS,        // Ptr to the section name
-                           wszGlbObj,                   // Ptr to the key name
-                           NULL,                        // Default value if not found
-                           lpaplChar,                   // Ptr to the output buffer
-                           8 * sizeof (lpaplChar[0]),   // Byte size of the output buffer
-                           lpDict))                     // Ptr to the file name
-        goto NORMAL_EXIT;
 
     // Get the current count as we might define several functions here
     //   and count in another entry
     uGlbCnt = (*lpuGlbCnt)++;
 
-    // Lock the memory to get a ptr to it
-    lpMemObj = MyGlobalLock (hGlbObj);
+    // Save ptr to start of buffer
+    lpaplCharStart = lpaplChar;
 
-    // Split cases based upon the object's signature
-    switch (GetSignatureMem (lpMemObj))
+    // If this object is a Direct Function, ...
+    if (lpSymEntry->stFlags.FcnDir)
     {
-        case FCNARRAY_HEADER_SIGNATURE:
+        APLNELM    uNameLen;
+        SYSTEMTIME systemTime;              // Current system (UTC) time
+
+        // Append the function name from the symbol table
+        CopyFcnName (lpaplCharStart, lpSymEntry, &uNameLen);
+
+        // Skip over the function name
+        lpaplChar = &lpaplCharStart[uNameLen];
+
+        // Ensure properly terminated
+        *lpaplChar++ = WC_EOS;
+
+        // Save as new start of buffer
+        lpaplCharStart2 = lpaplChar;
+
+        // Format the text as an ASCII string with non-ASCII chars
+        //   represented as either {symbol} or {\xXXXX} where XXXX is
+        //   a four-digit hex number.
+        lpaplChar +=
+          ConvertWideToNameLength (lpaplChar,       // Ptr to output save buffer
+                                   lpaplCharStart,  // Ptr to incoming chars
+                        (APLU3264) uNameLen);       // # chars to convert
+        // Ensure properly terminated
+        *lpaplChar++ = WC_EOS;
+
+        // Get the current system (UTC) time
+        GetSystemTime (&systemTime);
+
+        // Convert system time to file time and save as creation time
+        SystemTimeToFileTime (&systemTime, &ftCreation);
+
+        // Copy as last mod time
+        ftLastMod = ftCreation;
+
+        // Skip over the 'F ' to point to the section name
+        lpwszSectName = &lpwszFcnTypeName[2];
+
+        // Create the [nn.Name] section
+        ProfileSetSection (lpwszSectName,   // Ptr to the section name
+                           lpDict);         // Ptr to the dictionary
+        // Write out the single line
+        ProfileSetString (lpwszSectName,        // Ptr to the section name
+                         L"0",                  // Ptr to the key name
+                          lpaplCharStart2,      // Ptr to the key value
+                          lpDict);              // Ptr to the dictionary
+        // Write out the Count key value
+        ProfileSetString (lpwszSectName,        // Ptr to the section name
+                          KEYNAME_COUNT,        // Ptr to the key name
+                         L"1",                  // Ptr to the key value
+                          lpDict);              // Ptr to the dictionary
+        // Write out the UserDefined key value
+        ProfileSetString (lpwszSectName,        // Ptr to the section name
+                          KEYNAME_USERDEFINED,  // Ptr to the key name
+                         L"0",                  // Ptr to the key value
+                          lpDict);              // Ptr to the dictionary
+    } else
+    {
+        // Format the hGlbObj
+        MySprintfW (wszGlbObj,
+                    sizeof (wszGlbObj),
+                    FMTSTR_GLBOBJ,
+                    hGlbObj);
+        // Save as ptr to the profile keyname
+        lpMemProKeyName = lpaplChar;
+
+        // Check to see if this global has already been saved
+        //   in the [TempGlobals] section
+        if (ProfileCopyString (SECTNAME_TEMPGLOBALS,        // Ptr to the section name
+                               wszGlbObj,                   // Ptr to the key name
+                               NULL,                        // Default value if not found
+                               lpaplChar,                   // Ptr to the output buffer
+                               8 * sizeof (lpaplChar[0]),   // Byte size of the output buffer
+                               lpDict))                     // Ptr to the file name
+            goto NORMAL_EXIT;
+
+        // Lock the memory to get a ptr to it
+        lpMemObj = MyGlobalLock (hGlbObj);
+
+        // Split cases based upon the object's signature
+        switch (GetSignatureMem (lpMemObj))
+        {
+            case FCNARRAY_HEADER_SIGNATURE:
 #define lpMemFcnHdr     ((LPFCNARRAY_HEADER) lpMemObj)
-            // Skip over the 'F ' to point to the section name
-            lpwszSectName = &lpwszFcnTypeName[2];
+                // Skip over the 'F ' to point to the section name
+                lpwszSectName = &lpwszFcnTypeName[2];
 
-            // Fill in the extra parms
-            SavedWsGlbVarParm.lpDict           = lpDict;
-            SavedWsGlbVarParm.lpuGlbCnt        = lpuGlbCnt;
-            SavedWsGlbVarParm.lpSymEntry       = lpSymEntry;
-            SavedWsGlbVarParm.lplpSymLink      = NULL;
+                // Fill in the extra parms
+                SavedWsGlbVarParm.lpDict           = lpDict;
+                SavedWsGlbVarParm.lpuGlbCnt        = lpuGlbCnt;
+                SavedWsGlbVarParm.lpSymEntry       = lpSymEntry;
+                SavedWsGlbVarParm.lplpSymLink      = NULL;
 
-            SavedWsGlbFcnParm.lpDict           = lpDict;
-            SavedWsGlbFcnParm.lpwszFcnTypeName = &lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName) + 1];
-            SavedWsGlbFcnParm.lpuGlbCnt        = lpuGlbCnt;
-            SavedWsGlbFcnParm.lpSymEntry       = lpSymEntry;
-            SavedWsGlbFcnParm.lplpSymLink      = NULL;
+                SavedWsGlbFcnParm.lpDict           = lpDict;
+                SavedWsGlbFcnParm.lpwszFcnTypeName = &lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName) + 1];
+                SavedWsGlbFcnParm.lpuGlbCnt        = lpuGlbCnt;
+                SavedWsGlbFcnParm.lpSymEntry       = lpSymEntry;
+                SavedWsGlbFcnParm.lplpSymLink      = NULL;
 
-            // Call the common function display function
-            lpaplChar =
-              DisplayFcnGlb (lpaplCharStart,        // Ptr to output save area
-                             hGlbObj,               // Function array global memory handle
-                             FALSE,                 // TRUE iff we're to display the header
-                            &SavedWsGlbVarConv,     // Ptr to function to convert an HGLOBAL to {{nnn}} (may be NULL)
-                            &SavedWsGlbVarParm,     // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
-                            &SavedWsGlbFcnConv,     // Ptr to function to convert an HGLOBAL to {{nnn}} (may be NULL)
-                            &SavedWsGlbFcnParm);    // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
-            // Ensure properly terminated
-            *lpaplChar++ = WC_EOS;
+                // Call the common function display function
+                lpaplChar =
+                  DisplayFcnGlb (lpaplCharStart,        // Ptr to output save area
+                                 hGlbObj,               // Function array global memory handle
+                                 FALSE,                 // TRUE iff we're to display the header
+                                &SavedWsGlbVarConv,     // Ptr to function to convert an HGLOBAL to {{nnn}} (may be NULL)
+                                &SavedWsGlbVarParm,     // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                                &SavedWsGlbFcnConv,     // Ptr to function to convert an HGLOBAL to {{nnn}} (may be NULL)
+                                &SavedWsGlbFcnParm);    // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
+                // Ensure properly terminated
+                *lpaplChar++ = WC_EOS;
 
-            // Save as new start of buffer
-            lpaplCharStart2 = lpaplChar;
+                // Save as new start of buffer
+                lpaplCharStart2 = lpaplChar;
 
-            // Format the text as an ASCII string with non-ASCII chars
-            //   represented as either {symbol} or {\xXXXX} where XXXX is
-            //   a four-digit hex number.
-            lpaplChar +=
-              ConvertWideToNameLength (lpaplChar,                   // Ptr to output save buffer
-                                       lpaplCharStart,              // Ptr to incoming chars
-                                       lstrlenW (lpaplCharStart));  // # chars to convert
-            // Ensure properly terminated
-            *lpaplChar++ = WC_EOS;
+                // Format the text as an ASCII string with non-ASCII chars
+                //   represented as either {symbol} or {\xXXXX} where XXXX is
+                //   a four-digit hex number.
+                lpaplChar +=
+                  ConvertWideToNameLength (lpaplChar,                   // Ptr to output save buffer
+                                           lpaplCharStart,              // Ptr to incoming chars
+                                           lstrlenW (lpaplCharStart));  // # chars to convert
+                // Ensure properly terminated
+                *lpaplChar++ = WC_EOS;
 
-            // Copy creation time
-            ftCreation = ((LPFCNARRAY_HEADER) lpMemObj)->ftCreation;
+                // Copy creation time
+                ftCreation = lpMemFcnHdr->ftCreation;
 
-            // Copy last mod time
-            ftLastMod  = ((LPFCNARRAY_HEADER) lpMemObj)->ftLastMod;
+                // Copy last mod time
+                ftLastMod  = lpMemFcnHdr->ftLastMod;
 
-            // Create the [nn.Name] section
-            ProfileSetSection (lpwszSectName,   // Ptr to the section name
-                               lpDict);         // Ptr to the dictionary
-            // Write out the single line
-            ProfileSetString (lpwszSectName,        // Ptr to the section name
-                             L"0",                  // Ptr to the key name
-                              lpaplCharStart2,      // Ptr to the key value
-                              lpDict);              // Ptr to the dictionary
-            // Write out the Count key value
-            ProfileSetString (lpwszSectName,        // Ptr to the section name
-                              KEYNAME_COUNT,        // Ptr to the key name
-                             L"1",                  // Ptr to the key value
-                              lpDict);              // Ptr to the dictionary
-            // Write out the UserDefined key value
-            ProfileSetString (lpwszSectName,        // Ptr to the section name
-                              KEYNAME_USERDEFINED,  // Ptr to the key name
-                             L"0",                  // Ptr to the key value
-                              lpDict);              // Ptr to the dictionary
-            break;
+                // Create the [nn.Name] section
+                ProfileSetSection (lpwszSectName,   // Ptr to the section name
+                                   lpDict);         // Ptr to the dictionary
+                // Write out the single line
+                ProfileSetString (lpwszSectName,        // Ptr to the section name
+                                 L"0",                  // Ptr to the key name
+                                  lpaplCharStart2,      // Ptr to the key value
+                                  lpDict);              // Ptr to the dictionary
+                // Write out the Count key value
+                ProfileSetString (lpwszSectName,        // Ptr to the section name
+                                  KEYNAME_COUNT,        // Ptr to the key name
+                                 L"1",                  // Ptr to the key value
+                                  lpDict);              // Ptr to the dictionary
+                // Write out the UserDefined key value
+                ProfileSetString (lpwszSectName,        // Ptr to the section name
+                                  KEYNAME_USERDEFINED,  // Ptr to the key name
+                                 L"0",                  // Ptr to the key value
+                                  lpDict);              // Ptr to the dictionary
+                break;
 #undef  lpMemFcnHdr
 
-        case DFN_HEADER_SIGNATURE:
-        {
-            UINT      numFcnLines;
-            LPFCNLINE lpFcnLines;       // Ptr to array of function line structs (FCNLINE[numFcnLines])
+            case DFN_HEADER_SIGNATURE:
+            {
+                UINT      numFcnLines;
+                LPFCNLINE lpFcnLines;       // Ptr to array of function line structs (FCNLINE[numFcnLines])
 
 #define lpMemDfnHdr     ((LPDFN_HEADER) lpMemObj)
-            // Format the function section name as F nnn.Name where nnn is the count
-            wsprintfW (lpwszFcnTypeName,
-                       L"F %d.",
-                       uGlbCnt);
-            // If this is an AFO, ...
-            if (lpMemDfnHdr->bAFO)
-            {
-                LPWCHAR p;
+                // Format the function section name as F nnn.Name where nnn is the count
+                wsprintfW (lpwszFcnTypeName,
+                           L"F %d.",
+                           uGlbCnt);
+                // If this is an AFO, ...
+                if (lpMemDfnHdr->bAFO)
+                {
+                    LPWCHAR p;
 
-                // Find the '=' separator
-                p = SkipToCharW (lpwszFcnName, '=');
+                    // Find the '=' separator
+                    p = SkipToCharW (lpwszFcnName, '=');
 
-                // Zap it
-                *p = WC_EOS;
+                    // Zap it
+                    *p = WC_EOS;
 
-                // Append the function name
-                strcpyW (&lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)], lpwszFcnName);
+                    // Append the function name
+                    strcpyW (&lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)], lpwszFcnName);
 
-                // Restore the zapped char
-                *p = '=';
+                    // Restore the zapped char
+                    *p = '=';
 
-                // Return the pointer to the next char in the buffer
-                lpwszFcnName = &lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)];
-            } else
-            {
-                // Skip over the leading part
-                lpwszFcnName = &lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)];
+                    // Return the pointer to the next char in the buffer
+                    lpwszFcnName = &lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)];
+                } else
+                {
+                    // Skip over the leading part
+                    lpwszFcnName = &lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)];
 
-                // Copy and convert the function name from the STE
-                lpwszFcnName =
-                  ConvSteName (lpwszFcnName,            // Ptr to output area
-                               lpMemDfnHdr->steFcnName, // Ptr to function STE
-                               NULL);                   // Ptr to name length (may be NULL)
-            } // End IF/ELSE
+                    // Copy and convert the function name from the STE
+                    lpwszFcnName =
+                      ConvSteName (lpwszFcnName,            // Ptr to output area
+                                   lpMemDfnHdr->steFcnName, // Ptr to function STE
+                                   NULL);                   // Ptr to name length (may be NULL)
+                } // End IF/ELSE
 
-            // Append separator
-            *lpaplChar++ = L'=';
+                // Append separator
+                *lpaplChar++ = L'=';
 
-            // Append the name type
-            *lpaplChar++ = L'0' + lpMemDfnHdr->steFcnName->stFlags.stNameType;
+                // Append the name type
+                *lpaplChar++ = L'0' + lpMemDfnHdr->steFcnName->stFlags.stNameType;
 
-            // Append separator
-            *lpaplChar++ = L'=';
+                // Append separator
+                *lpaplChar++ = L'=';
 
-            // Skip over the 'F ' to point to the section name
-            lpwszSectName = &lpwszFcnTypeName[2];
+                // Skip over the 'F ' to point to the section name
+                lpwszSectName = &lpwszFcnTypeName[2];
 
-            // Put the function definition in a separate
-            //   section named [nnn.Name] with each line
-            //   of the function on a separate line as in
-            //   0 = <Header>
-            //   1 = <First Line>, etc.
-            //   CreationTime = xxxxxxxxxxxxxxxx (64-bit hex number)
+                // Put the function definition in a separate
+                //   section named [nnn.Name] with each line
+                //   of the function on a separate line as in
+                //   0 = <Header>
+                //   1 = <First Line>, etc.
+                //   CreationTime = xxxxxxxxxxxxxxxx (64-bit hex number)
 
-            // Save the # function lines
-            numFcnLines = lpMemDfnHdr->numFcnLines;
+                // Save the # function lines
+                numFcnLines = lpMemDfnHdr->numFcnLines;
 
-            // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-            lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+                // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+                lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-            // Create the [nn.Name] section
-            ProfileSetSection (lpwszSectName,   // Ptr to the section name
-                               lpDict);         // Ptr to the dictionary
-            // Write out the function header
-            WriteFunctionLine (lpwszSectName,   // Ptr to the section name
-                               lpaplChar,       // Ptr to save area for the formatted line
-                               0,               // Line #
-                               lpMemDfnHdr->hGlbTxtHdr,
-                               lpDict);         // Ptr to the dictionary
-            // Loop through the function lines
-            for (uLine = 0; uLine < numFcnLines; uLine++, lpFcnLines++)
+                // Create the [nn.Name] section
+                ProfileSetSection (lpwszSectName,   // Ptr to the section name
+                                   lpDict);         // Ptr to the dictionary
+                // Write out the function header
                 WriteFunctionLine (lpwszSectName,   // Ptr to the section name
                                    lpaplChar,       // Ptr to save area for the formatted line
-                                   uLine + 1,       // Line #
-                                   lpFcnLines->hGlbTxtLine,
+                                   0,               // Line #
+                                   lpMemDfnHdr->hGlbTxtHdr,
                                    lpDict);         // Ptr to the dictionary
-            // Format the function line count
-            wsprintfW (lpaplChar,
-                       L"%d",
-                       numFcnLines + 1);
-            // Write out the Count key value
-            ProfileSetString (lpwszSectName,        // Ptr to the section name
-                              KEYNAME_COUNT,        // Ptr to the key name
-                              lpaplChar,            // Ptr to the key value
-                              lpDict);              // Ptr to the dictionary
-            // Write out the UserDefined key value
-            ProfileSetString (lpwszSectName,        // Ptr to the section name
-                              KEYNAME_USERDEFINED,  // Ptr to the key name
-                             L"1",                  // Ptr to the key value
-                              lpDict);              // Ptr to the dictionary
-            // If it's an AFO, ...
-            if (lpMemDfnHdr->bAFO)
-                // Write out the bAFO key value
-                ProfileSetString (lpwszSectName,    // Ptr to the section name
-                                  KEYNAME_AFO,      // Ptr to the key name
-                                 L"1",              // Ptr to the key value
-                                  lpDict);          // Ptr to the dictionary
+                // Loop through the function lines
+                for (uLine = 0; uLine < numFcnLines; uLine++, lpFcnLines++)
+                    WriteFunctionLine (lpwszSectName,   // Ptr to the section name
+                                       lpaplChar,       // Ptr to save area for the formatted line
+                                       uLine + 1,       // Line #
+                                       lpFcnLines->hGlbTxtLine,
+                                       lpDict);         // Ptr to the dictionary
+                // Format the function line count
+                wsprintfW (lpaplChar,
+                           L"%d",
+                           numFcnLines + 1);
+                // Write out the Count key value
+                ProfileSetString (lpwszSectName,        // Ptr to the section name
+                                  KEYNAME_COUNT,        // Ptr to the key name
+                                  lpaplChar,            // Ptr to the key value
+                                  lpDict);              // Ptr to the dictionary
+                // Write out the UserDefined key value
+                ProfileSetString (lpwszSectName,        // Ptr to the section name
+                                  KEYNAME_USERDEFINED,  // Ptr to the key name
+                                 L"1",                  // Ptr to the key value
+                                  lpDict);              // Ptr to the dictionary
+                // If it's an AFO, ...
+                if (lpMemDfnHdr->bAFO)
+                    // Write out the bAFO key value
+                    ProfileSetString (lpwszSectName,    // Ptr to the section name
+                                      KEYNAME_AFO,      // Ptr to the key name
+                                     L"1",              // Ptr to the key value
+                                      lpDict);          // Ptr to the dictionary
 #define lpUndoIni       lpaplChar       // Start of output save area
 
-            // Write out the Undo buffer
-            if (lpMemDfnHdr->hGlbUndoBuff NE NULL)
-            {
-                LPUNDO_BUF lpMemUndo;               // Ptr to Undo Buffer global memory
-                SIZE_T     uUndoCount;              // # entries in the Undo Buffer
-                LPAPLCHAR  lpUndoOut;               // Ptr to output save area
-                WCHAR      wcTmp[2];                // Temporary char string
-
-                // Ensure properly terminated
-                wcTmp[1] = WC_EOS;
-
-                // Get the # entries
-                uUndoCount = (MyGlobalSize (lpMemDfnHdr->hGlbUndoBuff)) / sizeof (UNDO_BUF);
-
-                // Start with the # entries
-                lpUndoOut = lpUndoIni +
-                  wsprintfW (lpUndoIni,
-                             L"%d ",
-                             uUndoCount);
-                // Lock the memory to get a ptr to it
-                lpMemUndo = MyGlobalLock (lpMemDfnHdr->hGlbUndoBuff);
-
-                // Loop through the undo entries
-                for (;
-                     uUndoCount;
-                     uUndoCount--, lpMemUndo++)
+                // Write out the Undo buffer
+                if (lpMemDfnHdr->hGlbUndoBuff NE NULL)
                 {
-                    LPAPLCHAR lpUndoChar;
+                    LPUNDO_BUF lpMemUndo;               // Ptr to Undo Buffer global memory
+                    SIZE_T     uUndoCount;              // # entries in the Undo Buffer
+                    LPAPLCHAR  lpUndoOut;               // Ptr to output save area
+                    WCHAR      wcTmp[2];                // Temporary char string
 
-                    // Split cases based upon the undo char
-                    switch (lpMemUndo->Char)
+                    // Ensure properly terminated
+                    wcTmp[1] = WC_EOS;
+
+                    // Get the # entries
+                    uUndoCount = (MyGlobalSize (lpMemDfnHdr->hGlbUndoBuff)) / sizeof (UNDO_BUF);
+
+                    // Start with the # entries
+                    lpUndoOut = lpUndoIni +
+                      wsprintfW (lpUndoIni,
+                                 L"%d ",
+                                 uUndoCount);
+                    // Lock the memory to get a ptr to it
+                    lpMemUndo = MyGlobalLock (lpMemDfnHdr->hGlbUndoBuff);
+
+                    // Loop through the undo entries
+                    for (;
+                         uUndoCount;
+                         uUndoCount--, lpMemUndo++)
                     {
-                        case WC_EOS:
-                            lpUndoChar = L"";
+                        LPAPLCHAR lpUndoChar;
 
-                            break;
+                        // Split cases based upon the undo char
+                        switch (lpMemUndo->Char)
+                        {
+                            case WC_EOS:
+                                lpUndoChar = L"";
 
-                        case WC_LF:
-                            lpUndoChar = WS_SLOPE L"n";
+                                break;
 
-                            break;
+                            case WC_LF:
+                                lpUndoChar = WS_SLOPE L"n";
 
-                        case WC_CR:
-                            lpUndoChar = WS_SLOPE L"r";
+                                break;
 
-                            break;
+                            case WC_CR:
+                                lpUndoChar = WS_SLOPE L"r";
 
-                        case WC_SQ:
-                            lpUndoChar = WS_SLOPE WS_SQ;
+                                break;
 
-                            break;
+                            case WC_SQ:
+                                lpUndoChar = WS_SLOPE WS_SQ;
 
-                        case WC_SLOPE:
-                            lpUndoChar = WS_SLOPE;
+                                break;
 
-                            break;
+                            case WC_SLOPE:
+                                lpUndoChar = WS_SLOPE;
 
-                        default:
-                            // Copy to string
-                            if ((lpUndoChar = CharToSymbolName (lpMemUndo->Char)) EQ NULL)
-                            {
-                                // Save as one-char string
-                                wcTmp[0] = lpMemUndo->Char;
-                                lpUndoChar = wcTmp;
-                            } // End IF
+                                break;
 
-                            break;
-                    } // End SWITCH
+                            default:
+                                // Copy to string
+                                if ((lpUndoChar = CharToSymbolName (lpMemUndo->Char)) EQ NULL)
+                                {
+                                    // Save as one-char string
+                                    wcTmp[0] = lpMemUndo->Char;
+                                    lpUndoChar = wcTmp;
+                                } // End IF
 
-                    // Format this element of the Undo Buffer
-                    lpUndoOut +=
-                      wsprintfW (lpUndoOut,
-                                 (*lpUndoChar EQ WC_EOS) ? L"%c %d %d %d, "
-                                                         : L"%c %d %d %d '%s', ",
-                                 UndoActToChar[lpMemUndo->Action],
-                                 lpMemUndo->CharPosBeg,
-                                 lpMemUndo->CharPosEnd,
-                                 lpMemUndo->Group,
-                                 lpUndoChar);
-                } // End FOR
+                                break;
+                        } // End SWITCH
 
-                // We no longer need this ptr
-                MyGlobalUnlock (lpMemDfnHdr->hGlbUndoBuff); lpMemUndo = NULL;
+                        // Format this element of the Undo Buffer
+                        lpUndoOut +=
+                          wsprintfW (lpUndoOut,
+                                     (*lpUndoChar EQ WC_EOS) ? L"%c %d %d %d, "
+                                                             : L"%c %d %d %d '%s', ",
+                                     UndoActToChar[lpMemUndo->Action],
+                                     lpMemUndo->CharPosBeg,
+                                     lpMemUndo->CharPosEnd,
+                                     lpMemUndo->Group,
+                                     lpUndoChar);
+                    } // End FOR
 
-                // Ensure properly terminated (zap the trailing comma)
-                if (lpUndoOut[-2] EQ L',')
-                    lpUndoOut[-2] = WC_EOS;
-                else
-                    lpUndoOut[ 0] = WC_EOS;
-            } else
-                // Ensure properly terminated
-                strcpyW (lpUndoIni, L"0");
+                    // We no longer need this ptr
+                    MyGlobalUnlock (lpMemDfnHdr->hGlbUndoBuff); lpMemUndo = NULL;
 
-            // Write out the Undo Buffer contents
-            ProfileSetString (lpwszSectName,    // Ptr to the section name
-                              KEYNAME_UNDO,     // Ptr to the key name
-                              lpUndoIni,        // Ptr to the key value
-                              lpDict);          // Ptr to the dictionary
-            // ***FINISHME*** -- Write out the stop/trace bits
+                    // Ensure properly terminated (zap the trailing comma)
+                    if (lpUndoOut[-2] EQ L',')
+                        lpUndoOut[-2] = WC_EOS;
+                    else
+                        lpUndoOut[ 0] = WC_EOS;
+                } else
+                    // Ensure properly terminated
+                    strcpyW (lpUndoIni, L"0");
 
-
-
-
-
-
-
-
-
-
-            if (lpMemDfnHdr->hGlbMonInfo NE NULL)
-            {
-                LPINTMONINFO lpMemMonInfo;          // Ptr to function line monitoring info
-                LPAPLCHAR    lpaplCharMon;          // Ptr to formatted monitor info
-
-                // Lock the memory to get a ptr to it
-                lpMemMonInfo = MyGlobalLock (lpMemDfnHdr->hGlbMonInfo);
-
-                // Get the loop length
-                uLen = numFcnLines + 1;
-
-                // Save the ptr
-                lpaplCharMon = lpaplChar;
-
-                // Format the monitor info as integers
-                for (uCnt = 0; uCnt < uLen; uCnt++, lpMemMonInfo++)
-                {
-                    // Format the IncSubFns value
-                    lpaplCharMon =
-                      FormatAplIntFC (lpaplCharMon,             // Ptr to output save area
-                                      lpMemMonInfo->IncSubFns,  // The value to format
-                                      UTF16_OVERBAR);           // Char to use as overbar
-                    // Format the ExcSubFns value
-                    lpaplCharMon =
-                      FormatAplIntFC (lpaplCharMon,             // Ptr to output save area
-                                      lpMemMonInfo->ExcSubFns,  // The value to format
-                                      UTF16_OVERBAR);           // Char to use as overbar
-                    // Format the Count value
-                    lpaplCharMon =
-                      FormatAplIntFC (lpaplCharMon,             // Ptr to output save area
-                                      lpMemMonInfo->Count,      // The value to format
-                                      UTF16_OVERBAR);           // Char to use as overbar
-                    // Append a separator
-                    lpaplCharMon[-1] = L',';
-                } // End FOR
-
-                // We no longer need this ptr
-                MyGlobalUnlock (lpMemDfnHdr->hGlbMonInfo); lpMemMonInfo = NULL;
-
-                // Ensure properly terminated and zap the trailing blank
-                lpaplCharMon[-1] = WC_EOS;
-
-                // Write out the Monitor Info
+                // Write out the Undo Buffer contents
                 ProfileSetString (lpwszSectName,    // Ptr to the section name
-                                  KEYNAME_MONINFO,  // Ptr to the key name
-                                  lpaplChar,        // Ptr to the key value
+                                  KEYNAME_UNDO,     // Ptr to the key name
+                                  lpUndoIni,        // Ptr to the key value
                                   lpDict);          // Ptr to the dictionary
-            } // End IF
+                // ***FINISHME*** -- Write out the stop/trace bits
 
-            // Copy creation time
-            ftCreation = lpMemDfnHdr->ftCreation;
 
-            // Copy last modification time
-            ftLastMod  = lpMemDfnHdr->ftLastMod;
+
+
+
+
+
+
+
+
+                if (lpMemDfnHdr->hGlbMonInfo NE NULL)
+                {
+                    LPINTMONINFO lpMemMonInfo;          // Ptr to function line monitoring info
+                    LPAPLCHAR    lpaplCharMon;          // Ptr to formatted monitor info
+
+                    // Lock the memory to get a ptr to it
+                    lpMemMonInfo = MyGlobalLock (lpMemDfnHdr->hGlbMonInfo);
+
+                    // Get the loop length
+                    uLen = numFcnLines + 1;
+
+                    // Save the ptr
+                    lpaplCharMon = lpaplChar;
+
+                    // Format the monitor info as integers
+                    for (uCnt = 0; uCnt < uLen; uCnt++, lpMemMonInfo++)
+                    {
+                        // Format the IncSubFns value
+                        lpaplCharMon =
+                          FormatAplIntFC (lpaplCharMon,             // Ptr to output save area
+                                          lpMemMonInfo->IncSubFns,  // The value to format
+                                          UTF16_OVERBAR);           // Char to use as overbar
+                        // Format the ExcSubFns value
+                        lpaplCharMon =
+                          FormatAplIntFC (lpaplCharMon,             // Ptr to output save area
+                                          lpMemMonInfo->ExcSubFns,  // The value to format
+                                          UTF16_OVERBAR);           // Char to use as overbar
+                        // Format the Count value
+                        lpaplCharMon =
+                          FormatAplIntFC (lpaplCharMon,             // Ptr to output save area
+                                          lpMemMonInfo->Count,      // The value to format
+                                          UTF16_OVERBAR);           // Char to use as overbar
+                        // Append a separator
+                        lpaplCharMon[-1] = L',';
+                    } // End FOR
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (lpMemDfnHdr->hGlbMonInfo); lpMemMonInfo = NULL;
+
+                    // Ensure properly terminated and zap the trailing blank
+                    lpaplCharMon[-1] = WC_EOS;
+
+                    // Write out the Monitor Info
+                    ProfileSetString (lpwszSectName,    // Ptr to the section name
+                                      KEYNAME_MONINFO,  // Ptr to the key name
+                                      lpaplChar,        // Ptr to the key value
+                                      lpDict);          // Ptr to the dictionary
+                } // End IF
+
+                // Copy creation time
+                ftCreation = lpMemDfnHdr->ftCreation;
+
+                // Copy last modification time
+                ftLastMod  = lpMemDfnHdr->ftLastMod;
 #undef  lpMemDfnHdr
-            break;
-        } // End DFN_HEADER_SIGNATURE
+                break;
+            } // End DFN_HEADER_SIGNATURE
 
-        defstop
-            break;
-    } // End SWITCH
+            defstop
+                break;
+        } // End SWITCH
+    } // End IF/ELSE
 
     // Save the ftCreation time
     wsprintfW (lpaplChar,
@@ -1229,11 +1293,16 @@ LPAPLCHAR SavedWsFormGlbFcn
                       wszGlbCnt,            // Ptr to the key value
                       lpwszFcnTypeName,     // Ptr to the key name
                       lpDict);              // Ptr to the dictionary
-    // Write out the saved marker
-    ProfileSetString (SECTNAME_TEMPGLOBALS, // Ptr to the section name
-                      wszGlbObj,            // Ptr to the key name
-                      wszGlbCnt,            // Ptr to the key value
-                      lpDict);              // Ptr to the dictionary
+    // If this object is NOT a Direct Function, ...
+    if (!lpSymEntry->stFlags.FcnDir)
+    {
+        // Write out the saved marker
+        ProfileSetString (SECTNAME_TEMPGLOBALS, // Ptr to the section name
+                          wszGlbObj,            // Ptr to the key name
+                          wszGlbCnt,            // Ptr to the key value
+                          lpDict);              // Ptr to the dictionary
+    } // End IF
+
     // Move back to the start
     lpaplChar = lpaplCharStart;
 
@@ -1333,8 +1402,9 @@ LPAPLCHAR SavedWsFormGlbVar
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    // Mark as not saved into workspace
-    lpSavedWsVar_CB->iIndex = -1;
+    if (lpSavedWsVar_CB NE NULL)
+        // Mark as not saved into workspace
+        lpSavedWsVar_CB->iIndex = -1;
 
     // Check on user-defined functions/operators
     bUsrDfn = IsGlbTypeDfnDir_PTB (hGlbObj);

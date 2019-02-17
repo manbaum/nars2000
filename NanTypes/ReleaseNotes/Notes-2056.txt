@@ -1,0 +1,9 @@
+Build #2056 -- Version 0.6.0.xx
+-------------------------------
+
+* Allow Hex Notation In )DEBUG Keywords
+
+Directory branches/bsmith/NanTypes/htdocs:
+
+SC_DEBUG.C:
+  Allow hex notation in )DEBUG keywords.

@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2056 -- Version 0.6.0.xx
+-------------------------------
+
+* Allow Hex Notation In )DEBUG Keywords
+
+Directory branches/bsmith/NanTypes/htdocs:
+
+SC_DEBUG.C:
+  Allow hex notation in )DEBUG keywords.
+
+
 Build #2054 -- Version 0.6.0.xx
 -------------------------------
 
@@ -15,6 +26,9 @@ PARSELINE.H:
   Reformat the Binding Strengths and Reductions tables to be more readable.
   Define more Binding Strengths so as to handle more Train syntax.
   Define more pesudo-Reductions so as to handle more Train syntax.
+
+STRAND.C:
+  Back out of second parameter to <UnVarStrand>.
 
 SYNOBJ.H:
   Reformat the Syntax Object Names table to be more readable.

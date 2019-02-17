@@ -13,5 +13,8 @@ PARSELINE.H:
   Define more Binding Strengths so as to handle more Train syntax.
   Define more pesudo-Reductions so as to handle more Train syntax.
 
+STRAND.C:
+  Back out of second parameter to <UnVarStrand>.
+
 SYNOBJ.H:
   Reformat the Syntax Object Names table to be more readable.

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -183,8 +183,14 @@ UBOOL CmdDebug_EM
             /* Skip over the separator                */\
             p = SkipWhiteW (q + 1);                     \
                                                         \
-            /* Get the value                          */\
-            sscanfW (p, L"%i", &i);                     \
+            /* If the input is in hex, ...            */\
+            if (p[0] EQ L'0'                            \
+             && p[1] EQ L'x')                           \
+                /* Get the value                      */\
+                sscanfW (&p[2], L"%x", &i);             \
+            else                                        \
+                /* Get the value                      */\
+                sscanfW (p, L"%i", &i);                 \
                                                         \
             /* Skip over the number                   */\
             p = SkipBlackW (p);                         \

@@ -1,6 +1,17 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2055 -- Version 0.5.10.xx
+--------------------------------
+
+* Allow Hex Notation In )DEBUG Keywords
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+SC_DEBUG.C:
+  Allow hex notation in )DEBUG keywords.
+
+
 Build #2053 -- Version 0.5.10.xx
 --------------------------------
 

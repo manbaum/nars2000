@@ -1,0 +1,9 @@
+Build #2055 -- Version 0.5.10.xx
+--------------------------------
+
+* Allow Hex Notation In )DEBUG Keywords
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+SC_DEBUG.C:
+  Allow hex notation in )DEBUG keywords.

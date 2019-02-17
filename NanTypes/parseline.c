@@ -90,7 +90,6 @@
 #define plRedDOP_IDX    plRedF_IDX
 #define plRedDOPN_IDX   plRedF_IDX
 
-
 #define plRedDOP_SA     plRedDOP_RhtOper
 #define plRedDOP_IO     plRedDOP_RhtOper
 #define plRedDOPN_A     plRedDOP_RhtOper
@@ -6069,13 +6068,11 @@ void FreeStackTemps
         UnVarStrand (lpYYRes);
 
         if (IsTknValid (lpYYRes->tkToken))
-        {
             // Free the variable only if unnamed
             FreeTempResult (lpYYRes);
 
-            // Mark as to be YYFree'd
-            bYYFree = TRUE;
-        } // End IF
+        // Mark as to whether or not it's YYFree-able
+        bYYFree = IsTknFreeable (lpYYRes->tkToken);
     } else
     // If it's not an EOS or SOS, ...
     if (lpYYRes->tkToken.tkSynObj NE soSOS
@@ -6084,7 +6081,7 @@ void FreeStackTemps
         bYYFree = TRUE;
 
     // If we're to YYFree this item, ...
-    if (bYYFree && IsTknValid (lpYYRes->tkToken))
+    if (bYYFree)
     {
         // YYFree the temp
         YYFree (lpYYRes); lpYYRes = NULL;

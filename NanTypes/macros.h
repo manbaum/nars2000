@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -776,6 +776,12 @@
     ((a).tkFlags.TknType NE TKT_UNUSED              \
      && ((a).tkFlags.TknType NE TKT_VARNAMED        \
       || (a).tkData.tkSym->stFlags.Value EQ TRUE))
+
+// Define macro to determine if a token is free-able
+#define IsTknFreeable(a)                            \
+    ((a).tkFlags.TknType NE TKT_UNUSED              \
+     && ((a).tkFlags.TknType NE TKT_VARNAMED        \
+      || (a).tkData.tkSym->stFlags.ObjName NE OBJNAME_NONE))
 
 // Define macro to free and YYFree a result, and set to NULL
 #define FreeYYRes(lpYYRes)                          \

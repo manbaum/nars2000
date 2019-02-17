@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -652,7 +652,7 @@ void DisplayGlobals
                             if (IsEmpty (lpHeader->NELM))
                             {
                                 aplArrChar[0] = L'0';
-                                aplArrChar[1] = L'v';
+                                aplArrChar[1] = DEF_VFPSEP;
                                 aplArrChar[2] = WC_EOS;
                             } else
                             {
@@ -775,6 +775,54 @@ void DisplayGlobals
                               FormatAplHC8V (aplArrChar,            // Ptr to output save area
                                  (LPAPLHC8V) lpData,                // Ptr to the value to format
                                              0);                    // # significant digits (0 = all)
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
+
+                            break;
+
+                        case ARRAY_ARB:
+                            if (IsEmpty (lpHeader->NELM))
+                            {
+                                aplArrChar[0] = L'0';
+                                aplArrChar[1] = DEF_ARBSEP;
+                                aplArrChar[2] = WC_EOS;
+                            } else
+                            {
+                                lpwsz =
+                                  FormatAplArb (aplArrChar,             // Ptr to output save area
+                                     (LPAPLARB) lpData,                 // Ptr to the value to format
+                                                0);                     // # significant digits (0 = all)
+                                // Zap the trailing blank
+                                lpwsz[-1] = WC_EOS;
+                            } // End IF/ELSE
+
+                            break;
+
+                        case ARRAY_BA2F:
+                            lpwsz =
+                              FormatAplBA2F (aplArrChar,            // Ptr to output save area
+                                 (LPAPLBA2F) lpData,                // Ptr to the value to format
+                                             0);                    // Use this many significant digits for VFP
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
+
+                            break;
+
+                        case ARRAY_BA4F:
+                            lpwsz =
+                              FormatAplBA4F (aplArrChar,            // Ptr to output save area
+                                 (LPAPLBA4F) lpData,                // Ptr to the value to format
+                                             0);                    // Use this many significant digits for VFP
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
+
+                            break;
+
+                        case ARRAY_BA8F:
+                            lpwsz =
+                              FormatAplBA8F (aplArrChar,            // Ptr to output save area
+                                 (LPAPLBA8F) lpData,                // Ptr to the value to format
+                                             0);                    // Use this many significant digits for VFP
                             // Zap the trailing blank
                             lpwsz[-1] = WC_EOS;
 
@@ -2144,13 +2192,27 @@ LPWCHAR DisplayFcnSub
             break;
 
         case TKT_VARIMMED:
+        {
+            IMM_TYPES immType;
+
+            // Get the immediate data type
+            immType = lpYYMem[0].tkToken.tkFlags.ImmType;
+
+            // If the immediate type is Char, ...
+            if (IsImmChr (immType))
+                *lpaplChar++ = WC_SQ;
+            // Format the immediate value
             lpaplChar =
               FormatImmed (lpaplChar,           // ***FIXME*** Use FormatImmedFC ??
                            lpYYMem[0].tkToken.tkFlags.ImmType,
                            GetPtrTknLongest (&lpYYMem[0].tkToken));
             if (lpaplChar[-1] EQ L' ')
                 lpaplChar--;            // Back over the trailing blank
+            // If the immediate type is Char, ...
+            if (IsImmChr (immType))
+                *lpaplChar++ = WC_SQ;
             break;
+        } // End TKT_VARIMMED
 
         case TKT_CHRSTRAND:
         case TKT_NUMSTRAND:

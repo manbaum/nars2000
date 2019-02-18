@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -507,7 +507,7 @@ LPAPLUINT AttributeValences
 
         case NAMETYPE_VAR:
             *lpMemDataRes++ = 1;            // [1] = Explicit result (0 or 1)
-            *lpMemDataRes++ =               // [2] = Function valence (0, 1, or 2)
+            *lpMemDataRes++ = 0;            // [2] = Function valence (0, 1, or 2)
             *lpMemDataRes++ = 0;            // [3] = Operator valence (0, 1, or 2)
 
             break;
@@ -592,7 +592,8 @@ LPAPLUINT AttributeValences
             {
                 *lpMemDataRes++ = 1;            // [1] = Explicit result (0 or 1)
                 *lpMemDataRes++ = 2;            // [2] = Function valence (0, 1, or 2)
-                *lpMemDataRes++ = 0;            // [3] = Operator valence (0, 1, or 2)
+                *lpMemDataRes++ = GetOprValence (lpSymEntry);
+                                                // [3] = Operator valence (0, 1, or 2)
             } // End IF/ELSE/...
 
             break;
@@ -613,6 +614,101 @@ LPAPLUINT AttributeValences
 
     return lpMemDataRes;
 } // End AttributeValences
+
+
+//***************************************************************************
+//  $GetOprValence
+//
+//  Calculate the valence of the Function Array Operator with a given SYMENTRY
+//***************************************************************************
+
+APLUINT GetOprValence
+    (LPSYMENTRY lpSymEntry)                 // Ptr to object SYMENTRY
+
+{
+    APLUINT uRet = 0;                       // The result
+
+    // If the object is not immediate, and
+    //                  not a UDFO, and
+    //                  not a direct function, ...
+    if (!lpSymEntry->stFlags.Imm
+     && !lpSymEntry->stFlags.UsrDfn
+     && !lpSymEntry->stFlags.FcnDir)
+    {
+        HGLOBAL hGlbObj = NULL;             // Object global memory handle
+        LPVOID  lpMemHdrObj = NULL;         // Ptr to object global memory
+
+        // Get the user-defined function/operator global memory handle
+        hGlbObj = lpSymEntry->stData.stGlbData;
+
+        // Split cases based upon the function signature
+        switch (GetSignatureGlb_PTB (hGlbObj))
+        {
+            case FCNARRAY_HEADER_SIGNATURE:
+                // Lock the memory to get a ptr to it
+                lpMemHdrObj = MyGlobalLockFcn (hGlbObj);
+
+                // Split cases based upon the name type
+                switch (((LPFCNARRAY_HEADER) lpMemHdrObj)->fnNameType)
+                {
+                    case NAMETYPE_UNK:
+                    case NAMETYPE_VAR:
+                    case NAMETYPE_FN0:
+                    case NAMETYPE_FN12:
+////////////////////////uRet = 0;               // Aready zero from declaration
+
+                        break;
+
+                    case NAMETYPE_OP1:
+                        uRet = 1;
+
+                        break;
+
+                    case NAMETYPE_OP2:
+                        uRet = 2;
+
+                        break;
+
+                    case NAMETYPE_OP3:
+                        uRet = 1;
+
+                        break;
+
+                    case NAMETYPE_LST:
+                    case NAMETYPE_TRN:
+////////////////////////uRet = 0;               // Aready zero from declaration
+
+                        break;
+
+                    defstop
+////////////////////////uRet = 0;               // Aready zero from declaration
+
+                        break;
+                } // End SWITCH
+
+                break;
+
+////////////case DFN_HEADER_SIGNATURE:
+////////////////// Lock the memory to get a ptr to it
+////////////////lpMemHdrObj = MyGlobalLockDfn (hGlbObj);
+////////////////
+////////////////DbgStop ();         // We should never get here
+////////////////
+////////////////break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        if (hGlbObj NE NULL && lpMemHdrObj NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbObj); lpMemHdrObj = NULL;
+        } // End IF
+    } // End IF
+
+    return uRet;
+} // End GetOprValence
 
 
 //***************************************************************************

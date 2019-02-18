@@ -1,6 +1,17 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2059 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bug In 1 []AT on Operators As Function Arrays
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+QF_AT.C:
+  In <AttributeValences>, handle Function Array Operators through a separate function.
+
+
 Build #2057 -- Version 0.5.10.xx
 --------------------------------
 

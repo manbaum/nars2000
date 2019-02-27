@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -586,7 +586,8 @@ void PrimFnMonQueryRisR
         RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
     else
     // Check for DOMAIN ERROR
-    if (mpq_cmp_ui (&lpatRht->aplRat, bQuadIO, 1) < 0)
+    if (mpq_cmp_ui (&lpatRht->aplRat, bQuadIO, 1) < 0
+     || mpq_inf_p  (&lpatRht->aplRat))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
     else
     // If the RAT is an integer,  ...
@@ -687,7 +688,8 @@ void PrimFnMonQueryVisV
         mpfr_urandomb (&lpMemRes[uRes], GetMemPTD ()->randState);
     } else
     // Check for DOMAIN ERROR
-    if (mpfr_cmp_ui (&lpatRht->aplVfp, bQuadIO) < 0)
+    if (mpfr_cmp_ui (&lpatRht->aplVfp, bQuadIO) < 0
+     || mpfr_inf_p  (&lpatRht->aplVfp))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
     else
     // If the VFP is an integer,  ...

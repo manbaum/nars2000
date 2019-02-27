@@ -1,0 +1,9 @@
+Build #2063 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bug With ?{infinity} For Both Multiple Precision Numbers
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+PF_QUERY.C:
+  In both <PrimFnMonQueryRisR> and <PrimFnMonQueryVisV>, check for {infinity} and signal a DOMAIN ERROR if found.

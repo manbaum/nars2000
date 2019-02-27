@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -119,11 +119,6 @@ UBOOL CmdSiSinlCom_EM
             case DFNTYPE_OP1:
             case DFNTYPE_OP2:
             case DFNTYPE_FCN:
-#ifndef DEBUG
-                // If it's a Magic Function/Operator, skip it
-                if (lpSISCur->bMFO)
-                    break;
-#endif
                 // Lock the memory to get a ptr to it
                 lpMemName = MyGlobalLockWsz (lpSISCur->hGlbFcnName);
 
@@ -182,7 +177,11 @@ UBOOL CmdSiSinlCom_EM
                     {
                         // Copy the STE name to local storage
                         lpw = CopySteName (lpwszTemp, &lpSymEntryNxt[numSym], &uNameLen);
-
+#ifndef DEBUG
+                        // For non-DEBUG users, skip the display of MFO local names
+                        if (IsMFOLclName (lpwszTemp))
+                            continue;
+#endif
                         // Ensure properly terminated
                         *lpw = WC_EOS;
 

@@ -1,0 +1,13 @@
+Build #2061 -- Version 0.5.10.xx
+--------------------------------
+
+* Disallow Display Of MFO Local Names In )SINL
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+MACROS.H:
+  Define macro to detect MFO Local names.
+
+SC_SI.C:
+  Allow )SINL to display a pendent MFO.
+  Disallow display of MFO Local names in )SINL.

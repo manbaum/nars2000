@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ typedef enum tagENUM_VARIANT
 //   <varOprType> and <varOprValTab> in <po_variant.c>.
 
 
-#define VAR_MAC(a,N1,N2,C1,C2,N3,N4,C3,C4)          \
+#define VAR_MAC(a,N1,N2,C1,C2,N3,N4,C3,C4,OP)       \
     {UTF16_##a,                                     \
      ENUM_VARIANT_##N1,                             \
      ENUM_VARIANT_##N2,                             \
@@ -92,6 +92,7 @@ typedef enum tagENUM_VARIANT
      ENUM_VARIANT_##N4,                             \
      ENUM_VARIANT_##C3,                             \
      ENUM_VARIANT_##C4,                             \
+     OP,                                            \
     }
 
 typedef struct tagVARIANT_STR
@@ -107,6 +108,7 @@ typedef struct tagVARIANT_STR
                     enumVarDydN2,           // ...                       Num2 in         Num1 Num2 or Chr1 Num2
                     enumVarDydC1,           // ...                       Chr1 in Chr1 or Chr1 Chr2 or Chr1 Num2
                     enumVarDydC2;           // ...                       Chr2 in         Chr1 Chr2 or Num1 Chr2
+    UINT            (*SYMTRANS) (WCHAR);    // Ptr to translation function (FcnTrans/OprTrans)
 } VARIANT_STR, *LPVARIANT_STR;
 
 typedef struct tagALLSYSVARS

@@ -119,9 +119,9 @@
 
 #define plRedJ_MOP      plRedLftOper_MOP
 #define plRedJ_MOPN     plRedLftOper_MOP
-#define plRedSA_MR      plRedLftOper_MOP
-#define plRedNAM_MR     plRedLftOper_MOP
-#define plRedIO_MR      plRedLftOper_MOP
+#define plRedSA_MOR     plRedLftOper_MOP
+#define plRedNAM_MOR    plRedLftOper_MOP
+#define plRedIO_MOR     plRedLftOper_MOP
 #define plRedSA_MOP     plRedLftOper_MOP
 #define plRedNAM_MOP    plRedLftOper_MOP
 #define plRedIO_MOP     plRedLftOper_MOP
@@ -131,27 +131,27 @@
 #define plRedNAM_MOPN   plRedLftOper_MOP
 #define plRedIO_MOPN    plRedLftOper_MOP
 #define plRedA_MOPN     plRedLftOper_MOP
-#define plRedA_MR       plRedLftOper_MOP
+#define plRedA_MOR      plRedLftOper_MOP
 #define plRedF_MOP      plRedLftOper_MOP
 #define plRedF_MOPN     plRedLftOper_MOP
 #define plRedMF_MOP     plRedLftOper_MOP
 #define plRedMF_MOPN    plRedLftOper_MOP
-#define plRedF_MR       plRedLftOper_MOP
-#define plRedMOP_MR     plRedLftOper_MOP
+#define plRedF_MOR      plRedLftOper_MOP
+#define plRedMOP_MOR    plRedLftOper_MOP
 #define plRedMOP_MOP    plRedLftOper_MOP
 #define plRedMOPN_MOP   plRedLftOper_MOP
 #define plRedMOP_MOPN   plRedLftOper_MOP
 #define plRedMOPN_MOPN  plRedLftOper_MOP
-#define plRedMOPN_MR    plRedLftOper_MOP
+#define plRedMOPN_MOR   plRedLftOper_MOP
 #define plRedF_HR       plRedLftOper_MOP
 
 #define plRedHY_MOPN    plRedHY_MOP
 #define plRedNF_MOPN    plRedNF_MOP
 
-#define plRedSPM_MOP    plRedLftOper_MOP
-#define plRedSPMN_MOP   plRedLftOper_MOP
-#define plRedSPM_MOPN   plRedLftOper_MOP
-#define plRedSPMN_MOPN  plRedLftOper_MOP
+#define plRedSPMO_MOP   plRedLftOper_MOP
+#define plRedSPMON_MOP  plRedLftOper_MOP
+#define plRedSPMO_MOPN  plRedLftOper_MOP
+#define plRedSPMON_MOPN plRedLftOper_MOP
 
 #define plRedF_RP       plRedCom_RP
 #define plRedHY_RP      plRedCom_RP
@@ -174,11 +174,12 @@
 
 #define plRedSP_F       plRedSP_Com
 #define plRedSP_FR      plRedSP_Com
-#define plRedSP_MR      plRedSP_Com
-#define plRedSP_DR      plRedSP_Com
+#define plRedSP_MOR     plRedSP_Com
+#define plRedSP_DOR     plRedSP_Com
 #define plRedSP_HR      plRedSP_Com
 #define plRedSP_HY      plRedSP_Com
 #define plRedSP_J       plRedSP_Com
+#define plRedSP_JD      plRedSP_Com
 #define plRedSP_MOP     plRedSP_Com
 #define plRedSP_MOPN    plRedSP_Com
 #define plRedSP_DOP     plRedSP_Com
@@ -188,12 +189,12 @@
 #define plRedNAM_SPA    plRedNAM_SPCom
 #define plRedNAM_SPAK   plRedNAM_SPCom
 #define plRedNAM_SPF    plRedNAM_SPCom
-#define plRedNAM_SPM    plRedNAM_SPCom
-#define plRedNAM_SPMN   plRedNAM_SPCom
-#define plRedNAM_SPMR   plRedNAM_SPCom
-#define plRedNAM_SPD    plRedNAM_SPCom
-#define plRedNAM_SPDN   plRedNAM_SPCom
-#define plRedNAM_SPDR   plRedNAM_SPCom
+#define plRedNAM_SPMO   plRedNAM_SPCom
+#define plRedNAM_SPMON  plRedNAM_SPCom
+#define plRedNAM_SPMOR  plRedNAM_SPCom
+#define plRedNAM_SPDO   plRedNAM_SPCom
+#define plRedNAM_SPDON  plRedNAM_SPCom
+#define plRedNAM_SPDOR  plRedNAM_SPCom
 #define plRedNAM_SPHY   plRedNAM_SPCom
 #define plRedNAM_SPHR   plRedNAM_SPCom
 #define plRedNAM_SPFR   plRedNAM_SPCom
@@ -206,8 +207,8 @@
 #define plRedLNR_ISPA   plRedLNR_SPA
 
 #define plRedLP_FR      plRedLP_Com
-#define plRedLP_MR      plRedLP_Com
-#define plRedLP_DR      plRedLP_Com
+#define plRedLP_MOR     plRedLP_Com
+#define plRedLP_DOR     plRedLP_Com
 #define plRedLP_HR      plRedLP_Com
 
 #define plRedLP_AFR     plRedLP_FFR
@@ -253,31 +254,31 @@
 
 #define plRedAFR_AFR    plRedPseudo
 #define plRedAFR_FR     plRedPseudo
-#define plRedAFR_MR     plRedPseudo
+#define plRedAFR_MOR    plRedPseudo
 #define plRedAFR_HR     plRedPseudo
 #define plRedAFR_FFR    plRedPseudo
 
 #define plRedFR_AFR     plRedPseudo
 #define plRedFR_FR      plRedPseudo
-#define plRedFR_MR      plRedPseudo
+#define plRedFR_MOR     plRedPseudo
 #define plRedFR_HR      plRedPseudo
 #define plRedFR_FFR     plRedPseudo
 
-#define plRedMR_AFR     plRedPseudo
-#define plRedMR_FR      plRedPseudo
-#define plRedMR_MR      plRedPseudo
-#define plRedMR_HR      plRedPseudo
-#define plRedMR_FFR     plRedPseudo
+#define plRedMOR_AFR    plRedPseudo
+#define plRedMOR_FR     plRedPseudo
+#define plRedMOR_MOR    plRedPseudo
+#define plRedMOR_HR     plRedPseudo
+#define plRedMOR_FFR    plRedPseudo
 
 #define plRedHR_AFR     plRedPseudo
 #define plRedHR_FR      plRedPseudo
-#define plRedHR_MR      plRedPseudo
+#define plRedHR_MOR     plRedPseudo
 #define plRedHR_HR      plRedPseudo
 #define plRedHR_FFR     plRedPseudo
 
 #define plRedFFR_AFR    plRedPseudo
 #define plRedFFR_FR     plRedPseudo
-#define plRedFFR_MR     plRedPseudo
+#define plRedFFR_MOR    plRedPseudo
 #define plRedFFR_HR     plRedPseudo
 #define plRedFFR_FFR    plRedPseudo
 
@@ -2584,12 +2585,12 @@ LPPL_YYSTYPE plRedMOP_RP
 
 
 //***************************************************************************
-//  $plRedHY_MR
+//  $plRedHY_MOR
 //
-//  Reduce "HY MR"
+//  Reduce "HY MOR"
 //***************************************************************************
 
-LPPL_YYSTYPE plRedHY_MR
+LPPL_YYSTYPE plRedHY_MOR
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
      LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
      LPPL_YYSTYPE  lpplYYLstRht,        // ...    last right ...
@@ -2604,7 +2605,7 @@ LPPL_YYSTYPE plRedHY_MR
                    soF);
     // Call common code
     return plRedLftOper_MOP (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
-} // End plRedHY_MR
+} // End plRedHY_MOR
 
 
 //***************************************************************************
@@ -2882,7 +2883,7 @@ LPPL_YYSTYPE plRedLP_HFR
 
 {
     Assert (lpplYYLstRht->tkToken.tkFlags.TknType EQ TKT_OP1IMMED
-         && lpplYYLstRht->tkToken.tkData.tkChar   EQ INDEX_OPTRAIN
+         && lpplYYLstRht->tkToken.tkData.tkChar   EQ UTF16_OPTRAIN
          && lpplYYLstRht->tkToken.tkSynObj        EQ soHFR);
 
     // Convert the HY to a primitive function
@@ -5264,15 +5265,15 @@ PARSELINE_DONE:
 
             // Set flag for assigned name
             bAssignName = FALSE
-             || (curSynObj EQ soA    && oldLstSynObj EQ soSPA )
-             || (curSynObj EQ soSA   && oldLstSynObj EQ soSPA )
-             || (curSynObj EQ soF    && oldLstSynObj EQ soSPF )
-             || (curSynObj EQ soNF   && oldLstSynObj EQ soSPNF)
-             || (curSynObj EQ soMOP  && oldLstSynObj EQ soSPM )
-             || (curSynObj EQ soMOPN && oldLstSynObj EQ soSPMN)
-             || (curSynObj EQ soDOP  && oldLstSynObj EQ soSPD )
-             || (curSynObj EQ soDOPN && oldLstSynObj EQ soSPDN)
-             || (curSynObj EQ soHY   && oldLstSynObj EQ soSPHY);
+             || (curSynObj EQ soA    && oldLstSynObj EQ soSPA  )
+             || (curSynObj EQ soSA   && oldLstSynObj EQ soSPA  )
+             || (curSynObj EQ soF    && oldLstSynObj EQ soSPF  )
+             || (curSynObj EQ soNF   && oldLstSynObj EQ soSPNF )
+             || (curSynObj EQ soMOP  && oldLstSynObj EQ soSPMO )
+             || (curSynObj EQ soMOPN && oldLstSynObj EQ soSPMON)
+             || (curSynObj EQ soDOP  && oldLstSynObj EQ soSPDO )
+             || (curSynObj EQ soDOPN && oldLstSynObj EQ soSPDON)
+             || (curSynObj EQ soHY   && oldLstSynObj EQ soSPHY );
 
             // Set flag for sink
             bSink = !bAssignName
@@ -6623,7 +6624,7 @@ PL_YYLEX_FCNNAMED:
             break;
 
         case TKT_OP1AFO:            // Anonymous monadic operator
-        case TKT_OP1DFN:            // Unnamed UDFO
+        case TKT_OP1DFN:            // Unnamed   ...
             Assert (lpplYYLval->tkToken.tkSynObj EQ soMOP
                  || lpplYYLval->tkToken.tkSynObj EQ soMOPN);
 
@@ -6635,7 +6636,7 @@ PL_YYLEX_FCNNAMED:
             break;
 
         case TKT_OP2AFO:            // Anonymous dyadic operator
-        case TKT_OP2DFN:            // Unnamed UDFO
+        case TKT_OP2DFN:            // Unnamed   ...
             Assert (lpplYYLval->tkToken.tkSynObj EQ soDOP
                  || lpplYYLval->tkToken.tkSynObj EQ soDOPN);
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ SYMBOLNAMES aSymbolNames[]
 // No keystroke equivalents for these as yet
   {UTF16_DIERESISDOT          , L"{dieresisdot}"        },
   {UTF16_IBEAM                , L"{ibeam}"              },
+  {UTF16_OPJOTDOT             , L"{jotdot}"             },
   {UTF16_QUADJOT              , L"{quadjot}"            },
   {UTF16_QUADSLOPE            , L"{quadslope}"          },
   {UTF16_QUADLEFTARROW        , L"{quadleftarrow}"      },

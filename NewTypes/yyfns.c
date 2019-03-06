@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -848,7 +848,7 @@ LPPL_YYSTYPE YYCopyFcnTrn
 
             // If this is OPTRAIN, avoid duplicate YYFree
             if (lpYYArg->tkToken.tkFlags.TknType NE TKT_OP1IMMED
-             || lpYYArg->tkToken.tkData.tkChar   NE INDEX_OPTRAIN)
+             || lpYYArg->tkToken.tkData.tkChar   NE UTF16_OPTRAIN)
             {
                 // YYFree the old YYSTYPE
                 YYFree (lpYYArg); lpYYArg = NULL;

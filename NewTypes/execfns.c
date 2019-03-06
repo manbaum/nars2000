@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1239,13 +1239,13 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
     {
         case TKT_OP1IMMED:
         case TKT_OP3IMMED:
+        case TKT_OPJOTDOT:
             return ExecOp1_EM_YY
                    (lptkLftArg,     // Ptr to left arg token
                     lpYYFcnStr,     // Ptr to operator function strand
                     lptkRhtArg);    // Ptr to right arg token
 
         case TKT_OP2IMMED:
-        case TKT_OPJOTDOT:
             return ExecOp2_EM_YY
                    (lptkLftArg,     // Ptr to left arg token
                     lpYYFcnStr,     // Ptr to operator function strand
@@ -1440,15 +1440,15 @@ LPPL_YYSTYPE ExecOp1_EM_YY
     {
         case UTF16_SLASH:           // Reduction along the last coordinate
         case UTF16_SLASHBAR:        // Reduction along the first coordinate
-        case INDEX_OPSLASH:         // Reduction along the last coordinate
-        case INDEX_OPSLASHBAR:      // Reduction along the first coordinate
+        case UTF16_OPSLASH:         // Reduction along the last coordinate
+        case UTF16_OPSLASHBAR:      // Reduction along the first coordinate
             return PrimOpSlash_EM_YY (lptkLftArg,   // Ptr to left arg token (may be NULL if monadic)
                                       lpYYFcnStrOpr,// Ptr to operator function strand
                                       lptkRhtArg);  // Ptr to right arg token
         case UTF16_SLOPE:           // Scan along the last coordinate
         case UTF16_SLOPEBAR:        // Scan along the first coordinate
-        case INDEX_OPSLOPE:         // Scan along the last coordinate
-        case INDEX_OPSLOPEBAR:      // Scan along the first coordinate
+        case UTF16_OPSLOPE:         // Scan along the last coordinate
+        case UTF16_OPSLOPEBAR:      // Scan along the first coordinate
             return PrimOpSlope_EM_YY (lptkLftArg,               // Ptr to left arg token (may be NULL if monadic)
                                       lpYYFcnStrOpr,            // Ptr to operator function strand
                                       lptkRhtArg);              // Ptr to right arg token
@@ -1485,16 +1485,19 @@ LPPL_YYSTYPE ExecOp1_EM_YY
                                         lpYYFcnStrOpr,              // Ptr to operator function strand
                                         lptkRhtArg);                // Ptr to right arg token
         case UTF16_DOUBLESHRIEK:    // Combinatorial Op
-        case INDEX_OPDOUBLESHRIEK:  // ...
             return PrimOpCombinatorial_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
                                               lpYYFcnStrOpr,        // Ptr to operator function strand
                                               lptkRhtArg);          // Ptr to right arg token
-        case INDEX_OPTRAIN:         // Train
+        case UTF16_OPTRAIN:         // Train
             // Execute as Train, skipping over the monadic operator
             return ExecTrain_EM_YY (lptkLftArg,                     // Ptr to left arg token
                                    &lpYYFcnStrOpr[1],               // Ptr to function strand
                                     lptkRhtArg,                     // Ptr to right arg token
                                     lpYYFcnStrOpr->TknCount - 1);   // # elements in the train
+        case UTF16_OPJOTDOT:        // Outer product
+            return PrimOpJotDot_EM_YY (lptkLftArg,                  // Ptr to left arg token (may be NULL if monadic)
+                                       lpYYFcnStrOpr,               // Ptr to operator function strand
+                                       lptkRhtArg);                 // Ptr to right arg token
         defstop
             return NULL;
     } // End SWITCH
@@ -1521,10 +1524,6 @@ LPPL_YYSTYPE ExecOp2_EM_YY
     // Split cases based upon the type of the dyadic operator
     switch (lpYYFcnStrOpr->tkToken.tkData.tkChar)
     {
-        case UTF16_JOTDOT:          // Outer product
-            return PrimOpJotDot_EM_YY (lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
-                                       lpYYFcnStrOpr,       // Ptr to operator function strand
-                                       lptkRhtArg);         // Ptr to right arg token
         case UTF16_DOT:             // Inner product
             return PrimOpDot_EM_YY    (lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
                                        lpYYFcnStrOpr,       // Ptr to operator function strand

@@ -188,7 +188,11 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     // If it's immediate, ...
     if (lpSymEntry->stFlags.Imm)
         // Finish the job via subroutine
-        hGlbRes = SysFnMonCR_ALLOC_EM (1, aplRankRes, &lpSymEntry->stData.stChar, lptkFunc);
+        hGlbRes =
+          SysFnMonCR_ALLOC_EM (-1,          // Calculate the length from the incoming string
+                               aplRankRes,
+                               TranslateFcnOprToStr (&lpSymEntry->stData.stChar),
+                               lptkFunc);
     else
     {
         // Check for internal functions
@@ -627,9 +631,9 @@ NORMAL_EXIT:
 //***************************************************************************
 
 HGLOBAL SysFnMonCR_ALLOC_EM
-    (APLNELM   aplNELMRes,      // Result NELM
+    (APLNELM   aplNELMRes,      // Result NELM (may be -1 if calculate length from lpw)
      APLRANK   aplRankRes,      // ...    rank
-     LPAPLCHAR lpw,             // Ptr to result text
+     LPAPLCHAR lpw,             // Ptr to result text (may be NULL if the result is empty)
      LPTOKEN   lptkFunc)        // Ptr to function token
 
 {
@@ -638,6 +642,15 @@ HGLOBAL SysFnMonCR_ALLOC_EM
     LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
     LPVOID            lpMemRes;             // Ptr to result    ...
     APLUINT           ByteRes;              // # bytes in the result
+
+    // If we're to calculate the length from lpw, ...
+    if (aplNELMRes EQ -1)
+    {
+        Assert (lpw NE NULL);
+
+        // Calculate it
+        aplNELMRes = lstrlenW (lpw);
+    } // End IF
 
     // If the result is an empty vector, ...
     if (IsEmpty (aplNELMRes)
@@ -699,7 +712,11 @@ HGLOBAL SysFnMonCR_ALLOC_EM
     if (IsNested (aplTypeRes))
         // Fill in the result prototype
         *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbV0Char);
-
+#ifdef DEBUG
+    else
+    if (!IsEmpty (aplNELMRes))
+        DbgStop ();         // #ifdef DEBUG -- we should never get here
+#endif
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 

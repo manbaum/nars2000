@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,21 +23,32 @@
 #ifndef NARS_UNICODE
 #define NARS_UNICODE
 
-// When initializing an array of functions (such as PrimFnsTab) use these
-//   equates instead of the low-order byte of the corresponding UTF16_xxx
-//   so as to avoid a conflict.
-#define INDEX_JOTDOT              0x01          // Index for {jot}{dot}
-#define INDEX_OPSLASH             0x02          // ...       {slash} as an operator
-#define INDEX_OPSLASHBAR          0x03          // ...       {slashbar} ...
-#define INDEX_OPSLOPE             0x04          // ...       {slope}    ...
-#define INDEX_OPSLOPEBAR          0x05          // ...       {slopebar} ...
-#define INDEX_OPTRAIN             0x06          // ...       Train      ...
-#define INDEX_OPDOUBLESHRIEK      0x07          // ...       {doubleshriek} ...
-///////                          0x08-0x18      // (available)
+// When initializing an array of functions/operators (such as PrimFlags/PrimSpecTab/PrimFnsTab/PrimProtoFnsTab/PrimProtoOpsTab) use these
+//   equates instead of the PRIMTAB_MASK of the corresponding UTF16_xxx
+//   so as to avoid a conflict
+//   These values may *NOT* appear in a token as "tkToken.tkData.tkChar"
+//   Because these values may appear in the same tab, duplicates are not allowed.
+#define INDEX_OPDOUBLESHRIEK      0x01          // Index for operator {doubleshriek} (0x203C & PRIMTAB_MASK) == 0x003C == '<'
+                                                //   The conflict is in varOprTab[]
+//efine INDEX_FNxxx               0x            // Index for function ...
+
+
+// Pseudo-symbols for special functions
+//   Some of these functions are used to distinguish between the four hybrids
+//   (SLASH, SLASHBAR, SLOPE, SLOPEBAR) as a function or operator.
+//   These values may appear in a token as "tkToken.tkData.tkChar"
+#define UTF16_OPJOTDOT            0x02          // Pseudo-symbol for {jotdot} digraph
+#define UTF16_OPTRAIN             0x03          // ...               Train
+#define UTF16_OPSLASH             0x04          // ...               {slash} as an operator
+#define UTF16_OPSLASHBAR          0x05          // ...               {slashbar} ...
+#define UTF16_OPSLOPE             0x06          // ...               {slope}    ...
+#define UTF16_OPSLOPEBAR          0x07          // ...               {slopebar} ...
+///////                           0x08-0x18     // (available)
 
 // N.B.:  Whenever changing any of the UTF16_xxx symbol
-//   names below, be sure to make a corresponding change
-//   to <aSymbolNames> in <symbolnames.h>.
+//   names below, be sure to make a corresponding change to
+//   <aSymbolNames> in <symbolnames.h>,
+//   <TranslateFcnOprToStr> in <translate.c>.
 
 // No keystroke equivalents for these as yet
 #define UTF16_PLUS_OR_MINUS       0x00B1        // Plus or minus symbol
@@ -236,7 +247,6 @@
 #define UTF16_CIRCLEMIDDLEDOT     0x2299        // Alt-'?' - circle-middle-dot
 
 // Non-Alt key equivalents
-#define UTF16_JOTDOT              0x0001        // Pseudo-symbol for {jot}{dot} digraph
 #define UTF16_QUOTEDOT            0x0021        // Quote dot
 #define UTF16_DOUBLEQUOTE         0x0022        // Double quote
 #define UTF16_NUMBER              0x0023        // Number
@@ -497,7 +507,6 @@
 #define WS_UTF16_CIRCLEMIDDLEDOT     L"\x2299"  // Alt-'?' - circle-middle-dot
 
 // Non-Alt key equivalents
-#define WS_UTF16_JOTDOT              L"\x0001"  // Pseudo-symbol for {jot}{dot} digraph
 #define WS_UTF16_QUOTEDOT            L"\x0021"  // Quote dot
 #define WS_UTF16_DOUBLEQUOTE         L"\x0022"  // Double quote
 #define WS_UTF16_NUMBER              L"\x0023"  // Number

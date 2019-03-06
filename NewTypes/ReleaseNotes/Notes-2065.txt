@@ -1,0 +1,74 @@
+Build #2065 -- Version 0.5.10.xx
+--------------------------------
+
+* Allow {jotdot} As A Monadic Operator Including Assignment
+* Rename Various Syntax Objects For Later Consistency With Hyperators
+* Rename <INDEX_OPxxx> To <UTF16_OPxxx> As They Are Not Indices Into A Table
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+ASSIGN.C:
+  Allow {jotdot} as a monadic operator including assignment.
+
+DISPDBG.C:
+  Define helper function to strcpyW and skip to the end of the destination.
+  Change <TranslateFcnOprToChar> to <TranslateFcnOprToStr>.
+
+EXECFNS.C:
+  Rename <INDEX_OPxxx> to <UTF16_OPxxx> as they are not indices into a table.
+  In <ExecOp1_EM_YY>, handle <UTF16_JOTDOT>.
+
+INITDATA.C:
+  Rename <INDEX_OPxxx> to <UTF16_OPxxx> as they are not indices into a table.
+
+PARSELINE.C:
+PARSELINE.H:
+  Rename various Syntax Objects for later consistency with Hyperators.
+  Define alias for SP_JD -- {is}{jotdot}.
+  Rename <INDEX_OPxxx> to <UTF16_OPxxx> as they are not indices into a table.
+
+PO_JOTDOT.C:
+  Rename <INDEX_OPxxx> to <UTF16_OPxxx> as they are not indices into a table.
+
+PO_SLASH.C:
+  Rename <INDEX_OPxxx> to <UTF16_OPxxx> as they are not indices into a table.
+  Simplify test for SLASHBAR.
+
+PO_SLOPE.C:
+  Rename <INDEX_OPxxx> to <UTF16_OPxxx> as they are not indices into a table.
+
+QF_CR.C:
+  Handle []CR of a name whose value is {jotdot}.
+
+SC_LOAD.C:
+  For Immediate functions, ensure the Value bit is set.
+
+SC_SAVE.C:
+  For Immediate functions, skip TranslateXXX as the ConvertXXX function handles that.
+
+STRAND.C:
+  Rename <INDEX_OPxxx> to <UTF16_OPxxx> as they are not indices into a table.
+
+SYMBOLNAMES.H:
+  Include {jotdot} in the last of translatable symbol names.
+
+SYMTRANS.C:
+  Rename <INDEX_OPxxx> to <UTF16_OPxxx> as they are not indices into a table.
+  Define new translate function <varOprTrans> specifically for <varOprTab>.
+
+SYNOBJ.H:
+  Rename various Syntax Objects for later consistency with Hyperators.
+
+TRANSLATE.C:
+  Rename various Syntax Objects for later consistency with Hyperators.
+  Change <TranslateFcnOprToChar> to <TranslateFcnOprToStr>.
+  Rename <INDEX_OPxxx> to <UTF16_OPxxx> as they are not indices into a table.
+  In <TranslateFcnOprToStr>, handle {jotdot}.
+
+UNICODE.H:
+  Separate the table index conflicts from the special functions.
+  Rename <INDEX_OPxxx> to <UTF16_OPxxx> as they are not indices into a table.
+  Improve comments.
+
+YYFNS.C:
+  Rename <INDEX_OPxxx> to <UTF16_OPxxx> as they are not indices into a table.

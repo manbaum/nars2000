@@ -1525,6 +1525,24 @@ static TOKENNAMES tokenNames[] =
 #endif
 
 
+//***************************************************************************
+//  $StrCpySkip
+//
+//  StrCpyW and skip to the end of the destination
+//***************************************************************************
+
+LPAPLCHAR StrCpySkipW
+    (LPAPLCHAR lpDst,
+     LPAPLCHAR lpSrc)
+
+{
+    // Copy Src to Dst
+    strcpyW (lpDst, lpSrc);
+
+    return lpDst + lstrlenW (lpDst);
+} // End StrCpySkip
+
+
 #ifdef DEBUG
 //***************************************************************************
 //  $DisplayFcnStrand
@@ -1578,8 +1596,8 @@ void DisplayFcnStrand
                                         NAMETYPE_FN12,  // lpHeader->fnNameType,
                                         1,              // LODWORD (lpHeader->NELM),
                                         0);             // lpHeader->RefCnt);
-            // Translate from INDEX_xxx to UTF16_xxx
-            *lpaplChar++ = TranslateFcnOprToChar (lptkFunc->tkData.tkChar);
+            // Translate from INDEX_xxx to UTF16_xxx string
+            lpaplChar = StrCpySkipW (lpaplChar, TranslateFcnOprToStr (&lptkFunc->tkData.tkChar));
 
             break;
 
@@ -1758,7 +1776,7 @@ LPWCHAR DisplayFcnMem
         *lpaplChar++ = L'(';
 
         // Loop through the function array entries
-        //   skipping the first (TKT_OP1IMMED/INDEX_OPTRAIN) entry
+        //   skipping the first (TKT_OP1IMMED/UTF16_OPTRAIN) entry
         while (tknNELM-- > 1)
         {
             // Back off to next item
@@ -1836,8 +1854,8 @@ LPWCHAR DisplayFcnSub
             // Get the token count to the left operand
             TknLftCount = 1 + bAxisOper;    // Skip over the function & axis (if any)
 
-            // If the monadic operator is not INDEX_OPTRAIN, ...
-            if (lpYYMem[0].tkToken.tkData.tkChar NE INDEX_OPTRAIN)
+            // If the monadic operator is not UTF16_OPTRAIN, ...
+            if (lpYYMem[0].tkToken.tkData.tkChar NE UTF16_OPTRAIN)
             {
                 // If there's room for a left operand, ...
                 if (tknNELM > TknLftCount)
@@ -1850,9 +1868,9 @@ LPWCHAR DisplayFcnSub
                                      lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                                      lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
                                      lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
-                // Translate from INDEX_xxx to UTF16_xxx
+                // Translate from INDEX_xxx to UTF16_xxx string
                 // Display the immediate operator
-                *lpaplChar++ = TranslateFcnOprToChar (lpYYMem[0].tkToken.tkData.tkChar);// Op1
+                lpaplChar = StrCpySkipW (lpaplChar, TranslateFcnOprToStr (&lpYYMem[0].tkToken.tkData.tkChar));   // Op1
             } else
             {
                 // Skip to the next entry
@@ -1862,7 +1880,7 @@ LPWCHAR DisplayFcnSub
                 *lpaplChar++ = L'(';
 
                 // Loop through the function array entries
-                //   skipping the first (TKT_OP1IMMED/INDEX_OPTRAIN) entry
+                //   skipping the first (TKT_OP1IMMED/UTF16_OPTRAIN) entry
                 while (tknNELM-- > 1)
                 {
                     // Back off to next item
@@ -1920,9 +1938,9 @@ LPWCHAR DisplayFcnSub
                                  lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                                  lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
                                  lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
-            // Translate from INDEX_xxx to UTF16_xxx
+            // Translate from INDEX_xxx to UTF16_xxx string
             // Display the immediate operator
-            *lpaplChar++ = TranslateFcnOprToChar (lpYYMem[0].tkToken.tkData.tkChar);    // Op2
+            lpaplChar = StrCpySkipW (lpaplChar, TranslateFcnOprToStr (&lpYYMem[0].tkToken.tkData.tkChar));  // Op2
 
             // If the right operand has multiple tokens, ...
             if (lpYYMem[TknRhtCount].TknCount > 1)
@@ -1943,9 +1961,9 @@ LPWCHAR DisplayFcnSub
 
         case TKT_FCNIMMED:
         case TKT_FILLJOT:
-            // Translate from INDEX_xxx to UTF16_xxx
+            // Translate from INDEX_xxx to UTF16_xxx string
             // Display the function
-            *lpaplChar++ = TranslateFcnOprToChar (lpYYMem[0].tkToken.tkData.tkChar);    // Fcn
+            lpaplChar = StrCpySkipW (lpaplChar, TranslateFcnOprToStr (&lpYYMem[0].tkToken.tkData.tkChar)); // FcnImmed
 
             // Check for axis operator
             if (bAxisOper)

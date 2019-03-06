@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,8 +38,8 @@ LPPL_YYSTYPE PrimOpSlope_EM_YY
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPE
-         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPEBAR
+    Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLOPE
+         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLOPEBAR
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPE         // For when we come in via TKT_OP3NAMED
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR);    // ...
 
@@ -218,12 +218,12 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
         // No axis specified:
         //    if Slope   , use last  axis
         //    if SlopeBar, use first axis
-        if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPE
+        if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLOPE
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPE)
             aplAxis = aplRankRht - 1;
         else
         {
-            Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPEBAR
+            Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLOPEBAR
                  || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR);
 
             // Otherwise, it's SlopeBar on the first axis
@@ -1663,7 +1663,7 @@ LPPL_YYSTYPE PrimOpDydSlopeCommon_EM_YY
     // If no axis specified,
     //   and SlopeBar, use first axis
     if (lptkAxisOpr EQ NULL
-     && (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPEBAR
+     && (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLOPEBAR
       || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR))
         // Get the magic function/operator global memory handle
         hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DydScan1];

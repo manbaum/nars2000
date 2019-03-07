@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2448,7 +2448,7 @@ LPPL_YYSTYPE MakeTrainOp_YY
     lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_PRIMOP1;
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;             // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.bTempAPV  = FALSE;             // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkChar     = INDEX_OPTRAIN;
+    lpYYRes->tkToken.tkData.tkChar     = UTF16_OPTRAIN;
     lpYYRes->tkToken.tkCharIndex       = lpYYArg1->tkToken.tkCharIndex;
 ////lpYYRes->TknCount                  = 0;                 // Already zero from YYAlloc
 

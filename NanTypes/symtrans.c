@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,7 +35,16 @@ UINT FcnTrans
     (WCHAR wchFcn)          // Function symbol
 
 {
-    return (PRIMTAB_MASK & wchFcn);
+    // Split cases based upon the function symbol
+    switch (wchFcn)
+    {
+////    case UTF16_xxx:
+////        return INDEX_FNxxx;
+
+        default:                            // All others
+            // Return the low-order bits
+            return (PRIMTAB_MASK & wchFcn);
+    } // End SWITCH
 } // End FcnTrans
 
 
@@ -52,23 +61,21 @@ UINT OprTrans
     // Split cases based upon the operator symbol
     switch (wchOpr)
     {
+        case UTF16_DOUBLESHRIEK:            // (0x203C & PRIMTAB_MASK) == 0x003C == '<'
+                                            //   The conflict is in varOprTab[]
+            return INDEX_OPDOUBLESHRIEK;    // Use special index
+
         case UTF16_SLASH:                   // 0x002F
-            return INDEX_OPSLASH;           // Use special index
+            return UTF16_OPSLASH;           // Use special index
 
         case UTF16_SLASHBAR:                // 0x233F
-            return INDEX_OPSLASHBAR;        // Use special index
+            return UTF16_OPSLASHBAR;        // Use special index
 
         case UTF16_SLOPE:                   // 0x005C
-            return INDEX_OPSLOPE;           // Use special index
+            return UTF16_OPSLOPE;           // Use special index
 
         case UTF16_SLOPEBAR:                // 0x2340
-            return INDEX_OPSLOPEBAR;        // Use special index
-
-        case UTF16_JOTDOT:                  // 0x0001
-            return INDEX_JOTDOT;            // Use special index
-
-        case UTF16_DOUBLESHRIEK:            // 0x203C
-            return INDEX_OPDOUBLESHRIEK;    // Use special index
+            return UTF16_OPSLOPEBAR;        // Use special index
 
         default:                            // All others
             // Return the low-order bits
@@ -171,7 +178,7 @@ UINT SymTrans
     } // End SWITCH
 
     // If we locked a function array, unlock it now
-    if (hGlbFcn)
+    if (hGlbFcn NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;

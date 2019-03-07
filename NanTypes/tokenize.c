@@ -3377,7 +3377,7 @@ UBOOL fnOutDone
     tkFlags.TknType = TKT_OPJOTDOT;
 
     // Copy to local var so we may pass its address
-    tkData.tkChar = UTF16_JOTDOT;
+    tkData.tkChar = UTF16_OPJOTDOT;
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.

@@ -39,8 +39,8 @@ LPPL_YYSTYPE PrimOpSlash_EM_YY
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH
-         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR
+    Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLASH       // For when we come in via TKT_OP3NAMED
+         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLASHBAR    // ...
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH         // For when we come in via TKT_OP3NAMED
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASHBAR);    // ...
 
@@ -268,6 +268,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                       bNrmIdent = FALSE,    // TRUE iff reducing an empty array with a primitive scalar dyadic function
                       bPrimIdent = FALSE,   // TRUE iff reducing an empty array with a primitive function/operator
                       bFastBool = FALSE,    // TRUE iff this is a Fast Boolean operation
+                      bSlashBar,            // TRUE iff the incoming symbol is SLASHBAR
                       bDimDemote = FALSE;   // TRUE iff dimension demotion allowed
     LPPRIMFNS         lpPrimProtoLft;       // Ptr to left operand prototype function
     LPPRIMSPEC        lpPrimSpecLft;        // Ptr to left operand PRIMSPEC
@@ -320,6 +321,8 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
+    bSlashBar = (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLASHBAR
+              || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASHBAR);
     // Check for axis present
     if (lptkAxisOpr NE NULL)
     {
@@ -340,13 +343,12 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         // No axis specified:
         //    if Slash   , use last  axis
         //    if SlashBar, use first axis
-        if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH
+        if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLASH
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH)
             aplAxis = max (aplRankRht, 1) - 1;
         else
         {
-            Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR
-                 || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASHBAR);
+            Assert (bSlashBar);
 
             // Otherwise, it's SlashBar on the first axis
             aplAxis = 0;
@@ -1795,6 +1797,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                       bNstIdent = FALSE,    // TRUE iff reducing an empty nested array with a primitive scalar dyadic fcn
                       bPrimIdent = FALSE,   // TRUE iff reducing an empty array with a primitive
                                             //   or user-defined function/operator
+                      bSlashBar,            // TRUE iff the incoming symbol is SLASHBAR
                       bEqualNotEqual,       // TRUE iff the left operand is Equal or NotEqual
                       bDimDemote = FALSE;   // TRUE iff dimension demotion allowed
     LPPL_YYSTYPE      lpYYRes = NULL,       // Ptr to the result
@@ -1890,6 +1893,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     // Calculate the absolute value of aplIntegerLft
     aplIntegerLftAbs = abs64 (aplIntegerLft);
 
+    bSlashBar = (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLASHBAR
+              || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASHBAR);
     // Check for axis present
     if (lptkAxisOpr NE NULL)
     {
@@ -1910,13 +1915,12 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         // No axis specified:
         //    if Slash   , use last  axis
         //    if SlashBar, use first axis
-        if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH
+        if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLASH
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH)
             aplAxis = max (aplRankRht, 1) - 1;
         else
         {
-            Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR
-                 || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASHBAR);
+            Assert (bSlashBar);
 
             // Otherwise, it's SlashBar on the first axis
             aplAxis = 0;
@@ -2124,8 +2128,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
             tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
 ////////////tkFcn.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
-            tkFcn.tkData.tkChar     = (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR) ? UTF16_SLASHBAR
-                                                                                                 : UTF16_SLASH;
+            tkFcn.tkData.tkChar     = bSlashBar ? UTF16_SLASHBAR
+                                                : UTF16_SLASH;
             tkFcn.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
             // Compress the right arg
@@ -2323,8 +2327,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
         tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
 ////////tkFcn.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
-        tkFcn.tkData.tkChar     = (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR) ? UTF16_CIRCLEBAR
-                                                                                             : UTF16_CIRCLESTILE;
+        tkFcn.tkData.tkChar     = bSlashBar ? UTF16_CIRCLEBAR
+                                            : UTF16_CIRCLESTILE;
         tkFcn.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
         // Reverse the right arg along the specified axis

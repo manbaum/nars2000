@@ -56,20 +56,20 @@ typedef enum tagSO_ENUM
 	soHY        , 			// 13:  Hybrid:  /\ and barred forms                           
 	soSPA       , 			// 14:  {is} A                                                 
 	soSPF       , 			// 15:  {is} F                                                 
-	soSPM       , 			// 16:  {is} MOP                                               
-	soSPD       , 			// 17:  {is} DOP                                               
+	soSPMO      , 			// 16:  {is} MOP                                               
+	soSPDO      , 			// 17:  {is} DOP                                               
 	soSPHY      , 			// 18:  {is} HY                                                
 	soSPNF      , 			// 19:  {is} NF                                                
 	soSPFR      , 			// 1A:  {is} FR                                                
-	soSPMR      , 			// 1B:  {is} MR                                                
-	soSPDR      , 			// 1C:  {is} DR                                                
+	soSPMOR     , 			// 1B:  {is} MOR                                               
+	soSPDOR     , 			// 1C:  {is} DOR                                               
 	soSPHR      , 			// 1D:  {is} HR                                                
-	soSPMN      , 			// 1E:  {is} MOPN                                              
-	soSPDN      , 			// 1F:  {is} DOPN                                              
+	soSPMON     , 			// 1E:  {is} MOPN                                              
+	soSPDON     , 			// 1F:  {is} DOPN                                              
 	soSPAK      , 			// 20:  {is} ARBK                                              
 	soFR        , 			// 21:  F)    - Trains                                         
-	soMR        , 			// 22:  MOP)  - ...                                            
-	soDR        , 			// 23:  DOP)  - ...                                            
+	soMOR       , 			// 22:  MOP)  - ...                                            
+	soDOR       , 			// 23:  DOP)  - ...                                            
 	soHR        , 			// 24:  HY)   - ...                                            
 	soFFR       , 			// 25:  F F)  - ...                                            
 	soAFR       , 			// 26:  A F)  - ...                                            
@@ -134,20 +134,20 @@ LPWCHAR soNames[]
 	L"HY"     ,			// 13:  Hybrid:  /\ and barred forms                           
 	L"SPA"    ,			// 14:  {is} A                                                 
 	L"SPF"    ,			// 15:  {is} F                                                 
-	L"SPM"    ,			// 16:  {is} MOP                                               
-	L"SPD"    ,			// 17:  {is} DOP                                               
+	L"SPMO"   ,			// 16:  {is} MOP                                               
+	L"SPDO"   ,			// 17:  {is} DOP                                               
 	L"SPHY"   ,			// 18:  {is} HY                                                
 	L"SPNF"   ,			// 19:  {is} NF                                                
 	L"SPFR"   ,			// 1A:  {is} FR                                                
-	L"SPMR"   ,			// 1B:  {is} MR                                                
-	L"SPDR"   ,			// 1C:  {is} DR                                                
+	L"SPMOR"  ,			// 1B:  {is} MOR                                               
+	L"SPDOR"  ,			// 1C:  {is} DOR                                               
 	L"SPHR"   ,			// 1D:  {is} HR                                                
-	L"SPMN"   ,			// 1E:  {is} MOPN                                              
-	L"SPDN"   ,			// 1F:  {is} DOPN                                              
+	L"SPMON"  ,			// 1E:  {is} MOPN                                              
+	L"SPDON"  ,			// 1F:  {is} DOPN                                              
 	L"SPAK"   ,			// 20:  {is} ARBK                                              
 	L"FR"     ,			// 21:  F)    - Trains                                         
-	L"MR"     ,			// 22:  MOP)  - ...                                            
-	L"DR"     ,			// 23:  DOP)  - ...                                            
+	L"MOR"    ,			// 22:  MOP)  - ...                                            
+	L"DOR"    ,			// 23:  DOP)  - ...                                            
 	L"HR"     ,			// 24:  HY)   - ...                                            
 	L"FFR"    ,			// 25:  F F)  - ...                                            
 	L"AFR"    ,			// 26:  A F)  - ...                                            

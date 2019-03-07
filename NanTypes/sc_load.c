@@ -1169,8 +1169,9 @@ UBOOL ParseSavedWsFcn_EM
         } else
             wcTmp = *lpwSrc++;
 
-        // Mark as immediate
-        lpSymObj->stFlags.Imm = TRUE;
+        // Mark as Valued and Immediate
+        lpSymObj->stFlags.Value =
+        lpSymObj->stFlags.Imm   = TRUE;
 
         // Mark as immediate type
         lpSymObj->stFlags.ImmType = TranslateNameTypeToImmType (nameType);

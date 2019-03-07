@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -67,17 +67,17 @@ NAME_TYPES TranslateSOTypeToNameType
         case soMOP:
         case soMOPN:
         case soJD:
-        case soSPM:
-        case soSPMN:
-        case soSPMR:
+        case soSPMO:
+        case soSPMON:
+        case soSPMOR:
             return NAMETYPE_OP1;
 
         // Flavors of dyadic operators
         case soDOP:
         case soDOPN:
-        case soSPD:
-        case soSPDN:
-        case soSPDR:
+        case soSPDO:
+        case soSPDON:
+        case soSPDOR:
             return NAMETYPE_OP2;
 
         // Flavors of hybrids
@@ -131,17 +131,17 @@ TOKEN_TYPES TranslateSOTypeToNamedTokenType
         case soMOP:
         case soMOPN:
         case soJD:
-        case soSPM:
-        case soSPMN:
-        case soSPMR:
+        case soSPMO:
+        case soSPMON:
+        case soSPMOR:
             return TKT_OP1NAMED;
 
         // Flavors of dyadic operators
         case soDOP:
         case soDOPN:
-        case soSPD:
-        case soSPDN:
-        case soSPDR:
+        case soSPDO:
+        case soSPDON:
+        case soSPDOR:
             return TKT_OP2NAMED;
 
         // Flavors of hybrids
@@ -195,25 +195,25 @@ SO_ENUM TranslateSOTypeToBasicSOType
 
         // Flavors of niladic derived fns from monadic operators
         case soMOPN:
-        case soSPMN:
+        case soSPMON:
             return soMOPN;
 
         // Flavors of monadic/dyadic derived fns from monadic operators
         case soMOP:
         case soJD:
-        case soSPM:
-        case soSPMR:
+        case soSPMO:
+        case soSPMOR:
             return soMOP;
 
         // Flavors of niladic derived fns from from dyadic operators
         case soDOPN:
-        case soSPDN:
+        case soSPDON:
             return soDOPN;
 
         // Flavors of monadic/dyadic derived fns from dyadic operators
         case soDOP:
-        case soSPD:
-        case soSPDR:
+        case soSPDO:
+        case soSPDOR:
             return soDOP;
 
         // Flavors of hybrids
@@ -959,55 +959,43 @@ ARRAY_TYPES TranslateCharToArrayType
 
 
 //***************************************************************************
-//  $TranslateFcnOprToChar
+//  $TranslateFcnOprToStr
 //
-//  Translate an immediate function/operator to an UTF16_xxx char
+//  Translate an immediate function/operator to a UTF16_xxx string
 //***************************************************************************
 
-APLCHAR TranslateFcnOprToChar
-    (APLCHAR fcnOpr)            // The operator/function to translate
+LPAPLCHAR TranslateFcnOprToStr
+    (LPAPLCHAR lpFcnOpr)        // Ptr to the operator/function to translate
 
 {
     // Split cases based upon the symbol
-    switch (fcnOpr)
+    switch (lpFcnOpr[0])
     {
-        case INDEX_JOTDOT:                      // 0x01           // Index for {jot}{dot}
+        case UTF16_OPJOTDOT:                    // 0x01           // Pseudo-symbol for {jot}{dot}
+            return WS_UTF16_JOT L".";
+
+        case UTF16_OPTRAIN:                     // 0x02           // ...       Train      ...
             // We should never get here
             DbgStop ();
 
-            return UTF16_JOT;
+            return L"\0";
 
-        case INDEX_OPSLASH:                     // 0x02           // ...       {slash} as an operator
-            return UTF16_SLASH;
+        case UTF16_OPSLASH:                     // 0x03           // ...       {slash} as an operator
+            return WS_UTF16_SLASH;
 
-        case INDEX_OPSLASHBAR:                  // 0x03           // ...       {slashbar} ...
-            return UTF16_SLASHBAR;
+        case UTF16_OPSLASHBAR:                  // 0x04           // ...       {slashbar} ...
+            return WS_UTF16_SLASHBAR;
 
-        case INDEX_OPSLOPE:                     // 0x04           // ...       {slope}    ...
-            return UTF16_SLOPE;
+        case UTF16_OPSLOPE:                     // 0x05           // ...       {slope}    ...
+            return WS_UTF16_SLOPE;
 
-        case INDEX_OPSLOPEBAR:                  // 0x05           // ...       {slopebar} ...
-            return UTF16_SLOPEBAR;
-
-        case INDEX_OPTRAIN:                     // 0x06           // ...       Train      ...
-            // We should never get here
-            DbgStop ();
-
-            return '\0';
-
-        case INDEX_OPDOUBLESHRIEK:              // 0x07           // ...       {doubleshriek} ...
-            return UTF16_DOUBLESHRIEK;
-
-        case INDEX_DOUBLETILDE_INTER:           // 0x08           // ...       {upshoe} as left operand to {doubletilde}
-            return UTF16_UPSHOE;
-
-        case INDEX_DOUBLETILDE_UNION:           // 0x09           // ...       {downshoe} as left operand to {doubletilde}
-            return UTF16_DOWNSHOE;
+        case UTF16_OPSLOPEBAR:                  // 0x06           // ...       {slopebar} ...
+            return WS_UTF16_SLOPEBAR;
 
         default:
-            return fcnOpr;
+            return lpFcnOpr;
     } // End SWITCH
-} // End TranslateFcnOprToChar
+} // End TranslateFcnOprToStr
 
 
 //***************************************************************************

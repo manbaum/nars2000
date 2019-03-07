@@ -481,18 +481,18 @@ UBOOL CmdSave_EM
                         // If it's immediate, ...
                         if (stFlags.Imm)
                         {
-                            APLCHAR aplChar;
+                            LPAPLCHAR lpStr;
 
-                            // Translate from INDEX_xxx to UTF16_xxx
-                            aplChar = TranslateFcnOprToChar (lpSymEntry->stData.stChar);
+                            // Copy a ptr to UTF16_xxx or INDEX_xxx
+                            lpStr = &lpSymEntry->stData.stChar;
 
                             // Format the text as an ASCII string with non-ASCII chars
                             //   represented as either {symbol} or {\xXXXX} where XXXX is
                             //   a four-digit hex number.
                             lpaplChar +=
-                              ConvertWideToNameLength (lpaplChar,   // Ptr to output save buffer
-                                                      &aplChar,     // Ptr to incoming chars
-                                                       1);          // # chars to convert
+                              ConvertWideToNameLength (lpaplChar,           // Ptr to output save buffer
+                                                       lpStr,               // Ptr to incoming chars
+                                                       lstrlenW (lpStr));   // # chars to convert
                         } else
                             // Convert the function/operator in global memory to saved ws form
                             lpaplChar =

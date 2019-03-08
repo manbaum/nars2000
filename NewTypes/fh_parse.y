@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@
 #include "headers.h"
 
 
-////#define YYLEX_DEBUG
 ////#define YYFPRINTF_DEBUG
 
 #ifdef DEBUG
@@ -744,6 +743,8 @@ int fh_yylex
      LPFHLOCALVARS lpfhLocalVars)       // Ptr to Function Header local vars
 
 {
+    static UINT uCnt = 0;
+
 FH_YYLEX_START:
     // Save the token base as this item's index
     //   and post-increment it
@@ -763,10 +764,12 @@ FH_YYLEX_START:
             return '\0';
     } // End IF
 
-#ifdef YYLEX_DEBUG
-    dprintfWL9 (L"==fh_yylex:  TknType = %S, CharIndex = %d",
-                GetTokenTypeName (lpfhLocalVars->lptkNext->tkFlags.TknType),
-                lpfhLocalVars->lptkNext->tkCharIndex);
+#ifdef DEBUG
+    if (bDebugFHLex)
+        dprintfWL0 (L"==fh_yylex(%u):  TknType = %S, CharIndex = %d",
+                    ++uCnt,
+                    GetTokenTypeName (lpfhLocalVars->lptkNext->tkFlags.TknType),
+                    lpfhLocalVars->lptkNext->tkCharIndex);
 #endif
 
     // Return the current token

@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,6 @@ the FLT value would be converted to a VFP with imprecise trailing digits as in
 #include <math.h>
 #include "headers.h"
 
-////#define YYLEX_DEBUG
 ////#define YYFPRINTF_DEBUG
 
 #ifdef DEBUG
@@ -1132,7 +1131,8 @@ int pn_yylex
     UCHAR uChar;
     static UINT uCnt = 0;
 
-#if (defined (DEBUG)) && (defined (YYLEX_DEBUG))
+#ifdef DEBUG
+    if (bDebugPNLex)
     {
         char *lp;
         char ch[2] = {'\0'};
@@ -1145,7 +1145,7 @@ int pn_yylex
             lp = &ch[0];
         } // End IF/ELSE
 
-        dprintfWL0 (L"pn_yylex(%u):  '%S'",
+        dprintfWL0 (L"==pn_yylex(%u):  '%S'",
                      ++uCnt,
                      lp);
     }

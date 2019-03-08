@@ -2561,7 +2561,17 @@ UBOOL bDebugExecTrace
  = FALSE
 #endif
 ,
+      bDebugFHLex
+#ifdef DEFINE_VALUES
+ = FALSE
+#endif
+,
       bDebugPN
+#ifdef DEFINE_VALUES
+ = FALSE
+#endif
+,
+      bDebugPNLex
 #ifdef DEFINE_VALUES
  = FALSE
 #endif

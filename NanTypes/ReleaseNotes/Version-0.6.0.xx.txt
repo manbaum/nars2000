@@ -1,6 +1,26 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2068 -- Version 0.6.0.xx
+-------------------------------
+
+* Define More )DEBUG Commands
+
+Directory branches/bsmith/NanTypes/htdocs:
+
+EXTERNS.H:
+  Define <bDebugFHLex> and <bDebugPNLex> as )DEBUG commands.
+
+FH_PARSE.Y:
+  Alloc <bDebugFHlex> to control DEBUGging of FH Lexical Analysis.
+
+PN_PARSE.Y:
+  Alloc <bDebugPNLex> to control DEBUGging of PN Lexical Analysis.
+
+SC_DEBUG.C:
+  Define )DEBUG PNLex=n and )DEBUG FHLex=n as new DEBUG commands.
+
+
 Build #2066 -- Version 0.6.0.xx
 -------------------------------
 

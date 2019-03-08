@@ -49,25 +49,28 @@ UBOOL CmdDebug_EM
     {
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"Is %s PLTrace = %d  PLStart = %d  ExecTrace = %d  CS = %d  FH = %d  PN = %d  YYAlloc = 0x%X\r\n"
-                   L"   DbgLvl = %d  FcnLvl = %d  VfpLvl = %d  ResizeLvl = %d  ArbRadius = %d  Test = %d",
+                   L"Is %s\r\n"
+                   L"   PLTrace = %d  PLStart = %d  ExecTrace = %d\r\n"
+                   L"   CS = %d  FH = %d  FHLex = %d  PN = %d  PNLex = %d\r\n"
+                   L"   DbgLvl = %d  FcnLvl = %d  VfpLvl = %d  ResizeLvl = %d\r\n"
+                   L"   YYAlloc = 0x%X  Test = %d  ArbRadius = %d",
                    (hWndDB EQ NULL) ? L"OFF" : L"ON",
                     bDebugPLTrace,
                     bDebugPLStart,
                     bDebugExecTrace,
                     bDebugCS,
                     bDebugFH,
+                    bDebugFHLex,
                     bDebugPN,
-                    gYYAlloc,
+                    bDebugPNLex,
                     gDbgLvl,
                     gFcnLvl,
                     gVfpLvl,
                     gResizeLvl,
-                    arbRadiusDigs,
-                    guTest);
+                    guTest,
+                    arbRadiusDigs);
         // Tell the user about it
         AppendLine (wszTemp, FALSE, TRUE);
-
 
         // Mark as successful
         return TRUE;
@@ -224,14 +227,16 @@ UBOOL CmdDebug_EM
     DEBUG_MAC (L"ExecTrace"  , L"Was ExecTrace = %d" , bDebugExecTrace , IsBooleanValue)
     DEBUG_MAC (L"CS"         , L"Was CS = %d"        , bDebugCS        , IsBooleanValue)
     DEBUG_MAC (L"FH"         , L"Was FH = %d"        , bDebugFH        , IsBooleanValue)
+    DEBUG_MAC (L"FHLex"      , L"Was FHLex = %d"     , bDebugFHLex     , IsBooleanValue)
     DEBUG_MAC (L"PN"         , L"Was PN = %d"        , bDebugPN        , IsBooleanValue)
-    DEBUG_MAC (L"YYAlloc"    , L"Was YYAlloc = 0x%X" , gYYAlloc        , IsWORD        )
+    DEBUG_MAC (L"PNLex"      , L"Was PNLex = %d"     , bDebugPNLex     , IsBooleanValue)
     DEBUG_MAC (L"DbgLvl"     , L"Was DbgLvl = %d"    , gDbgLvl         , IsUCHAR       )
     DEBUG_MAC (L"FcnLvl"     , L"Was FcnLvl = %d"    , gFcnLvl         , IsUCHAR       )
     DEBUG_MAC (L"VfpLvl"     , L"Was VfpLvl = %d"    , gVfpLvl         , IsUCHAR       )
     DEBUG_MAC (L"ResizeLvl"  , L"Was ResizeLvl = %d" , gResizeLvl      , IsUCHAR       )
-    DEBUG_MAC (L"arbRadius"  , L"Was arbRadius = %d" , arbRadiusDigs   , IsUCHAR       )
+    DEBUG_MAC (L"YYAlloc"    , L"Was YYAlloc = 0x%X" , gYYAlloc        , IsWORD        )
     DEBUG_MAC (L"Test"       , L"Was Test = %d"      , guTest          , IsUCHAR       )
+    DEBUG_MAC (L"arbRadius"  , L"Was arbRadius = %d" , arbRadiusDigs   , IsUCHAR       )
 
     // If there was no match, ...
     if (!bRet)

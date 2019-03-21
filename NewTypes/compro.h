@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -198,6 +198,7 @@
   #include "rebar.pro"
   #include "refcnt.pro"
   #include "savefcn.pro"
+  #include "sc_box.pro"
   #include "sc_common.pro"
   #include "sc_copy.pro"
 #ifdef DEBUG

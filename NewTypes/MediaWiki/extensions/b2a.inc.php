@@ -4,6 +4,10 @@
 //    /var/www/cgi-bin/
 //    /root/usr/local/mediawiki/extensions/
 
+// On the local system, this file should be saved into both
+//   P:\rul\mediawiki\extensions\
+//   R:\NARS2000\<dir>\MediaWiki\Extensions\   (under Version Control)
+
 // Define the array of conversions
 $br2a = array (
 
@@ -88,6 +92,8 @@ $br2a = array (
 'highminus'             => 0x00AF,
 'overbar'               => 0x00AF,
 '_'                     => 0x00AF,
+
+'pom'                   => 0x00B1,
 
 'signum'                => 0x00D7,
 'times'                 => 0x00D7,
@@ -187,6 +193,8 @@ $br2a = array (
 'dotdieresis'           => 0x2235,
 
 'tilde'                 => 0x223C,
+
+'doubletilde'           => 0x2248,
 
 '/='                    => 0x2260,
 'ne'                    => 0x2260,
@@ -370,6 +378,7 @@ $br2a = array (
 'quadup'                => 0x2350,
 
 'encodeoverbar'         => 0x2351,
+'downtackoverbar'       => 0x2351,
 
 'gradedown'             => 0x2352,
 'downgrade'             => 0x2352,

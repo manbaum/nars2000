@@ -1,6 +1,6 @@
 # /***************************************************************************
 #     NARS2000 -- An Experimental APL Interpreter
-#     Copyright (C) 2006-2018 Sudley Place Software
+#     Copyright (C) 2006-2019 Sudley Place Software
 #
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -689,6 +689,7 @@ $(O)refcnt.obj:         $(@B).c         $(REFCNT_DEP)
 $(O)resdebug.obj:       $(@B).c         $(RESDEBUG_DEP)
 !endif
 $(O)savefcn.obj:        $(@B).c         $(SAVEFCN_DEP)
+$(O)sc_box.obj:         $(@B).c         $(SC_BOX_DEP)
 $(O)sc_common.obj:      $(@B).c         $(SC_COMMON_DEP)
 $(O)sc_copy.obj:        $(@B).c         $(SC_COPY_DEP)
 $(O)sc_debug.obj:       $(@B).c         $(SC_DEBUG_DEP)

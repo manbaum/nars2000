@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -96,33 +96,34 @@ typedef enum tagWINDOWCLASS     // Window Classes
 typedef enum tagSYSCMDS_ENUM    // System Commands
 {
     SYSCMD_None = 0 ,           // 00:  <invalid result>
-    SYSCMD_CLEAR    ,           // 01:  )CLEAR
-    SYSCMD_CLOSE    ,           // 02:  )CLOSE
-    SYSCMD_COPY     ,           // 03:  )COPY
-    SYSCMD_DROP     ,           // 04:  )DROP
+    SYSCMD_BOX      ,           // 01:  )BOX
+    SYSCMD_CLEAR    ,           // 02:  )CLEAR
+    SYSCMD_CLOSE    ,           // 03:  )CLOSE
+    SYSCMD_COPY     ,           // 04:  )COPY
     SYSCMD_DEBUG    ,           // 05:  )DEBUG
-    SYSCMD_EDIT     ,           // 06:  )EDIT
-    SYSCMD_ERASE    ,           // 07:  )ERASE
-    SYSCMD_EXIT     ,           // 08:  )EXIT
-    SYSCMD_FNS      ,           // 09:  )FNS
-    SYSCMD_FOPS     ,           // 0A:  )FOPS
-    SYSCMD_IN       ,           // 0B:  )IN
-    SYSCMD_INASCII  ,           // 0C:  )INASCII
-    SYSCMD_LIB      ,           // 0D:  )LIB
-    SYSCMD_LOAD     ,           // 0E:  )LOAD
-    SYSCMD_NEWTAB   ,           // 0F:  )NEWTAB
-    SYSCMD_NMS      ,           // 10:  )NMS
-    SYSCMD_OPS      ,           // 11:  )OPS
-    SYSCMD_OUT      ,           // 12:  )OUT
-    SYSCMD_RESET    ,           // 13:  )RESET
-    SYSCMD_SAVE     ,           // 14:  )SAVE
-    SYSCMD_SI       ,           // 15:  )SI
-    SYSCMD_SINL     ,           // 16:  )SINL
-    SYSCMD_ULIB     ,           // 17:  )ULIB
+    SYSCMD_DROP     ,           // 06:  )DROP
+    SYSCMD_EDIT     ,           // 07:  )EDIT
+    SYSCMD_ERASE    ,           // 08:  )ERASE
+    SYSCMD_EXIT     ,           // 09:  )EXIT
+    SYSCMD_FNS      ,           // 0A:  )FNS
+    SYSCMD_FOPS     ,           // 0B:  )FOPS
+    SYSCMD_IN       ,           // 0C:  )IN
+    SYSCMD_INASCII  ,           // 0D:  )INASCII
+    SYSCMD_LIB      ,           // 0E:  )LIB
+    SYSCMD_LOAD     ,           // 0F:  )LOAD
+    SYSCMD_NEWTAB   ,           // 10:  )NEWTAB
+    SYSCMD_NMS      ,           // 11:  )NMS
+    SYSCMD_OPS      ,           // 12:  )OPS
+    SYSCMD_OUT      ,           // 13:  )OUT
+    SYSCMD_RESET    ,           // 14:  )RESET
+    SYSCMD_SAVE     ,           // 15:  )SAVE
+    SYSCMD_SI       ,           // 16:  )SI
+    SYSCMD_SINL     ,           // 17:  )SINL
     SYSCMD_SYMB     ,           // 18:  )SYMB
-    SYSCMD_VARS     ,           // 19:  )VARS
-    SYSCMD_XLOAD    ,           // 1A:  )XLOAD
-    SYSCMD_WSID     ,           // 1B:  )WSID
+    SYSCMD_ULIB     ,           // 19:  )ULIB
+    SYSCMD_VARS     ,           // 1A:  )VARS
+    SYSCMD_XLOAD    ,           // 1B:  )XLOAD
+    SYSCMD_WSID     ,           // 1C:  )WSID
 } SYSCMDS_ENUM, *LPSYSCMDS_ENUM;
 
 

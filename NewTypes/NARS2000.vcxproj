@@ -562,6 +562,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile Include="refcnt.c" />
     <ClCompile Include="resdebug.c" />
     <ClCompile Include="savefcn.c" />
+    <ClCompile Include="sc_box.c" />
     <ClCompile Include="sc_common.c" />
     <ClCompile Include="sc_copy.c" />
     <ClCompile Include="sc_debug.c">

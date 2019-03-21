@@ -69,6 +69,37 @@ UBOOL ArrayDisplay_EM
     LPWCHAR      lpwszFormat;       // Ptr to formatting save area
     IMM_TYPES    immType;           // Type of immediate value
     APLCHAR      aplChar;           // Immediate value if character
+    UBOOL        bRet = TRUE,       // TRUE iff the result is valid
+                 oldgbBoxState,     // Save area for old BoxState
+                 bBoxing = FALSE;   // TRUE iff we're displaying with boxing
+
+    // Save the old value
+    oldgbBoxState = gbBoxState;
+
+    // If it's ON, ...
+    if (gbBoxState)
+    {
+        LPPL_YYSTYPE lpYYBox;
+
+        // Turn it OFF to avoid recursion
+        gbBoxState = FALSE;
+
+        // Display the array with boxing
+        lpYYBox = SysFnMonFMT_EM_YY (NULL,      // Ptr to function token
+                                     lptkRes,   // Ptr to right arg token (should be NULL)
+                                     NULL);     // Ptr to axis token (may be NULL)
+        // Copy the new token
+        CopyAll (lptkRes, &lpYYBox->tkToken);
+
+        // Free the YYSTYPE
+        YYFree (lpYYBox); lpYYBox = NULL;
+
+        // Tell the trailing code to free lptkRes at the end
+        bBoxing = TRUE;
+
+        // Restore the previous state
+        gbBoxState = oldgbBoxState;
+    } // End IF
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -85,7 +116,7 @@ UBOOL ArrayDisplay_EM
 
             // Check for NoValue
             if (IsSymNoValue (lptkRes->tkData.tkSym))
-                return TRUE;
+                goto NORMAL_EXIT;
 
             // If it's not immediate, it's an array
             if (!lptkRes->tkData.tkSym->stFlags.Imm)
@@ -95,16 +126,19 @@ UBOOL ArrayDisplay_EM
 
                 // Check for NoDisplay flag
                 if (!lptkRes->tkFlags.NoDisplay)
-                    return
+                {
+                    bRet =
                       DisplayGlbArr_EM (lptkRes->tkData.tkSym->stData.stGlbData,
                                         bEndingCR,          // TRUE iff last line has CR
                                         lpbCtrlBreak,       // Ptr to Ctrl-Break flag
                                         lptkRes);           // Ptr to function token
+                    goto NORMAL_EXIT;
+                } // End IF
             } // End IF
 
             // Check for NoDisplay flag
             if (lptkRes->tkFlags.NoDisplay)
-                return TRUE;
+                goto NORMAL_EXIT;
 
             // Handle the immediate case
 
@@ -125,7 +159,7 @@ UBOOL ArrayDisplay_EM
         case TKT_VARIMMED:  // The tkData is an immediate constant
             // Check for NoDisplay flag
             if (lptkRes->tkFlags.NoDisplay)
-                return TRUE;
+                goto NORMAL_EXIT;
 
             lpaplChar =
               FormatImmed (lpwszFormat,
@@ -142,7 +176,7 @@ UBOOL ArrayDisplay_EM
         case TKT_VARARRAY:  // The tkData is an HGLOBAL of an array of LPSYMENTRYs/HGLOBALs
             // Check for NoDisplay flag
             if (lptkRes->tkFlags.NoDisplay)
-                return TRUE;
+                goto NORMAL_EXIT;
 
             switch (GetPtrTypeDir (lptkRes->tkData.tkVoid))
             {
@@ -156,20 +190,28 @@ UBOOL ArrayDisplay_EM
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    return
+                    bRet =
                       DisplayGlbArr_EM (lptkRes->tkData.tkGlbData,
                                         bEndingCR,          // TRUE iff last line has CR
                                         lpbCtrlBreak,       // Ptr to Ctrl-Break flag
                                         lptkRes);           // Ptr to function token
+                    goto NORMAL_EXIT;
+
                 defstop
-                    return FALSE;
+                    // Mark as in error
+                    bRet = FALSE;
+
+                    goto NORMAL_EXIT;
             } // End SWITCH
 
             break;
 
 ////////case TKT_STRAND:    // The tkData is an HGLOBAL of a single HGLOBAL
         defstop
-            return FALSE;
+            // Mark as in error
+            bRet = FALSE;
+
+            goto NORMAL_EXIT;
     } // End SWITCH
 
     // Delete the last blank in case it matters,
@@ -212,12 +254,25 @@ UBOOL ArrayDisplay_EM
     // Display the line
     AppendLine (lpwszFormat, FALSE, bEndingCR);
 
-    return TRUE;
+    goto NORMAL_EXIT;
 
 SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkRes);
-    return FALSE;
+    // Mark as in error
+    bRet = FALSE;
+
+    goto NORMAL_EXIT;
+
+NORMAL_EXIT:
+    // If we're boxing, ...
+    if (bBoxing)
+    {
+        // Free the boxed display result
+        FreeResultTkn (lptkRes); lptkRes = NULL;
+    } // End IF
+
+    return bRet;
 } // End ArrayDisplay_EM
 
 

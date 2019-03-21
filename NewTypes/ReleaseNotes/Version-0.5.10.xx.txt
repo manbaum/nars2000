@@ -1,21 +1,60 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2069 -- Version 0.5.10.xx
+--------------------------------
+
+* Implement )BOX
+
+Directory branches/bsmith/NewTypes:
+
+COMPRO.H:
+  Include new file.
+
+DISPLAY.C:
+  Make sensitive to )BOX state.
+  Use common exit point.
+
+ENUMS.H:
+  Define new ENUM for )BOX.
+
+EXTERNS.H:
+  Define )BOX vars.
+
+MAKEFILE.INC:
+MAKEFILE.SRC:
+NARS2000.VCXPROJ:
+NARS2000.VCXPROJ.FILTERS:
+  Include new file.
+
+SC_BOX.C:
+  Implement )BOX.
+
+SYSCMDS.C:
+  Include )BOX in the table of system commands.
+
+
+Directory branches/bsmith/NewTypes/Mediawiki/extensions:
+
+B2A.INC.PHP:
+  Define more aliases for keystrokes.
+
+
 Build #2067 -- Version 0.5.10.xx
 --------------------------------
 
 * Define More )DEBUG Commands
 
-Directory branches/bsmith/NewTypes/htdocs:
+Directory branches/bsmith/NewTypes:
 
 EXTERNS.H:
   Define <bDebugFHLex> and <bDebugPNLex> as )DEBUG commands.
 
 FH_PARSE.Y:
-  Alloc <bDebugFHlex> to control DEBUGging of FH Lexical Analysis.
+  Allow <bDebugFHlex> to control DEBUGging of FH Lexical Analysis.
 
 PN_PARSE.Y:
-  Alloc <bDebugPNLex> to control DEBUGging of PN Lexical Analysis.
+  Allow <bDebugPNLex> to control DEBUGging of PN Lexical Analysis.
 
 SC_DEBUG.C:
   Define )DEBUG PNLex=n and )DEBUG FHLex=n as new DEBUG commands.
@@ -28,7 +67,7 @@ Build #2065 -- Version 0.5.10.xx
 * Rename Various Syntax Objects For Later Consistency With Hyperators
 * Rename <INDEX_OPxxx> To <UTF16_OPxxx> As They Are Not Indices Into A Table
 
-Directory branches/bsmith/NewTypes/htdocs:
+Directory branches/bsmith/NewTypes:
 
 ASSIGN.C:
   Allow {jotdot} as a monadic operator including assignment.
@@ -102,7 +141,7 @@ Build #2063 -- Version 0.5.10.xx
 
 * Fix Bug With ?{infinity} For Both Multiple Precision Numbers
 
-Directory branches/bsmith/NewTypes/htdocs:
+Directory branches/bsmith/NewTypes:
 
 PF_QUERY.C:
   In both <PrimFnMonQueryRisR> and <PrimFnMonQueryVisV>, check for {infinity} and signal a DOMAIN ERROR if found.
@@ -113,7 +152,7 @@ Build #2061 -- Version 0.5.10.xx
 
 * Disallow Display Of MFO Local Names In )SINL
 
-Directory branches/bsmith/NewTypes/htdocs:
+Directory branches/bsmith/NewTypes:
 
 MACROS.H:
   Define macro to detect MFO Local names.
@@ -128,7 +167,7 @@ Build #2059 -- Version 0.5.10.xx
 
 * Fix Bug In 1 []AT on Operators As Function Arrays
 
-Directory branches/bsmith/NewTypes/htdocs:
+Directory branches/bsmith/NewTypes:
 
 QF_AT.C:
   In <AttributeValences>, handle Function Array Operators through a separate function.
@@ -139,7 +178,7 @@ Build #2057 -- Version 0.5.10.xx
 
 * Fix Bug When Saving f{is}{quad}NL In Workspace
 
-Directory branches/bsmith/NewTypes/htdocs:
+Directory branches/bsmith/NewTypes:
 
 DISPDBG.C:
   Fix bug when creating f{is}'a'{jot}{quad}NL as f{is]a{jot}{quad}NL.
@@ -172,7 +211,7 @@ Build #2055 -- Version 0.5.10.xx
 
 * Allow Hex Notation In )DEBUG Keywords
 
-Directory branches/bsmith/NewTypes/htdocs:
+Directory branches/bsmith/NewTypes:
 
 SC_DEBUG.C:
   Allow hex notation in )DEBUG keywords.
@@ -183,7 +222,7 @@ Build #2053 -- Version 0.5.10.xx
 
 * Fix Bugs In Syntax Analysis Of Trains With Variables
 
-Directory branches/bsmith/NewTypes/htdocs:
+Directory branches/bsmith/NewTypes:
 
 PARSELINE.C:
   Define aliases for routines to handle more Train syntax such as (F A F) A.

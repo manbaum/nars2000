@@ -1,0 +1,37 @@
+Build #2070 -- Version 0.6.0.xx
+-------------------------------
+
+* Implement )BOX
+
+Directory branches/bsmith/NanTypes:
+
+COMPRO.H:
+  Include new file.
+
+DISPLAY.C:
+  Make sensitive to )BOX state.
+  Use common exit point.
+
+ENUMS.H:
+  Define new ENUM for )BOX.
+
+EXTERNS.H:
+  Define )BOX vars.
+
+MAKEFILE.INC:
+MAKEFILE.SRC:
+NARS2000.VCXPROJ:
+NARS2000.VCXPROJ.FILTERS:
+  Include new file.
+
+SC_BOX.C:
+  Implement )BOX.
+
+SYSCMDS.C:
+  Include )BOX in the table of system commands.
+
+
+Directory branches/bsmith/NanTypes/Mediawiki/extensions:
+
+B2A.INC.PHP:
+  Define more aliases for keystrokes.

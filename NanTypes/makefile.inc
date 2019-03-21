@@ -1,6 +1,6 @@
 # /***************************************************************************
 #     NARS2000 -- An Experimental APL Interpreter
-#     Copyright (C) 2006-2018 Sudley Place Software
+#     Copyright (C) 2006-2019 Sudley Place Software
 #
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -106,11 +106,11 @@
 
 NAME=NARS2000                       # Directory name
 ENAME=NARS2000                      # Executable name
-BIN=binaries\                       # Binaries directory
+BIN=binaries^\                      # Binaries directory
 DEBUG=0
-A=Images\                           # Images & artwork
-BC=$(BIN)COM\                       # Directory for common binaries
-WS=WineHQ\                          # Wine source
+A=Images^\                          # Images & artwork
+BC=$(BIN)COM^\                      # Directory for common binaries
+WS=WineHQ^\                         # Wine source
 OLDPATH=$(PATH)                     # Save the current path
 GSL_INC=$(GSL_DIR)include^\         # Directory of GSL includes
 SDK_INC=$(INCLUDE)                  # Directories of SDK includes
@@ -288,11 +288,11 @@ ASM=masm
 AFLAGS=/Mu /DDEBUG=$(DEBUG)
 
 !if "$(DEBUG)" == "1"
-B=$(BIN)D$(WIN)\                # Define output directory for binaries
+B=$(BIN)D$(WIN)^\               # Define output directory for binaries
 !else
-B=$(BIN)ND$(WIN)\               # Define output directory for binaries
+B=$(BIN)ND$(WIN)^\              # Define output directory for binaries
 !endif
-OC=RET\COM\                     # Define output directory for common intermediate files
+OC=RET\COM^\                    # Define output directory for common intermediate files
 
 PDBFILE = $(B)$(ENAME).pdb
 
@@ -573,10 +573,6 @@ $(O)inifile.obj:        $(@B).c         $(INIFILE_DEP)
 $(O)iniparser.obj:      $(@B).c         $(INIPARSER_DEP)
 $(O)initdata.obj:       $(@B).c         $(INITDATA_DEP)
 $(O)main.obj:           $(@B).c         $(MAIN_DEP)
-##$(O)malloc.obj:         $(@B).c         $(MALLOC_DEP)
-##        @Set INCLUDE=$(I98);$(O)
-##        @if exist $@ del $@
-##        @$(CC) $(CFLAGS_WEXE) /D USE_LOCKS=1 /Fo$@ $(LIST) %s
 $(O)mpci.obj:           $(@B).c         $(MPCI_DEP)
 $(O)mphi.obj:           $(@B).c         $(MPHI_DEP)
 $(O)mpoi.obj:           $(@B).c         $(MPOI_DEP)
@@ -707,6 +703,7 @@ $(O)refcnt.obj:         $(@B).c         $(REFCNT_DEP)
 $(O)resdebug.obj:       $(@B).c         $(RESDEBUG_DEP)
 !endif
 $(O)savefcn.obj:        $(@B).c         $(SAVEFCN_DEP)
+$(O)sc_box.obj:         $(@B).c         $(SC_BOX_DEP)
 $(O)sc_common.obj:      $(@B).c         $(SC_COMMON_DEP)
 $(O)sc_copy.obj:        $(@B).c         $(SC_COPY_DEP)
 $(O)sc_debug.obj:       $(@B).c         $(SC_DEBUG_DEP)

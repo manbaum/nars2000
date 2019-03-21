@@ -4,6 +4,10 @@
 //    /var/www/cgi-bin/
 //    /root/usr/local/mediawiki/extensions/
 
+// On the local system, this file should be saved into both
+//   P:\rul\mediawiki\extensions\
+//   R:\NARS2000\<dir>\MediaWiki\Extensions\   (under Version Control)
+
 // Define the array of conversions
 $br2a = array (
 
@@ -374,6 +378,7 @@ $br2a = array (
 'quadup'                => 0x2350,
 
 'encodeoverbar'         => 0x2351,
+'downtackoverbar'       => 0x2351,
 
 'gradedown'             => 0x2352,
 'downgrade'             => 0x2352,

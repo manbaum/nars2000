@@ -2671,6 +2671,17 @@ UCHAR guTest
 #endif
 ;
 
+//***************************************************************************
+//  )BOX Vars
+//***************************************************************************
+
+EXTERN
+UBOOL gbBoxState
+#ifdef DEFINE_VALUES
+ = FALSE
+#endif
+;
+
 
 #define ENUMS_DEFINED
 #undef  EXTERN

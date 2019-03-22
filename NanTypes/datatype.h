@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -364,11 +364,12 @@ typedef struct tagVARARRAY_HEADER
                      PV1:1,             //      00001000:  ...                          1
                      bSelSpec:1,        //      00002000:  Select Specification array
                      All2s:1,           //      00004000:  Values are all 2s
+                     bSplitNum:1,       //      00008000:  TRUE iff this var is a temporary split numeric strand
 #ifdef DEBUG
-                     bMFOvar:1,         //      00008000:  Magic Function/Operator var -- do not display
-                     :16;               //      FFFF0000:  Available bits
+                     bMFOvar:1,         //      00010000:  Magic Function/Operator var -- do not display
+                     :15;               //      FFFE0000:  Available bits
 #else
-                     :17;               //      FFFF8000:  Available bits
+                     :16;               //      FFFF0000:  Available bits
 #endif
     UINT             RefCnt;            // 08:  Reference count
     APLNELM          NELM;              // 0C:  # elements in the array (8 bytes)

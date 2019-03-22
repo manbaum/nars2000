@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -79,6 +79,56 @@ void FreeTopResult
 
 
 //***************************************************************************
+//  $FreeResultCurry
+//
+//  Free and YYFree any and all curried objects
+//***************************************************************************
+
+void FreeResultCurry
+    (LPPL_YYSTYPE lpYYRes)              // Ptr to YYSTYPE to free
+
+{
+    // If there is a curried index, ...
+    if (lpYYRes->lpplYYIdxCurry NE NULL)
+    {
+        // YYFree and Free it recursively
+        FreeResult (lpYYRes->lpplYYIdxCurry); YYFree (lpYYRes->lpplYYIdxCurry); lpYYRes->lpplYYIdxCurry = NULL;
+    } // End IF
+
+    // If there is a curried arg, ...
+    if (lpYYRes->lpplYYArgCurry NE NULL)
+    {
+        // YYFree and Free it recursively
+        FreeResult (lpYYRes->lpplYYArgCurry); YYFree (lpYYRes->lpplYYArgCurry); lpYYRes->lpplYYArgCurry = NULL;
+    } // End IF
+
+    // If there is a curried left operand, ...
+    if (lpYYRes->lpplYYFcnCurry NE NULL)
+    {
+        // If the curried left operand is not an AFO, ...
+        if (!IsTknAFO (&lpYYRes->lpplYYFcnCurry->tkToken))
+            // Free it recursively
+            FreeResult (lpYYRes->lpplYYFcnCurry);
+
+        // YYFree it
+        YYFree (lpYYRes->lpplYYFcnCurry); lpYYRes->lpplYYFcnCurry = NULL;
+    } // End IF
+
+    // If there is a curried right operand, ...
+    if (lpYYRes->lpplYYOpRCurry NE NULL)
+    {
+        // If the curried right operand is not an AFO, ...
+        if (!IsTknAFO (&lpYYRes->lpplYYOpRCurry->tkToken))
+            // Free it recursively
+            FreeResult (lpYYRes->lpplYYOpRCurry);
+
+        // YYFree it
+        YYFree (lpYYRes->lpplYYOpRCurry); lpYYRes->lpplYYOpRCurry = NULL;
+    } // End IF
+} // End FreeResultCurry
+
+
+//***************************************************************************
 //  $FreeResult
 //
 //  Free the HGLOBALs and LPSYMENTRYs in a result
@@ -90,43 +140,8 @@ void FreeResult
 {
     if (lpYYRes NE NULL)
     {
-        // If there is a curried index, ...
-        if (lpYYRes->lpplYYIdxCurry NE NULL)
-        {
-            // YYFree and Free it recursively
-            FreeResult (lpYYRes->lpplYYIdxCurry); YYFree (lpYYRes->lpplYYIdxCurry); lpYYRes->lpplYYIdxCurry = NULL;
-        } // End IF
-
-        // If there is a curried arg, ...
-        if (lpYYRes->lpplYYArgCurry NE NULL)
-        {
-            // YYFree and Free it recursively
-            FreeResult (lpYYRes->lpplYYArgCurry); YYFree (lpYYRes->lpplYYArgCurry); lpYYRes->lpplYYArgCurry = NULL;
-        } // End IF
-
-        // If there is a curried fcn, ...
-        if (lpYYRes->lpplYYFcnCurry NE NULL)
-        {
-            // If the curried function is not an AFO, ...
-            if (!IsTknAFO (&lpYYRes->lpplYYFcnCurry->tkToken))
-                // Free it recursively
-                FreeResult (lpYYRes->lpplYYFcnCurry);
-
-            // YYFree it
-            YYFree (lpYYRes->lpplYYFcnCurry); lpYYRes->lpplYYFcnCurry = NULL;
-        } // End IF
-
-        // If there is a curried right operand, ...
-        if (lpYYRes->lpplYYOpRCurry NE NULL)
-        {
-            // If the curried right operand is not an AFO, ...
-            if (!IsTknAFO (&lpYYRes->lpplYYOpRCurry->tkToken))
-                // Free it recursively
-                FreeResult (lpYYRes->lpplYYOpRCurry);
-
-            // YYFree it
-            YYFree (lpYYRes->lpplYYOpRCurry); lpYYRes->lpplYYOpRCurry = NULL;
-        } // End IF
+        // Free the currys
+        FreeResultCurry (lpYYRes);
 
         Assert (lpYYRes->TknCount <= 1);
 
@@ -527,7 +542,15 @@ UBOOL FreeResultGlobalVarSub
 #undef  lpHeader
 
         // Ensure non-zero
-        Assert (RefCnt > 0);
+        Assert (RefCnt > lpMemHdrVar->bSplitNum);
+
+        // If this var is a temporary split numeric strand, ...
+        if (lpMemHdrVar->bSplitNum)
+        {
+            // A cheap way to free the temp var
+            RefCnt = --lpMemHdrVar->RefCnt;
+            lpMemHdrVar->bSplitNum = FALSE;
+        } // End IF
 
         // Decrement
         RefCnt =

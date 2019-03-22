@@ -4940,6 +4940,36 @@ PARSELINE_REDUCE:
                     goto PARSELINE_SYNTERR;
                 } // End IF
 
+                // Check for the need to split a numeric strand to the right of a dyadic operator
+                if (rhtSynObj EQ soA
+                 && curSynObj EQ soDOP
+                 && lpplYYLstRht->tkToken.tkFlags.TknType EQ TKT_NUMSTRAND)
+                {
+                    // Split out the first item
+                    if (!SplitStrandFirst (lpplYYLstRht, lpMemPTD))
+                        goto PARSELINE_WSFULL;
+
+                    // Respecify as they have changed
+                    rhtSynObj = soA; Assert (IsValidSO (rhtSynObj));
+                    lstSynObj = soA; Assert (IsValidSO (lstSynObj));
+
+                    // If we're splitting on a dyadic operator Hyperator, ...
+                    if (curSynObj NE soDOP)
+                    {
+                        LPPL_YYSTYPE lpplYYTmpRht;
+
+                        // Check the new right stack item
+                        lpplYYTmpRht = POPRIGHT;
+
+                        // If the righthand part of the split is still a numeric strand, ...
+                        if (lpplYYTmpRht->tkToken.tkFlags.TknType EQ TKT_NUMSTRAND)
+                            // Split out the first item
+                            if (!SplitStrandFirst (lpplYYTmpRht, lpMemPTD))
+                                goto PARSELINE_WSFULL;
+                        // Put it back onto the righthand stack
+                        PUSHRIGHT (lpplYYTmpRht);
+                    } // End IF
+                } // End IF
 #ifdef DEBUG
                 if (bDebugPLTrace)
                 {
@@ -5147,6 +5177,15 @@ PARSELINE_SYNTERR:
                                       &lpplYYCurObj->tkToken);
             goto PARSELINE_ERROR;
 
+PARSELINE_WSFULL:
+#ifdef DEBUG
+            if (bDebugPLTrace)
+                TRACE (L"WSFULL:  ", L"", CURSYNOBJ, RHTSYNOBJ);
+#endif
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                      &lpplYYCurObj->tkToken);
+            goto PARSELINE_ERROR;
+
 PARSELINE_ERROR:
             // If lpYYRes is defined, ...
             if (lpYYRes NE NULL)
@@ -5178,11 +5217,16 @@ PARSELINE_ERROR:
                         // Zap it so we won't attempt to free it again just below
                         lpplYYLstRht = NULL;
 
-                    // If the current object is a Fcn or Var, ...
+                    // If the current object is a Fcn, Var, or Opr, ...
                     if (IsTknTypeFcnOpr (lpplYYCurObj->tkToken.tkFlags.TknType)
                      || IsTknTypeVar    (lpplYYCurObj->tkToken.tkFlags.TknType))
                         // Free the object and its curries only if not named
+                        // N.B.: when A[...][...]{is}B fails on an INDEX ERROR, we must not free 'A'
                         FreeTempResult (lpplYYCurObj);
+
+                    // YYFree the current object's currys
+                    FreeResultCurry (lpplYYCurObj);
+
                     // YYFree the current object
                     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
                 } else
@@ -6228,8 +6272,8 @@ PL_YYLEX_START:
     CopyAll (&lpplYYLval->tkToken, lpplLocalVars->lptkNext);
 
     // Initialize the rest of the fields
-////lpplYYLval->TknCount        =               // Already zero from ZeroMemory
-////lpplYYLval->YYInuse         =               // ...
+    lpplYYLval->TknCount        = 1;
+////lpplYYLval->YYInuse         =               // Already zero from ZeroMemory
 ////lpplYYLval->YYIndirect      = 0;            // ...
 ////lpplYYLval->YYStranding     = FALSE;        // ...
 ////lpplYYLval->lpYYFcnBase     = NULL;         // ...
@@ -6290,7 +6334,7 @@ PL_YYLEX_FCNNAMED:
                         // Mark it as named as it'll be re-assigned shortly
                         lpplYYLval->tkToken.tkSynObj = soNAM;
                     else
-                        // Mark is as a VALUE ERROR
+                        // Mark it as a VALUE ERROR
                         lpplYYLval->tkToken.tkSynObj = soVALR;
                     break;
 
@@ -7746,7 +7790,7 @@ void ConvertNamedFopToUnnamed
     {
         // If the function is a hybrid, ...
         if (IsTknHybrid (&lpplYYLval->tkToken))
-            // Mark is as a hybrid
+            // Mark it as a hybrid
             lpplYYLval->tkToken.tkSynObj = soHY;
         else
             // Mark it as a Fcn/Opx so it can't be re-assigned.
@@ -7809,6 +7853,585 @@ void ConvertNamedFopToUnnamed
         // Mark it as a Fcn/Opx so it can't be re-assigned.
         lpplYYLval->tkToken.tkSynObj = soTKN_IMMED;
 } // End ConvertNamedFopToUnnamed
+
+
+//***************************************************************************
+//  $SplitStrandLast
+//
+//  Split out the last item of a strand
+//***************************************************************************
+
+UBOOL SplitStrandLast
+    (LPPL_YYSTYPE lpplYYCurObj,
+     LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
+
+{
+    LPVARARRAY_HEADER lpMemHdrVar,
+                      lpMemHdrGlb;
+    LPVOID            lpMemVar,
+                      lpMemGlb;
+    HGLOBAL           hGlbVar,
+                      hGlbRht;
+    TOKEN             tkLft = {0},
+                      tkRht = {0};
+    ARRAY_TYPES       arrType;
+    APLNELM           arrNELM;
+    int               iSizeofGlb;
+    LPPL_YYSTYPE      lpYYLft;
+    APLUINT           ByteSize;
+    UBOOL             bRet;             // TRUE iff the result is valid
+
+    // Get the global memory handle
+    hGlbVar = lpplYYCurObj->tkToken.tkData.tkGlbData;
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrVar = MyGlobalLockVar (hGlbVar);
+
+    // Skip over the header and dimensions to the data
+    lpMemVar = VarArrayDataFmBase (lpMemHdrVar);
+
+    // Save the Array Type and NELM
+    arrType = lpMemHdrVar->ArrType;
+    arrNELM = lpMemHdrVar->NELM;
+
+    // Note that the strand must have multiple items as the token type for a single item strand is TKT_VARIMMED
+    Assert (arrNELM > 1);
+
+    // Calculate the size of each item
+    iSizeofGlb = TranslateArrayTypeToSizeof (arrType);
+
+    // Set the common header fields
+    tkLft.tkSynObj   =
+    tkRht.tkSynObj   = soA;
+
+    // Split out the rightmost item into a TKT_VARIMMED
+    switch (arrType)
+    {
+        case ARRAY_BOOL:
+            tkRht.tkFlags.TknType  = TKT_VARIMMED;
+            tkRht.tkFlags.ImmType  = IMMTYPE_BOOL;
+            tkRht.tkData.tkBoolean = GetNextBoolean (lpMemVar,          arrNELM - 1);
+
+            break;
+
+        case ARRAY_INT:
+        case ARRAY_APA:
+            tkRht.tkFlags.TknType  = TKT_VARIMMED;
+            tkRht.tkFlags.ImmType  = IMMTYPE_INT;
+            tkRht.tkData.tkInteger = GetNextInteger (lpMemVar, arrType, arrNELM - 1);
+
+            break;
+
+        case ARRAY_FLOAT:
+            tkRht.tkFlags.TknType  = TKT_VARIMMED;
+            tkRht.tkFlags.ImmType  = IMMTYPE_FLOAT;
+            tkRht.tkData.tkFloat   = GetNextFloat   (lpMemVar, arrType, arrNELM - 1);
+
+            break;
+
+        case ARRAY_CHAR:
+            tkRht.tkFlags.TknType  = TKT_VARIMMED;
+            tkRht.tkFlags.ImmType  = IMMTYPE_CHAR;
+            tkRht.tkData.tkChar    = GetNextChar16  (lpMemVar, arrType, arrNELM - 1);
+
+            break;
+
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+
+        case ARRAY_RAT:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+
+        case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+            // Set the token type
+            tkRht.tkFlags.TknType  = TKT_VARARRAY;
+
+            // Allocate space for the Global Numeric
+            hGlbRht = AllocateGlobalArray (arrType, 1, 0, NULL);
+
+            // Check for error
+            if (hGlbRht EQ NULL)
+                goto WSFULL_EXIT;
+
+            // Make it a global
+            tkRht.tkData.tkGlbData = MakePtrTypeGlb (hGlbRht);
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrGlb = MyGlobalLockVar (tkRht.tkData.tkGlbData);
+
+            // Mark it as temporary split numeric strand
+            lpMemHdrGlb->bSplitNum = TRUE;
+
+            // Skip over the header and dimensions
+            lpMemGlb = VarArrayDataFmBase (lpMemHdrGlb);
+
+            // Copy the single item to global memory
+            CopyMemory (lpMemGlb, ByteAddr (lpMemVar, iSizeofGlb * (arrNELM - 1)), iSizeofGlb);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (tkRht.tkData.tkGlbData); lpMemHdrGlb = NULL;
+
+            break;
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+        defstop
+            break;
+    } // End SWITCH
+
+    // If the numeric strand has only two elements, and
+    //   the remaining item fits as an immediate, ...
+    if (arrNELM EQ 2
+     && (arrType EQ ARRAY_BOOL
+      || arrType EQ ARRAY_INT
+      || arrType EQ ARRAY_APA
+      || arrType EQ ARRAY_FLOAT
+      || arrType EQ ARRAY_CHAR))
+    {
+        switch (arrType)
+        {
+            case ARRAY_BOOL:
+                tkLft.tkFlags.TknType  = TKT_VARIMMED;
+                tkLft.tkFlags.ImmType  = IMMTYPE_BOOL;
+                tkLft.tkData.tkBoolean = GetNextBoolean (lpMemVar,          0);
+
+                break;
+
+            case ARRAY_INT:
+            case ARRAY_APA:
+                tkLft.tkFlags.TknType  = TKT_VARIMMED;
+                tkLft.tkFlags.ImmType  = IMMTYPE_INT;
+                tkLft.tkData.tkInteger = GetNextInteger (lpMemVar, arrType, 0);
+
+                break;
+
+            case ARRAY_FLOAT:
+                tkLft.tkFlags.TknType  = TKT_VARIMMED;
+                tkLft.tkFlags.ImmType  = IMMTYPE_FLOAT;
+                tkLft.tkData.tkFloat   = GetNextFloat   (lpMemVar, arrType, 0);
+
+                break;
+
+            case ARRAY_CHAR:
+                tkLft.tkFlags.TknType  = TKT_VARIMMED;
+                tkLft.tkFlags.ImmType  = IMMTYPE_CHAR;
+                tkLft.tkData.tkChar    = GetNextChar16  (lpMemVar, arrType, 0);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } else
+    {
+        // Count out the last item
+        arrNELM--;
+
+        // Set the token type
+        tkLft.tkFlags.TknType = (arrNELM > 1) ? TKT_NUMSTRAND : TKT_VARARRAY;
+
+        // Allocate space for the Simple or Global Numerics
+        hGlbRht = AllocateGlobalArray (arrType, arrNELM, arrNELM > 1, &arrNELM);
+
+        // Check for error
+        if (hGlbRht EQ NULL)
+            goto WSFULL_EXIT;
+
+        // Make it a global
+        tkLft.tkData.tkGlbData = MakePtrTypeGlb (hGlbRht);
+
+        // Lock the memory to get a ptr to it
+        lpMemHdrGlb = MyGlobalLockVar (tkLft.tkData.tkGlbData);
+
+        // Mark it as temporary split numeric strand
+        lpMemHdrGlb->bSplitNum = TRUE;
+
+        // Skip over the header and dimensions
+        lpMemGlb = VarArrayDataFmBase (lpMemHdrGlb);
+
+        // Calculate the size of the data portion (excluding the header)
+        //   (Booleans NOT rounded up to DWORD boundary)
+        ByteSize = CalcDataSize (arrType, arrNELM, NULL);
+
+        // Copy the remaining items to global memory
+        CopyMemory (lpMemGlb, lpMemVar, (size_t) ByteSize);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (tkLft.tkData.tkGlbData); lpMemHdrGlb = NULL;
+    } // End IF/ELSE
+
+    // Substitute tkRht for lpplYYCurObj
+    CopyAll (&lpplYYCurObj->tkToken, &tkRht); // curSynObj = soA; Assert (IsValidSO (curSynObj));
+    lpplYYCurObj->TknCount = 1;
+
+    // Push tkLft onto the left stack as the next token
+    lpYYLft = YYAlloc ();
+    CopyAll (&lpYYLft->tkToken, &tkLft);
+    lpYYLft->TknCount = 1;
+    PUSHLEFT  (lpYYLft); // lftSynObj = lpYYLft->tkToken.tkSynObj; Assert (IsValidSO (lftSynObj));
+
+    // Mark as successful
+    bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    // Mark as in error
+    bRet = FALSE;
+NORMAL_EXIT:
+    // If this var a temporary split numeric strand, ...
+    if (lpMemHdrVar->bSplitNum)
+    {
+        // If its RefCnt is also 1, ...
+        if (lpMemHdrVar->RefCnt EQ 1)
+        {
+            // Clear the flag so we don't trip over it in <FreeResultGlobalVarSub>
+            lpMemHdrVar->bSplitNum = FALSE;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbVar); lpMemHdrVar = NULL;
+
+            // Free the var
+            FreeResultGlobalVar (hGlbVar); hGlbVar = NULL;
+        } else
+        {
+            // A cheap way to free the temp var
+            lpMemHdrVar->RefCnt--;
+            lpMemHdrVar->bSplitNum = FALSE;
+        } // End IF
+    } // End IF
+
+    // If this var is still valid, ...
+    if (hGlbVar NE NULL
+     && lpMemHdrVar NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbVar); lpMemHdrVar = NULL;
+    } // End IF
+
+    return bRet;
+} // End SplitStrandLast
+
+
+//***************************************************************************
+//  $SplitStrandFirst
+//
+//  Split out the first item of a strand
+//***************************************************************************
+
+UBOOL SplitStrandFirst
+    (LPPL_YYSTYPE lpplYYCurObj,         // Ptr to the numeric strand
+     LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
+
+{
+    LPVARARRAY_HEADER lpMemHdrVar,
+                      lpMemHdrGlb;
+    LPVOID            lpMemVar,
+                      lpMemGlb;
+    HGLOBAL           hGlbVar,
+                      hGlbRht;
+    TOKEN             tkLft = {0},
+                      tkRht = {0};
+    ARRAY_TYPES       arrType;
+    APLNELM           arrNELM;
+    int               iSizeofGlb;
+    LPPL_YYSTYPE      lpYYLft;
+    APLUINT           ByteSize;
+    UBOOL             bRet;             // TRUE iff the result is valid
+
+    // Get the global memory handle
+    hGlbVar = lpplYYCurObj->tkToken.tkData.tkGlbData;
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrVar = MyGlobalLockVar (hGlbVar);
+
+    // Skip over the header and dimensions to the data
+    lpMemVar = VarArrayDataFmBase (lpMemHdrVar);
+
+    // Save the Array Type and NELM
+    arrType = lpMemHdrVar->ArrType;
+    arrNELM = lpMemHdrVar->NELM;
+
+    // Note that the strand must have multiple items as the token type for a single item strand is TKT_VARIMMED
+    Assert (arrNELM > 1);
+
+    // Calculate the size of each item
+    iSizeofGlb = TranslateArrayTypeToSizeof (arrType);
+
+    // Set the common header fields
+    tkLft.tkSynObj   =
+    tkRht.tkSynObj   = soA;
+
+    // Split out the leftmost item into a TKT_VARIMMED
+    switch (arrType)
+    {
+        case ARRAY_BOOL:
+            tkRht.tkFlags.TknType  = TKT_VARIMMED;
+            tkRht.tkFlags.ImmType  = IMMTYPE_BOOL;
+            tkRht.tkData.tkBoolean = GetNextBoolean (lpMemVar,          0);
+
+            break;
+
+        case ARRAY_INT:
+        case ARRAY_APA:
+            tkRht.tkFlags.TknType  = TKT_VARIMMED;
+            tkRht.tkFlags.ImmType  = IMMTYPE_INT;
+            tkRht.tkData.tkInteger = GetNextInteger (lpMemVar, arrType, 0);
+
+            break;
+
+        case ARRAY_FLOAT:
+            tkRht.tkFlags.TknType  = TKT_VARIMMED;
+            tkRht.tkFlags.ImmType  = IMMTYPE_FLOAT;
+            tkRht.tkData.tkFloat   = GetNextFloat   (lpMemVar, arrType, 0);
+
+            break;
+
+        case ARRAY_CHAR:
+            tkRht.tkFlags.TknType  = TKT_VARIMMED;
+            tkRht.tkFlags.ImmType  = IMMTYPE_CHAR;
+            tkRht.tkData.tkChar    = GetNextChar16  (lpMemVar, arrType, 0);
+
+            break;
+
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+
+        case ARRAY_RAT:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+
+        case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+            // Set the token type
+            tkRht.tkFlags.TknType  = TKT_VARARRAY;
+
+            // Allocate space for the Global Numeric
+            hGlbRht = AllocateGlobalArray (arrType, 1, 0, NULL);
+
+            // Check for error
+            if (hGlbRht EQ NULL)
+                goto WSFULL_EXIT;
+
+            // Make it a global
+            tkRht.tkData.tkGlbData = MakePtrTypeGlb (hGlbRht);
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrGlb = MyGlobalLockVar (tkRht.tkData.tkGlbData);
+
+            // Mark it as temporary split numeric strand
+            lpMemHdrGlb->bSplitNum = TRUE;
+
+            // Skip over the header and dimensions
+            lpMemGlb = VarArrayDataFmBase (lpMemHdrGlb);
+
+            // Copy the single item to global memory
+            CopyMemory (lpMemGlb, lpMemVar, iSizeofGlb);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (tkRht.tkData.tkGlbData); lpMemHdrGlb = NULL;
+
+            break;
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+        defstop
+            break;
+    } // End SWITCH
+
+    // If the numeric strand has only two elements, and
+    //   the remaining item fits as an immediate, ...
+    if (arrNELM EQ 2
+     && (arrType EQ ARRAY_BOOL
+      || arrType EQ ARRAY_INT
+      || arrType EQ ARRAY_APA
+      || arrType EQ ARRAY_FLOAT
+      || arrType EQ ARRAY_CHAR))
+    {
+        switch (arrType)
+        {
+            case ARRAY_BOOL:
+                tkLft.tkFlags.TknType  = TKT_VARIMMED;
+                tkLft.tkFlags.ImmType  = IMMTYPE_BOOL;
+                tkLft.tkData.tkBoolean = GetNextBoolean (lpMemVar,          1);
+
+                break;
+
+            case ARRAY_INT:
+            case ARRAY_APA:
+                tkLft.tkFlags.TknType  = TKT_VARIMMED;
+                tkLft.tkFlags.ImmType  = IMMTYPE_INT;
+                tkLft.tkData.tkInteger = GetNextInteger (lpMemVar, arrType, 1);
+
+                break;
+
+            case ARRAY_FLOAT:
+                tkLft.tkFlags.TknType  = TKT_VARIMMED;
+                tkLft.tkFlags.ImmType  = IMMTYPE_FLOAT;
+                tkLft.tkData.tkFloat   = GetNextFloat   (lpMemVar, arrType, 1);
+
+                break;
+
+            case ARRAY_CHAR:
+                tkLft.tkFlags.TknType  = TKT_VARIMMED;
+                tkLft.tkFlags.ImmType  = IMMTYPE_CHAR;
+                tkLft.tkData.tkChar    = GetNextChar16  (lpMemVar, arrType, 1);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } else
+    {
+        // Count out the first item
+        arrNELM--;
+
+        // Set the token type
+        tkLft.tkFlags.TknType = (arrNELM > 1) ? TKT_NUMSTRAND : TKT_VARARRAY;
+
+        // Allocate space for the Global Numerics
+        hGlbRht = AllocateGlobalArray (arrType, arrNELM, arrNELM > 1, &arrNELM);
+
+        // Check for error
+        if (hGlbRht EQ NULL)
+            goto WSFULL_EXIT;
+
+        // Make it a global
+        tkLft.tkData.tkGlbData = MakePtrTypeGlb (hGlbRht);
+
+        // Lock the memory to get a ptr to it
+        lpMemHdrGlb = MyGlobalLockVar (tkLft.tkData.tkGlbData);
+
+        // Mark it as temporary split numeric strand
+        lpMemHdrGlb->bSplitNum = TRUE;
+
+        // Skip over the header and dimensions
+        lpMemGlb = VarArrayDataFmBase (lpMemHdrGlb);
+
+        // Calculate the size of the data portion (excluding the header)
+        //   (Booleans NOT rounded up to DWORD boundary)
+        ByteSize = CalcDataSize (arrType, arrNELM, NULL);
+
+        // If this var contains packed Booleans, ...
+        if (IsSimpleBool (arrType))
+        {
+            UINT uBitMaskLft,          // Left arg bit mask for trundling through Booleans
+                 uBitMaskRht;          // Right ...
+
+            // Initialize the bit masks and index for Boolean arguments
+            uBitMaskLft = BIT0;
+            uBitMaskRht = BIT1;
+
+            // Packed Booleans can't handled by skipping over some number of leading bytes
+            //   so we need to shift them over by 1
+
+            while (arrNELM-- NE 0)
+            {
+                if ((((LPAPLBOOL) lpMemVar)[0] & uBitMaskRht) NE 0)
+                    ((LPAPLBOOL) lpMemGlb)[0] |= uBitMaskLft;
+
+                // Shift the left bit mask by 1
+                uBitMaskLft *= 2;
+
+                // Check for end-of-byte
+                if (uBitMaskLft EQ END_OF_BYTE)
+                {
+                    // Restart the bit mask
+                    uBitMaskLft = BIT0;
+                    ((LPAPLBOOL) lpMemGlb)++;
+                } // End IF
+
+                // Shift the right bit mask by 1
+                uBitMaskRht *= 2;
+
+                // Check for end-of-byte
+                if (uBitMaskRht EQ END_OF_BYTE)
+                {
+                    // Restart the bit mask
+                    uBitMaskRht = BIT0;
+                    ((LPAPLBOOL) lpMemVar)++;
+                } // End IF
+            } // End WHILE
+        } else
+            // Copy the remaining items to global memory
+            CopyMemory (lpMemGlb, ByteAddr (lpMemVar, iSizeofGlb), (size_t) ByteSize);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (tkLft.tkData.tkGlbData); lpMemHdrGlb = NULL;
+    } // End IF/ELSE
+
+    // Substitute tkRht for lpplYYCurObj
+    CopyAll (&lpplYYCurObj->tkToken, &tkRht); // curSynObj = soA; Assert (IsValidSO (curSynObj));
+    lpplYYCurObj->TknCount = 1;
+
+    // Push tkLft onto the right stack as the next token
+    lpYYLft = YYAlloc ();
+    CopyAll (&lpYYLft->tkToken, &tkLft);
+    lpYYLft->TknCount = 1;
+    PUSHRIGHT (lpYYLft); // lftSynObj = lpYYLft->tkToken.tkSynObj; Assert (IsValidSO (lftSynObj));
+
+    // Mark as successful
+    bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    // Mark as in error
+    bRet = FALSE;
+NORMAL_EXIT:
+    // If this var a temporary split numeric strand, ...
+    if (lpMemHdrVar->bSplitNum)
+    {
+        // If its RefCnt is also 1, ...
+        if (lpMemHdrVar->RefCnt EQ 1)
+        {
+            // Clear the flag so we don't trip over it in <FreeResultGlobalVarSub>
+            lpMemHdrVar->bSplitNum = FALSE;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbVar); lpMemHdrVar = NULL;
+
+            // Free the var
+            FreeResultGlobalVar (hGlbVar); hGlbVar = NULL;
+        } else
+        {
+            // A cheap way to free the temp var
+            lpMemHdrVar->RefCnt--;
+            lpMemHdrVar->bSplitNum = FALSE;
+        } // End IF
+    } // End IF
+
+    // If this var is still valid, ...
+    if (hGlbVar NE NULL
+     && lpMemHdrVar NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbVar); lpMemHdrVar = NULL;
+    } // End IF
+
+    return bRet;
+} // End SplitStrandFirst
+
+
 
 
 //***************************************************************************

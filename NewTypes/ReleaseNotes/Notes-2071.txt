@@ -1,0 +1,18 @@
+Build #2071 -- Version 0.5.10.xx
+--------------------------------
+
+* Implement APL2 Vector Notation W.R.T. Right Operands
+
+Directory branches/bsmith/NewTypes:
+
+DATATYPE.H:
+  Define bit field in Array Header for a Split Numeric Strand.
+
+FREE.C:
+  Define function to free curried objects only.
+  In <FreeResultGlobalVarSub>, test for Split Numeric and free it again.
+
+PARSELINE.C:
+  While Parsing and just before Reducing, check for the need to split a strand as a right operand.
+  When an error occurs during Parsing, ensure the curried arguments of the Current Object are freed.
+  Define routines to Split Numeric Strands.

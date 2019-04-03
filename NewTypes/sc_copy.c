@@ -156,6 +156,10 @@ UBOOL CmdCopy_EM
         if (lpDict EQ NULL)
             goto ERRMSG_EXIT;
 
+        // Check on the FEATURE%d keyname/values
+        if (!CheckWsFeatures (lpDict))
+            goto ERROR_EXIT;
+
         // Get the version #
         lpwszProf =
           ProfileGetString (SECTNAME_GENERAL,   // Ptr to the section name

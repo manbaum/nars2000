@@ -4361,7 +4361,7 @@ PARSELINE_START:
             // Get the current object
             lpplYYCurObj = POPLEFT; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
 #ifdef DEBUG
-            if (bDebugPLStart)
+            if (bDebugPLStart || bDebugPLTrace)
             {
                 LPMEMTXT_UNION lpMemTxtLine;    // Ptr to header/line text global memory
 
@@ -5569,6 +5569,9 @@ PARSELINE_DONE:
 
                     // And again to the end of the next stmt
                     plLocalVars.lptkNext = &plLocalVars.lptkNext[plLocalVars.lptkNext->tkData.tkIndex];
+
+                    // Calculate the token #
+                    uTknNum = (UINT) (plLocalVars.lptkNext - plLocalVars.lptkStart);
 
                     goto PARSELINE_START;
                 } // End IF
@@ -8430,8 +8433,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End SplitStrandFirst
-
-
 
 
 //***************************************************************************

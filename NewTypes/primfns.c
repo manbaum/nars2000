@@ -198,6 +198,32 @@ UBOOL IsTknFcnOpr
 
 
 //***************************************************************************
+//  $IsTknFcnOprVar
+//
+//  Return TRUE iff the given token is a function, operator, or variable
+//***************************************************************************
+
+UBOOL IsTknFcnOprVar
+    (LPTOKEN lptk)              // Ptr to token
+
+{
+    switch (TokenTypeFV (lptk))
+    {
+        case 'F':
+        case '1':
+        case '2':
+        case '3':
+        case 'V':
+            return TRUE;
+
+        defstop
+        case '?':
+            return 0;
+    } // End SWITCH
+} // End IsTknFcnOprVar
+
+
+//***************************************************************************
 //  $TokenTypeFV
 //
 //  Return the type of a token
@@ -263,7 +289,7 @@ char TokenTypeFV
         case TKT_DELAFO:    // Del -- monadic/dyadic operator, bound to its operands
             return 'F';
 
-        case TKT_DELDEL:    // Del Del -- either a monadic or dyadic function
+        case TKT_DELDEL:    // Del Del -- either a monadic/dyadic operator
             // Search up the SIS chain to see what this is
             lpSISCur = SrchSISForDfn (GetMemPTD (), FALSE);
 
@@ -273,8 +299,8 @@ char TokenTypeFV
                 // Split case based upon the function type
                 switch (lpSISCur->DfnType)
                 {
-////////////////////case DFNTYPE_FCN:
-////////////////////    return 'F';
+                    case DFNTYPE_FCN:
+                        return 'F';
 
                     case DFNTYPE_OP1:
                         return '1';
@@ -283,7 +309,7 @@ char TokenTypeFV
                         return '2';
 
                     default:
-                        return '?';
+                        break;
                 } // End SWITCH
             } // End IF
 
@@ -2390,6 +2416,7 @@ HGLOBAL CopyArray_EM_PTB
                     case TKT_OP1AFO:
                     case TKT_OP2AFO:
                     case TKT_FCNDFN:
+
                     case TKT_OP1DFN:
                     case TKT_OP2DFN:
                         // Get the item global memory handle
@@ -3145,7 +3172,8 @@ APLINT RoundUpBitsInArray
     (APLNELM aplNELM)           // NELM to convert
 
 {
-    return ((aplNELM + (NBID - 1)) & ~MASKLOG2NBID) >> LOG2NBIB;
+////return ((aplNELM + (NBID - 1)) & ~MASKLOG2NBID) >> LOG2NBIB;
+    return ((aplNELM + (NBIB - 1)) & ~MASKLOG2NBIB) >> LOG2NBIB;
 } // End RoundUpBitsInArray
 
 
@@ -3427,7 +3455,11 @@ APLUINT CalcArraySize
     UBOOL   bRet = FALSE;       // TRUE iff the result is valid
 
     // Calculate the size of the data portion (excluding the header)
+    //   (Booleans NOT rounded up to DWORD boundary)
     ByteRes = CalcDataSize (aplType, aplNELM, &bRet);
+
+    // Round up to DWORD boundary
+    ByteRes = 4 * ((ByteRes + 4-1) / 4);
 
     if (bRet && aplType NE ARRAY_LIST)
         // Add in the size of the header and dimension
@@ -3652,9 +3684,11 @@ UBOOL IsTknNamed
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
         case TKT_OP3NAMED:
+            return TRUE;
+
         case TKT_DEL:
         case TKT_DELDEL:
-            return TRUE;
+            return FALSE;
 
         case TKT_FCNAFO:
         case TKT_OP1AFO:
@@ -3678,6 +3712,29 @@ UBOOL IsTknNamed
             return FALSE;
     } // End SWITCH
 } // End IsTknNamed
+
+
+//***************************************************************************
+//  $IsTknDel
+//
+//  Return TRUE iff the given token is {del} or {del}{del}
+//***************************************************************************
+
+UBOOL IsTknDel
+    (LPTOKEN lpToken)
+
+{
+    // Split cases based upon the token type
+    switch (lpToken->tkFlags.TknType)
+    {
+        case TKT_DEL:
+        case TKT_DELDEL:
+            return TRUE;
+
+        default:
+            return FALSE;
+    } // End SWITCH
+} // End IsTknDel
 
 
 //***************************************************************************
@@ -3772,6 +3829,7 @@ UBOOL IsTknAFO
 
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
+
         case TKT_FCNDFN:
         case TKT_OP1DFN:
         case TKT_OP2DFN:
@@ -3978,6 +4036,7 @@ UBOOL IsTknImmed
     {
         case TKT_VARIMMED:
         case TKT_FCNIMMED:
+
         case TKT_OP1IMMED:
         case TKT_OP2IMMED:
         case TKT_OP3IMMED:
@@ -3989,6 +4048,7 @@ UBOOL IsTknImmed
 
         case TKT_VARNAMED:
         case TKT_FCNNAMED:
+
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
         case TKT_OP3NAMED:

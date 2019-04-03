@@ -165,6 +165,7 @@ APLU3264 CALLBACK AboutDlgProc
     static HFONT     hFont = NULL;
     static TOOLINFOW tti = {sizeof (tti)};
     static WCHAR     wszLclAppDPFE[_MAX_PATH + 1024];
+           int       i;
 
     // Split cases
     switch (message)
@@ -312,14 +313,21 @@ APLU3264 CALLBACK AboutDlgProc
                         L"%s\n",
                          crsh_version);
             //***************************************************************************
-            // Workspace version
+            // Workspace Features
             //***************************************************************************
 
-            // Append the workspace version #
-            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
-                        L"Workspace version #%s\n",
-                         WS_VERSTR);
+            // Loop through the Workspace Features this version of the interpreter supports
+            for (i = 0; i < ENUM_FEATURE_LENGTH; i++)
+            {
+                // Append the header
+                MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                             uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
+                            L"%s%d=%s\r\n",
+                             KEYNAME_FEATURE,
+                             i,
+                             aWsFeatureText[i]);
+            } // End FOR
+
             //***************************************************************************
             // SYMTABSIZE size
             //***************************************************************************

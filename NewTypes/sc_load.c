@@ -237,7 +237,8 @@ UBOOL LoadWorkspace_EM
                  uCnt;                  // Loop counter
     WCHAR        wszCount[8],           // Save area for formatted uSymVar/Fcn counter
                  wszVersion[WS_VERLEN], // ...                     version info
-                 wszSectName[15];       // ...                     section name (e.g., [Vars.nnn])
+                 wszSectName[15],       // ...                     section name (e.g., [Vars.nnn])
+                 wszTemp[1024];         // ... temp format data
     UBOOL        bRet = FALSE,          // TRUE iff the result is valid
                  bImmed,                // TRUE iff the result of ParseSavedWsVar_EM is immediate
                  bExecLX,               // TRUE iff execute []LX after successful load
@@ -326,6 +327,10 @@ UBOOL LoadWorkspace_EM
     if (lpDict EQ NULL)
         goto ERRMSG_EXIT;
 
+    // Check on the FEATURE%d keyname/values
+    if (!CheckWsFeatures (lpDict))
+        goto ERROR_EXIT;
+
     // Get the version #
     lpwszProf =
       ProfileGetString (SECTNAME_GENERAL,   // Ptr to the section name
@@ -339,8 +344,6 @@ UBOOL LoadWorkspace_EM
     // Compare the version #s
     if (lstrcmpW (wszVersion, WS_VERSTR) > 0)
     {
-        WCHAR wszTemp[1024];
-
         // Format the error message text
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
@@ -964,6 +967,67 @@ NORMAL_EXIT:
 
     return bRet;
 } // End LoadWorkspace_EM
+
+
+//***************************************************************************
+//  $CheckWsFeatures
+//
+//  Ensure the source workspace is supported
+//***************************************************************************
+
+UBOOL CheckWsFeatures
+    (LPDICTIONARY lpDict)
+
+{
+    UINT    uCnt;                   // Feature index
+    WCHAR   wszTemp[1024];          // Temp save area
+    LPWCHAR lpwszProf;              // Ptr to profile string
+    int     i;                      // Loop counter
+
+    uCnt = 0;
+    while (TRUE)
+    {
+        // Format the FEATURE keyname
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
+                   L"%s%d",
+                    KEYNAME_FEATURE,
+                    uCnt++);
+        // Get the FEATURE value
+        lpwszProf =
+          ProfileGetString (SECTNAME_GENERAL,   // Ptr to the section name
+                            wszTemp,            // Ptr to the key name
+                            L"",                // Ptr to the default value
+                            lpDict);            // Ptr to workspace dictionary
+        // If there's no entry, ...
+        if (lpwszProf[0] EQ WC_EOS)
+            // Quit looking
+            break;
+
+        // Compare the value with our supported values
+        for (i = 0; i < ENUM_FEATURE_LENGTH; i++)
+        if (lstrcmpiW (lpwszProf, aWsFeatureText[i]) EQ 0)
+            break;
+        // Check for Not Found
+        if (i EQ ENUM_FEATURE_LENGTH)
+        {
+            // Format the error message text
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"This workspace contains a feature (%s) not supported by this interpreter."
+                       L"  Please try loading the workspace with a later version of the interpreter.",
+                        lpwszProf);
+            // Tell the user the bad news
+            MessageBoxW (hWndMF,
+                         wszTemp,
+                         WS_APPNAME,
+                         MB_OK | MB_ICONSTOP);
+            return FALSE;
+        } // End IF
+    } // End WHILE
+
+    return TRUE;
+} // End CheckWsFeatures
 
 
 //***************************************************************************

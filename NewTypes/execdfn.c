@@ -2395,6 +2395,7 @@ UBOOL InitFcnSTEs
 
                 case TKT_FCNARRAY:
                 case TKT_FCNAFO:
+
                 case TKT_FCNDFN:
                 case TKT_OP1DFN:
                 case TKT_OP2DFN:
@@ -2417,12 +2418,12 @@ UBOOL InitFcnSTEs
 ////////////////////(*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_ERROR;    // ...
                     (*lplpSymEntry)->stFlags.Value      = TRUE;
                     (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
-                    (*lplpSymEntry)->stFlags.stNameType = TranslateDfnToNameType (lpMemDfnHdr->DfnType, lpMemDfnHdr->FcnValence);
+                    (*lplpSymEntry)->stFlags.stNameType = TranslateDfnTypeToNameType (lpMemDfnHdr->DfnType, lpMemDfnHdr->FcnValence);
                     (*lplpSymEntry)->stFlags.UsrDfn     = (GetSignatureGlb_PTB (hGlbDfnHdr) EQ DFN_HEADER_SIGNATURE);
                     (*lplpSymEntry)->stFlags.DfnAxis    = (*lplpSymEntry)->stFlags.UsrDfn ? lpMemDfnHdr->DfnAxis : FALSE;
 ////////////////////(*lplpSymEntry)->stFlags.FcnDir     = FALSE;            // Already zero from above
 
-
+                    // If the object is a UDFO, ...
                     if (lpYYArg->tkToken.tkFlags.TknType EQ TKT_FCNDFN
                      || lpYYArg->tkToken.tkFlags.TknType EQ TKT_OP1DFN
                      || lpYYArg->tkToken.tkFlags.TknType EQ TKT_OP2DFN)
@@ -2531,6 +2532,7 @@ UBOOL InitFcnSTEs
                 case TKT_AXISIMMED:
                 case TKT_VARIMMED:
                 case TKT_FCNIMMED:
+
                 case TKT_OP1IMMED:
                 case TKT_OP2IMMED:
                 case TKT_OP3IMMED:
@@ -2540,6 +2542,7 @@ UBOOL InitFcnSTEs
 
                 case TKT_VARNAMED:
                 case TKT_FCNNAMED:
+
                 case TKT_OP1NAMED:
                 case TKT_OP2NAMED:
                 case TKT_OP3NAMED:

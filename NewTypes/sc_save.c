@@ -56,6 +56,7 @@ UBOOL CmdSave_EM
     APLRANK      aplRankWSID;               // ...    rank
     APLUINT      ByteRes,                   // # bytes in the result
                  uQuadPP;                   // []PP save area
+    UBOOL        aWsFeatureFlag[ENUM_FEATURE_LENGTH] = {FALSE}; // Ws feature flags
     UBOOL        bRet = FALSE,              // TRUE iff result is valid
                  bDispMPSuf,                // Save area for OptionFlags value
                  bJ4i,                      // ...
@@ -64,7 +65,8 @@ UBOOL CmdSave_EM
                  bDispOctoDig;              // ...
     APLU3264     uNameLen;                  // Length of the object name in WCHARs
     int          iCmp;                      // Comparison result
-    UINT         uGlbCnt=0;                 // # entries in [Globals] section
+    UINT         uGlbCnt = 0,               // # entries in [Globals] section
+                 uCnt;                      // Loop counter
     FILE        *fStream;                   // Ptr to file stream
     LPSYMENTRY   lpSymEntry,                // Ptr to STE
                  lpSymTabNext;              // ...
@@ -75,7 +77,11 @@ UBOOL CmdSave_EM
                  lpwszTemp;                 // Ptr to temporary storage
     LPDICTIONARY lpDict = NULL;             // Ptr to workspace dictionary
     SAVEDWSVAR_CB savedWsVar_CB;            // Saved WS Var Callback struct
+    NAME_TYPES   nameType;                  // Name type of a UDFO
     VARS_TEMP_OPEN
+
+    // Initialize the WS Feature Flags
+    aWsFeatureFlag[ENUM_FEATURE_HYPERCOMPLEX] = TRUE;
 
     // Save OptionFlags for display to fixed
     //   values so we convert values on )LOAD,
@@ -448,6 +454,7 @@ UBOOL CmdSave_EM
                                                  lpDict,            // Ptr to the dictionary
                                                 &uGlbCnt,           // Ptr to [Globals] count
                                                  lpSymEntry,        // Ptr to this global's SYMENTRY
+                                                 aWsFeatureFlag,    // Ptr to Ws Feature flags
                                                 &savedWsVar_CB);    // Ptr to Callback struct (may be NULL)
                         // If the string hasn't been saved into the dictionary, ...
                         if (savedWsVar_CB.iIndex EQ -1)
@@ -473,10 +480,15 @@ UBOOL CmdSave_EM
                         // Append separator
                         *lpaplChar++ = L'=';
 
+                        // Get the name type
+                        nameType = stFlags.stNameType;
+
+                        Assert (nameType NE NAMETYPE_UNK);
+
                         // Append the name type
                         // N.B.:  This very poorly designed calculation "overflows" for
                         //        NAMETYPE_TRN (0A) and returns ':' for that name type.  Yuck!
-                        *lpaplChar++ = L'0' + stFlags.stNameType;
+                        *lpaplChar++ = L'0' + nameType;
 
                         // Append separator
                         *lpaplChar++ = L'=';
@@ -505,6 +517,7 @@ UBOOL CmdSave_EM
                                                  lpSymEntry->stData.stGlbData,  // WS object global memory handle
                                                  lpDict,                        // Ptr to saved WS file DPFE
                                                 &uGlbCnt,                       // Ptr to [Globals] count
+                                                 aWsFeatureFlag,    // Ptr to Ws Feature flags
                                                  lpSymEntry);                   // Ptr to this global's SYMENTRY
                         // Format the counter
                         MySprintfW (wszCount,
@@ -567,6 +580,22 @@ UBOOL CmdSave_EM
                 break;
         } // End SWITCH
     } // End __try/__except
+
+    // Write out the FEATUREs to the [General] section
+    for (uCnt = 0; uCnt < ENUM_FEATURE_LENGTH; uCnt++)
+    if (aWsFeatureFlag[uCnt])
+    {
+        // Format the FEATURE keyname
+        wsprintfW (lpwszTemp,
+                  L"%s%d",
+                   KEYNAME_FEATURE,
+                   uCnt);
+        // Write out to the [General] section
+        ProfileSetString (SECTNAME_GENERAL,     // Ptr to the section name
+                          lpwszTemp,            // Ptr to the key name
+                          aWsFeatureText[uCnt], // Ptr to the key value
+                          lpDict);              // Ptr to the dictionary
+    } // End FOR/IF
 
     // Delete the FMTSTR_GLBOBJ=FMTSTR_GLBCNT references in the [TempGlobals] section
     // In fact, delete the entire section
@@ -796,13 +825,14 @@ void CleanupAfterSave
 //***************************************************************************
 
 LPAPLCHAR SavedWsFormGlbFcn
-    (LPAPLCHAR    lpaplChar,            // Ptr to output save area
-     LPAPLCHAR    lpwszFcnTypeName,     // Ptr to the function section name as F nnn.Name where nnn is the count
-     LPAPLCHAR    lpwszFcnName,         // Ptr to the function name (for FCNARRAY_HEADER only)
-     HGLOBAL      hGlbObj,              // WS object global memory handle
-     LPDICTIONARY lpDict,               // Ptr to the dictionary
-     LPUINT       lpuGlbCnt,            // Ptr to [Globals] count
-     LPSYMENTRY   lpSymEntry)           // Ptr to this global's SYMENTRY
+    (LPAPLCHAR         lpaplChar,           // Ptr to output save area
+     LPAPLCHAR         lpwszFcnTypeName,    // Ptr to the function section name as F nnn.Name where nnn is the count
+     LPAPLCHAR         lpwszFcnName,        // Ptr to the function name (for FCNARRAY_HEADER only)
+     HGLOBAL           hGlbObj,             // WS object global memory handle
+     LPDICTIONARY      lpDict,              // Ptr to the dictionary
+     LPUINT            lpuGlbCnt,           // Ptr to [Globals] count
+     LPUBOOL           lpaWsFeatureFlag,    // Ptr to Ws Feature flags
+     LPSYMENTRY        lpSymEntry)          // Ptr to this global's SYMENTRY
 
 {
     LPVOID            lpMemObj = NULL;          // Ptr to WS object ...
@@ -920,7 +950,12 @@ LPAPLCHAR SavedWsFormGlbFcn
         switch (GetSignatureMem (lpMemObj))
         {
             case FCNARRAY_HEADER_SIGNATURE:
+            {
+#ifdef DEBUG
+                LPFCNARRAY_HEADER lpMemFcnHdr = lpMemObj;
+#else
 #define lpMemFcnHdr     ((LPFCNARRAY_HEADER) lpMemObj)
+#endif
                 // Skip over the 'F ' to point to the section name
                 lpwszSectName = &lpwszFcnTypeName[2];
 
@@ -929,12 +964,14 @@ LPAPLCHAR SavedWsFormGlbFcn
                 SavedWsGlbVarParm.lpuGlbCnt        = lpuGlbCnt;
                 SavedWsGlbVarParm.lpSymEntry       = lpSymEntry;
                 SavedWsGlbVarParm.lplpSymLink      = NULL;
+                SavedWsGlbVarParm.lpaWsFeatureFlag = lpaWsFeatureFlag;
 
                 SavedWsGlbFcnParm.lpDict           = lpDict;
                 SavedWsGlbFcnParm.lpwszFcnTypeName = &lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName) + 1];
                 SavedWsGlbFcnParm.lpuGlbCnt        = lpuGlbCnt;
                 SavedWsGlbFcnParm.lpSymEntry       = lpSymEntry;
                 SavedWsGlbFcnParm.lplpSymLink      = NULL;
+                SavedWsGlbFcnParm.lpaWsFeatureFlag = lpaWsFeatureFlag;
 
                 // Call the common function display function
                 lpaplChar =
@@ -986,14 +1023,21 @@ LPAPLCHAR SavedWsFormGlbFcn
                                  L"0",                  // Ptr to the key value
                                   lpDict);              // Ptr to the dictionary
                 break;
+            } // End FCNARRAY_HEADER_SIGNATURE
+#ifndef DEBUG
 #undef  lpMemFcnHdr
+#endif
 
             case DFN_HEADER_SIGNATURE:
             {
-                UINT      numFcnLines;
-                LPFCNLINE lpFcnLines;       // Ptr to array of function line structs (FCNLINE[numFcnLines])
-
+                UINT       numFcnLines;
+                LPFCNLINE  lpFcnLines;      // Ptr to array of function line structs (FCNLINE[numFcnLines])
+                NAME_TYPES nameType;        // Name type of a UDFO
+#ifdef DEBUG
+                LPDFN_HEADER lpMemDfnHdr = lpMemObj;
+#else
 #define lpMemDfnHdr     ((LPDFN_HEADER) lpMemObj)
+#endif
                 // Format the function section name as F nnn.Name where nnn is the count
                 wsprintfW (lpwszFcnTypeName,
                            L"F %d.",
@@ -1032,8 +1076,16 @@ LPAPLCHAR SavedWsFormGlbFcn
                 // Append separator
                 *lpaplChar++ = L'=';
 
+                // Get the name type
+                nameType = lpMemDfnHdr->steFcnName->stFlags.stNameType;
+
+                // Check for {del} or {del}{del}
+                if (nameType EQ NAMETYPE_UNK)
+                    // Fill in the name type
+                    nameType = TranslateDfnTypeToNameType (lpMemDfnHdr->DfnType, lpMemDfnHdr->FcnValence);
+
                 // Append the name type
-                *lpaplChar++ = L'0' + lpMemDfnHdr->steFcnName->stFlags.stNameType;
+                *lpaplChar++ = L'0' + nameType;
 
                 // Append separator
                 *lpaplChar++ = L'=';
@@ -1256,7 +1308,9 @@ LPAPLCHAR SavedWsFormGlbFcn
 
                 // Copy last modification time
                 ftLastMod  = lpMemDfnHdr->ftLastMod;
+#ifndef DEBUG
 #undef  lpMemDfnHdr
+#endif
                 break;
             } // End DFN_HEADER_SIGNATURE
 
@@ -1369,12 +1423,13 @@ void WriteFunctionLine
 //***************************************************************************
 
 LPAPLCHAR SavedWsFormGlbVar
-    (LPAPLCHAR       lpaplChar,         // Ptr to output save area
-     HGLOBAL         hGlbObj,           // WS object global memory handle
-     LPDICTIONARY    lpDict,            // Ptr to the dictionary
-     LPUINT          lpuGlbCnt,         // Ptr to [Globals] count
-     LPSYMENTRY      lpSymEntry,        // Ptr to this global's SYMENTRY
-     LPSAVEDWSVAR_CB lpSavedWsVar_CB)   // Ptr to Callback struct (may be NULL)
+    (LPAPLCHAR         lpaplChar,           // Ptr to output save area
+     HGLOBAL           hGlbObj,             // WS object global memory handle
+     LPDICTIONARY      lpDict,              // Ptr to the dictionary
+     LPUINT            lpuGlbCnt,           // Ptr to [Globals] count
+     LPSYMENTRY        lpSymEntry,          // Ptr to this global's SYMENTRY
+     LPUBOOL           lpaWsFeatureFlag,    // Ptr to Ws Feature Flags
+     LPSAVEDWSVAR_CB   lpSavedWsVar_CB)     // Ptr to Callback struct (may be NULL)
 
 {
     APLSTYPE     aplTypeObj;            // WS object storage type
@@ -1736,6 +1791,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                              lpDict,            // Ptr to the dictionary
                                              lpuGlbCnt,         // Ptr to [Globals] count
                                              lpSymEntry,        // Ptr to this global's SYMENTRY
+                                             lpaWsFeatureFlag,  // Ptr to Ws Feature flags
                                              lpSavedWsVar_CB);  // Ptr to Callback struct (may be NULL)
                         // Ensure there's a trailing blank
                         if (lpaplChar[-1] NE L' ')
@@ -2360,6 +2416,7 @@ LPAPLCHAR SavedWsGlbVarConv
                          lpSavedWsGlbVarParm->lpDict,           // Ptr to the dictionary
                          lpSavedWsGlbVarParm->lpuGlbCnt,        // Ptr to [Globals] count
                          lpSavedWsGlbVarParm->lpSymEntry,       // Ptr to this global's SYMENTRY
+                         lpSavedWsGlbVarParm->lpaWsFeatureFlag, // Ptr to Ws Feature flags
                          NULL);                                 // Ptr to Callback struct (may be NULL)
     // Include a trailing blank
     *lpaplChar++ = L' ';
@@ -2382,13 +2439,14 @@ LPAPLCHAR SavedWsGlbFcnConv
 {
     // Convert the function in global memory to saved ws form
     lpaplChar =
-      SavedWsFormGlbFcn (lpaplChar,                             // Ptr to output save area
-                         lpSavedWsGlbFcnParm->lpwszFcnTypeName, // Ptr to the function section name as F nnn.Name where nnn is the count
-                         NULL,                                  // Ptr to the function name (for FCNARRAY_HEADER only)
-                         hGlbObj,                               // WS object global memory handle
-                         lpSavedWsGlbFcnParm->lpDict,           // Ptr to saved WS file DPFE
-                         lpSavedWsGlbFcnParm->lpuGlbCnt,        // Ptr to [Globals] count
-                         lpSavedWsGlbFcnParm->lpSymEntry);      // Ptr to this global's SYMENTRY
+      SavedWsFormGlbFcn (lpaplChar,                                 // Ptr to output save area
+                         lpSavedWsGlbFcnParm->lpwszFcnTypeName,     // Ptr to the function section name as F nnn.Name where nnn is the count
+                         NULL,                                      // Ptr to the function name (for FCNARRAY_HEADER only)
+                         hGlbObj,                                   // WS object global memory handle
+                         lpSavedWsGlbFcnParm->lpDict,               // Ptr to saved WS file DPFE
+                         lpSavedWsGlbFcnParm->lpuGlbCnt,            // Ptr to [Globals] count
+                         lpSavedWsGlbFcnParm->lpaWsFeatureFlag,     // Ptr to Ws Feature flags
+                         lpSavedWsGlbFcnParm->lpSymEntry);          // Ptr to this global's SYMENTRY
     // Include a trailing blank
     *lpaplChar++ = L' ';
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1242,7 +1242,7 @@ NEXTLINE:
             break;
 
         case 1:         // Single result name:  Copy it as the result from this function
-            // Check for a value
+            // Check for NoValue
             if (!(*lplpSymEntry)->stFlags.Value)
                 // Make a PL_YYSTYPE NoValue entry
                 lpYYRes = MakeNoValue_YY (lptkFunc);
@@ -1290,71 +1290,78 @@ NEXTLINE:
             LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
             LPVOID            lpMemRes;             // Ptr to result global memory
 
-            // Calculate space needed for the result
-            ByteRes = CalcArraySize (ARRAY_NESTED, numResultSTE, 1);
+            // Check for NoValue
+            if (!(*lplpSymEntry)->stFlags.Value)
+                // Make a PL_YYSTYPE NoValue entry
+                lpYYRes = MakeNoValue_YY (lptkFunc);
+            else
+            {
+                // Calculate space needed for the result
+                ByteRes = CalcArraySize (ARRAY_NESTED, numResultSTE, 1);
 
-            // Check for overflow
-            if (ByteRes NE (APLU3264) ByteRes)
-                goto WSFULL_EXIT;
+                // Check for overflow
+                if (ByteRes NE (APLU3264) ByteRes)
+                    goto WSFULL_EXIT;
 
-            // Allocate space for the result
-            hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-            if (hGlbRes EQ NULL)
-                goto WSFULL_EXIT;
+                // Allocate space for the result
+                hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                if (hGlbRes EQ NULL)
+                    goto WSFULL_EXIT;
 
-            // Lock the memory to get a ptr to it
-            lpMemHdrRes = MyGlobalLock000 (hGlbRes);
+                // Lock the memory to get a ptr to it
+                lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
-            // Fill in the header
-            lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-            lpHeader->ArrType    = ARRAY_NESTED;
-////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-            lpHeader->RefCnt     = 1;
-            lpHeader->NELM       = numResultSTE;
-            lpHeader->Rank       = 1;
+                // Fill in the header
+                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                lpHeader->ArrType    = ARRAY_NESTED;
+////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+                lpHeader->RefCnt     = 1;
+                lpHeader->NELM       = numResultSTE;
+                lpHeader->Rank       = 1;
 #undef  lpHeader
 
-            // Fill in the dimension
-            *VarArrayBaseToDim (lpMemHdrRes) = numResultSTE;
+                // Fill in the dimension
+                *VarArrayBaseToDim (lpMemHdrRes) = numResultSTE;
 
-            // Skip over the header and dimension
-            lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+                // Skip over the header and dimension
+                lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
-            // Fill in the result
-            for (numRes = 0; numRes < numResultSTE; numRes++)
-            {
-                // If it's immediate, copy the LPSYMENTRY
-                if (lplpSymEntry[numRes]->stFlags.Imm)
-                    *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lplpSymEntry[numRes]);
-                else
-                // Otherwise, copy the HGLOBAL
-                    *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lplpSymEntry[numRes]->stData.stGlbData);
-            } // End FOR
+                // Fill in the result
+                for (numRes = 0; numRes < numResultSTE; numRes++)
+                {
+                    // If it's immediate, copy the LPSYMENTRY
+                    if (lplpSymEntry[numRes]->stFlags.Imm)
+                        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lplpSymEntry[numRes]);
+                    else
+                    // Otherwise, copy the HGLOBAL
+                        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lplpSymEntry[numRes]->stData.stGlbData);
+                } // End FOR
 
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
-            // Allocate a new YYRes
-            lpYYRes = YYAlloc ();
+                // Allocate a new YYRes
+                lpYYRes = YYAlloc ();
 #ifdef DEBUG
-            // Decrement the SI Level as this result belongs
-            //   to the next higher up level
-            lpYYRes->SILevel--;
+                // Decrement the SI Level as this result belongs
+                //   to the next higher up level
+                lpYYRes->SILevel--;
 #endif
-            // Fill in the result token
-            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////////////lpYYRes->tkToken.tkFlags.NoDisplay =                // Set below
-            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
-            lpYYRes->tkToken.tkCharIndex       = NEG1U;
+                // Fill in the result token
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay =                // Set below
+                lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+                lpYYRes->tkToken.tkCharIndex       = NEG1U;
 
-            // Copy the non-displayable flag
-            lpYYRes->tkToken.tkFlags.NoDisplay = lpMemDfnHdr->NoDispRes;
+                // Copy the non-displayable flag
+                lpYYRes->tkToken.tkFlags.NoDisplay = lpMemDfnHdr->NoDispRes;
 
-            // See if it fits into a lower (but not necessarily smaller) datatype
-            TypeDemote (&lpYYRes->tkToken, FALSE);
+                // See if it fits into a lower (but not necessarily smaller) datatype
+                TypeDemote (&lpYYRes->tkToken, FALSE);
+            } // End IF
 
             break;
         } // End default
@@ -1410,7 +1417,8 @@ UBOOL CheckDfnExitError_EM
     LPDFN_HEADER   lpMemDfnHdr = NULL;  // Ptr to user-defined function/operator header
     UBOOL          bRet = FALSE;        // TRUE iff error on exit
     UINT           numResultSTE,        // # result STEs (may be zero if no result)
-                   numRes;              // Loop counter
+                   numRes,              // Loop counter
+                   numValue = 0;        // Value counter
     LPSYMENTRY    *lplpSymEntry;        // Ptr to 1st result STE
     LPTOKEN_HEADER lptkHdr = NULL;      // Ptr to header of tokenized line
     LPTOKEN        lptkLine;            // Ptr to tokenized line
@@ -1462,7 +1470,7 @@ UBOOL CheckDfnExitError_EM
     // Get ptr to 1st result STE
     lplpSymEntry = (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offResultSTE);
 
-    // Ensure that all STEs in the result have a value
+    // Ensure that all or none of the STEs in the result have a value
     switch (numResultSTE)
     {
         case 0:         // No result:  Nothing to check
@@ -1494,7 +1502,8 @@ UBOOL CheckDfnExitError_EM
 
             break;
 
-        default:        // Multiple result names:  Ensure they all have a value and all are vars
+        default:        // Multiple result names:  Ensure they all have a value and all are vars,
+                        //                         or none have a value
             // Lock the memory to get a ptr to it
             lptkHdr = MyGlobalLockTkn (lpMemDfnHdr->hGlbTknHdr);
 
@@ -1510,13 +1519,18 @@ UBOOL CheckDfnExitError_EM
             {
                 // If the name has no value, ...
                 if (!lplpSymEntry[numRes]->stFlags.Value)
-                    goto VALUE_EXIT;
+                    // Count in another without a value
+                    numValue++;
                 else
                 // If the name is not a variable, ...
                 if (lplpSymEntry[numRes]->stFlags.stNameType NE NAMETYPE_VAR)
                     goto SYNTAX_EXIT;
             } // End FOR
 
+            // Check for all or none have a value
+            if (numValue NE 0
+             && numValue NE numResultSTE)
+                goto VALUE_EXIT;
             break;
     } // End SWITCH
 

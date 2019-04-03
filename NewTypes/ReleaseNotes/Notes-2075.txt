@@ -1,0 +1,9 @@
+Build #2075 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bug With UDFO Multiple Names In Result List That Are All NoValue
+
+Directory branches/bsmith/NewTypes:
+
+EXCEDFN.C:
+  In <ExecuteFunction_EM_YY> and <CheckDfnExitError_EM> when testing the multiple names in the Result List, allow all names to be NoValue.

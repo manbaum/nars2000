@@ -509,9 +509,22 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // Handle empty array results
     if (IsEmpty (aplNELMRes))
     {
-        // If the result is nested, copy the prototype from the right arg
+        // If the result is nested, ...
         if (IsNested (aplTypeRes))
-            *((LPAPLNESTED) lpMemRes) = CopySymGlbDir_PTB (*(LPAPLNESTED) lpMemRht);
+        {
+            // If the argument is empty, ...
+            if (IsEmpty (aplNELMRht))
+                // Copy the prototype from the right arg
+                *((LPAPLNESTED) lpMemRes) = CopySymGlbDir_PTB (*(LPAPLNESTED) lpMemRht);
+            else
+                // Compute the prototype of the right arg
+                *((LPAPLNESTED) lpMemRes) =
+                  MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemRht,
+                                           aplTypeRht,
+                                           lptkFunc,
+                                           MP_CHARS);
+        } // End IF
+
         goto YYALLOC_EXIT;
     } // End IF
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -476,9 +476,22 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     // Handle empty array results
     if (IsEmpty (aplNELMRes))
     {
-        // If the result is nested, copy the prototype from the right arg
+        // If the result is nested, ...
         if (IsNested (aplTypeRes))
-            *((LPAPLNESTED) lpMemRes) = CopySymGlbDir_PTB (*(LPAPLNESTED) lpMemRht);
+        {
+            // If the argument is empty, ...
+            if (IsEmpty (aplNELMRht))
+                // Copy the prototype from the right arg
+                *((LPAPLNESTED) lpMemRes) = CopySymGlbDir_PTB (*(LPAPLNESTED) lpMemRht);
+            else
+                // Compute the prototype of the right arg
+                *((LPAPLNESTED) lpMemRes) =
+                  MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemRht,
+                                           aplTypeRht,
+                                           lptkFunc,
+                                           MP_CHARS);
+        } // End IF
+
         goto YYALLOC_EXIT;
     } // End IF
 

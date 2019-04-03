@@ -1,6 +1,18 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2074 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In Up/Down Arrow Prototype In Certain Cases
+
+Directory branches/bsmith/NanTypes:
+
+PF_DARROW.C:
+PF_UARROW.C:
+  Fix bug in the "Arrows" when the result is Empty Nested but the right arg is Not Empty in which case the code mistakenly returns the right arg as the prototype instead of the "Type" of the right arg.
+
+
 Build #2072 -- Version 0.6.0.xx
 -------------------------------
 

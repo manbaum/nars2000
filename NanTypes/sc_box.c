@@ -47,7 +47,7 @@ UBOOL CmdBox_EM
     {
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"Is %s\r\n",
+                   L"Is %s",
                     gbBoxState ? L"ON" : L"OFF");
         // Tell the user about it
         AppendLine (wszTemp, FALSE, TRUE);

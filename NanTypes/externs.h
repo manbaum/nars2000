@@ -2683,6 +2683,29 @@ UBOOL gbBoxState
 ;
 
 
+//***************************************************************************
+//  Workspace Feature Values
+//***************************************************************************
+
+typedef enum tagENUM_FEATURE
+{
+    ENUM_FEATURE_HYPERCOMPLEX = 0,      // 00:  Hypercomplex arithmetic data
+    ENUM_FEATURE_BALLARITHMETIC  ,      // 01:  Ball Arithmetic data
+////ENUM_FEATURE_HYPERATOR       ,      // 02:  Hyperators
+    ENUM_FEATURE_LENGTH                 // # enums for workspace features
+} ENUM_FEATURE, *LPENUM_FEATURE;
+
+EXTERN
+LPWCHAR aWsFeatureText[ENUM_FEATURE_LENGTH]
+#ifdef DEFINE_VALUES
+ = {WS_VER_HYPERCOMPLEX    ,
+    WS_VER_BALLARITHMETIC  ,
+////WS_VER_HYPERATOR       ,
+   }
+#endif
+;
+
+
 #define ENUMS_DEFINED
 #undef  EXTERN
 

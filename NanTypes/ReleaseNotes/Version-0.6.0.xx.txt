@@ -1,6 +1,60 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2078 -- Version 0.6.0.xx
+-------------------------------
+
+* Implement Workspace Features To Allow Multiple Features And Non-Downward Compatible Features To Co-exist
+
+Directory branches/bsmith/NanTypes:
+
+ASSIGN.C:
+EXECDFN.C:
+  Rename<TranslateDfnToNameType> to <TranslateDfnTypeToNameType> to be more consistent with other function names in <translate.c>.
+
+EXTERNS.H:
+  Define section on Workspace Feature Values.
+
+HEADERS.H:
+  Copy <#include "workspace.h"> from <pertab.h> to #define certain names used in <externs.h>.
+
+MAIN.RC:
+  Lengthen the "About" dialog box to accommodate the list of workspace features supported by this version.
+
+PERTAB.H:
+  Surround <#include "workspace.h"> with #define/#undef so it #defines the structures, too.
+
+PRIMFNS.C:
+  Define function <IsTknFcnOprVar> like <IsTknFcnOpr> but including Vars.
+  In <RoundUpBitsInArray>, round up Bits to a byte boundary instead of DWORD.
+  Take the last change into account in <CalcArraySize>.
+  In <IsTknnamed>, change the status of DEL and DELDEL to FALSE.
+  Define function <IsTknDel> like <IsSymDel>, but for tokens.
+
+SC_BOX.C:
+  Fix minor display bug in )BOX which mistakenly inserts an extra line after the command.
+
+SC_COPY.C:
+  Before )COPYing, check to see that the source ws doesn't have unsupported features.
+
+SC_LOAD.C:
+  Before )LOADing, check to see that the source ws doesn't have unsupported features.
+
+SC_SAVE.C:
+  While )SAVEing a workspace, check for features that old interpreters might choke on and put a notice into the saved workspace.
+
+TRANSLATE.C:
+  Rename<TranslateDfnToNameType> to <TranslateDfnTypeToNameType> to be more consistent with other function names in <translate.c>.
+  In <TranslateNameTypeToImmType>, allow niladic function name type.
+  In <TranslateFcnOprToStr>, ensure the result is properly terminated
+
+VER.C:
+  In the "About" dialog box, display the Workspace Features this version supports.
+
+WORKSPACE.H:
+  #define keynames and feature names for Workspace Features.
+
+
 Build #2076 -- Version 0.6.0.xx
 -------------------------------
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,11 +39,17 @@
 #define KEYNAME_USERDEFINED             L"UserDefined"
 #define KEYNAME_AFO                     L"AFO"
 #define KEYNAME_MONINFO                 L"MonInfo"
+#define KEYNAME_FEATURE                 L"Feature"
 
 // Workspace Version string
 #define WS_VERSTR               L"0.03"
 #define WS_VERSTR_NOARB         L"0.02"
 #define WS_VERLEN               32      // Length of longest WS_VERSTR
+
+// Workspace Version Features
+#define WS_VER_HYPERCOMPLEX     L"Hypercomplex"
+#define WS_VER_HYPERATOR        L"Hyperator"
+#define WS_VER_BALLARITHMETIC   L"BallArithmetic"
 
 // Format string for [Globals] section keyname
 #define FMTCHR_LEAD             L':'
@@ -74,13 +80,15 @@
 #define AP_FPC                  L"FPC"
 
 
+#ifdef WORKSPACE_STRUCTS
+
 typedef struct tagSAVEDWSGLBVARPARM
 {
-    LPDICTIONARY lpDict;                // Ptr to the dictionary
-    LPUINT       lpuGlbCnt;             // Ptr to [Globals] count
-    LPSYMENTRY   lpSymEntry;            // Ptr to this global's SYMENTRY
-    LPSYMENTRY  *lplpSymLink;           // Ptr to ptr to SYMENTRY link
-    LPUBOOL      lpbIsArb;              // Ptr to TRUE iff any var is ARB
+    LPDICTIONARY  lpDict;               // Ptr to the dictionary
+    LPUINT        lpuGlbCnt;            // Ptr to [Globals] count
+    LPSYMENTRY    lpSymEntry;           // Ptr to this global's SYMENTRY
+    LPSYMENTRY   *lplpSymLink;          // Ptr to ptr to SYMENTRY link
+    LPUBOOL       lpaWsFeatureFlag;     // Ptr to Ws Feature flags
 } SAVEDWSGLBVARPARM, *LPSAVEDWSGLBVARPARM;
 
 typedef LPAPLCHAR (*LPSAVEDWSGLBVARCONV) (LPAPLCHAR, HGLOBAL, LPSAVEDWSGLBVARPARM);
@@ -102,14 +110,17 @@ typedef HGLOBAL (*LPLOADWSGLBVARCONV) (UINT, LPLOADWSGLBVARPARM, LPUBOOL);
 
 typedef struct tagSAVEDWSGLBFCNPARM
 {
-    LPDICTIONARY lpDict;                // Ptr to the dictionary
-    LPAPLCHAR    lpwszFcnTypeName;      // Ptr to the function section name as F nnn.Name where nnn is the count
-    LPUINT       lpuGlbCnt;             // Ptr to [Globals] count
-    LPSYMENTRY   lpSymEntry;            // Ptr to this global's SYMENTRY
-    LPSYMENTRY  *lplpSymLink;           // Ptr to ptr to SYMENTRY link
+    LPDICTIONARY  lpDict;               // Ptr to the dictionary
+    LPAPLCHAR     lpwszFcnTypeName;     // Ptr to the function section name as F nnn.Name where nnn is the count
+    LPUINT        lpuGlbCnt;            // Ptr to [Globals] count
+    LPSYMENTRY    lpSymEntry;           // Ptr to this global's SYMENTRY
+    LPSYMENTRY   *lplpSymLink;          // Ptr to ptr to SYMENTRY link
+    LPUBOOL       lpaWsFeatureFlag;     // Ptr to Ws Feature flags
 } SAVEDWSGLBFCNPARM, *LPSAVEDWSGLBFCNPARM;
 
 typedef LPAPLCHAR (*LPSAVEDWSGLBFCNCONV) (LPAPLCHAR, HGLOBAL, LPSAVEDWSGLBFCNPARM);
+
+#endif
 
 
 //***************************************************************************

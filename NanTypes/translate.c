@@ -26,6 +26,9 @@
 #include <math.h>
 #include "headers.h"
 #include "qf_ec.h"
+#define EXTERN
+#include "tokenso.h"
+#undef  EXTERN
 
 
 //***************************************************************************
@@ -205,7 +208,7 @@ SO_ENUM TranslateSOTypeToBasicSOType
         case soSPMOR:
             return soMOP;
 
-        // Flavors of niladic derived fns from from dyadic operators
+        // Flavors of niladic derived fns from dyadic operators
         case soDOPN:
         case soSPDON:
             return soDOPN;
@@ -262,6 +265,8 @@ SO_ENUM TranslateNameTypeToSOType
             return soHY;
 
         case NAMETYPE_UNK:
+            return soNVAL;
+
         case NAMETYPE_LST:
 
         defstop
@@ -300,6 +305,53 @@ SO_ENUM TranslateDfnTypeToSOType
             return soUNK;
     } // End SWITCH
 } // End TranslateDfnTypeToSOType
+
+
+//***************************************************************************
+//  $TranslateDfnTypeToDfnTknType
+//
+//  Translate a UDFO type (see FH_PARSE.H)
+//    to a TKT_xxxDFN token type (see TOKEN_TYPES)
+//***************************************************************************
+
+TOKEN_TYPES TranslateDfnTypeToDfnTknType
+    (DFN_TYPES dfnType)
+
+{
+    // Split cases based upon the dfnType
+    switch (dfnType)
+    {
+        case DFNTYPE_FCN:
+            return TKT_FCNDFN;
+
+        case DFNTYPE_OP1:
+            return TKT_OP1DFN;
+
+        case DFNTYPE_OP2:
+            return TKT_OP2DFN;
+
+        case DFNTYPE_UNK:
+        defstop
+            return soUNK;
+    } // End SWITCH
+} // End TranslateDfnTypeToDfnTknType
+
+
+//***************************************************************************
+//  $TranslateTknTypeToSOType
+//
+//  Translate a token type (see TOKEN_TYPES) to
+//    to a SynObj type (see SO_ENUM).
+//***************************************************************************
+
+SO_ENUM TranslateTknTypeToSOType
+    (TOKEN_TYPES tknType)
+
+{
+    Assert (((UINT) tknType) < tokenSoLen);
+
+    return tokenSo[tknType].tkSynObj;
+} // End TranslateTknTypeToSOType
 
 
 //***************************************************************************
@@ -344,13 +396,53 @@ TOKEN_TYPES TranslateTknTypeToTknTypeNamed
 
 
 //***************************************************************************
-//  TranslateDfnToNameType
+//  $TranslateNameTypeToTknTypeNamed
+//
+//  Translate a token type (see TOKEN_TYPES) to
+//    a named token type (see TOKEN_TYPES).
+//***************************************************************************
+
+TOKEN_TYPES TranslateNameTypeToTknTypeNamed
+    (NAME_TYPES nameType)
+
+{
+    switch (nameType)
+    {
+        case NAMETYPE_VAR:
+            return TKT_VARNAMED;
+
+        case NAMETYPE_FN0:
+        case NAMETYPE_FN12:
+        case NAMETYPE_TRN:
+            return TKT_FCNNAMED;
+
+        case NAMETYPE_OP1:
+            return TKT_OP1NAMED;
+
+        case NAMETYPE_OP2:
+            return TKT_OP2NAMED;
+
+        case NAMETYPE_OP3:
+            return TKT_OP3NAMED;
+
+        case NAMETYPE_UNK:
+            return TKT_FILLJOT;
+
+        case NAMETYPE_LST:
+        defstop
+            return -1;              // To keep the compiler happy
+    } // End SWITCH
+} // End TranslateNameTypeToTknTypeNamed
+
+
+//***************************************************************************
+//  TranslateDfnTypeToNameType
 //
 //  Translate a user-defined function/operator type (see DFN_TYPES and FCN_VALENCES)
 //    to a function type (see NAME_TYPES).
 //***************************************************************************
 
-NAME_TYPES TranslateDfnToNameType
+NAME_TYPES TranslateDfnTypeToNameType
     (DFN_TYPES    dfnType,      // User-defined function/operator type (see DFN_TYPES)
      FCN_VALENCES fcnValence)   // Function valence (see FCN_VALENCES)
 
@@ -384,7 +476,52 @@ NAME_TYPES TranslateDfnToNameType
         defstop
             return NAMETYPE_UNK;
     } // End SWITCH
-} // End TranslateDfnToNameType
+} // End TranslateDfnTypeToNameType
+
+
+//***************************************************************************
+//  TranslateTknTypeToNameType
+//
+//  Translate a token type (see TOKEN_TYPES)
+//    to a function type (see NAME_TYPES).
+//***************************************************************************
+
+NAME_TYPES TranslateTknTypeToNameType
+    (TOKEN_TYPES  tknType)      // Token type (see TOKEN_TYPES)
+
+{
+    // Split cases based upon the token type
+    switch (tknType)
+    {
+        case TKT_OP1IMMED:
+        case TKT_OP1NAMED:
+        case TKT_OP1DFN:
+        case TKT_OP1AFO:
+        case TKT_OPJOTDOT:
+            return NAMETYPE_OP1;
+
+        case TKT_OP2IMMED:
+        case TKT_OP2NAMED:
+        case TKT_OP2DFN:
+        case TKT_OP2AFO:
+            return NAMETYPE_OP2;
+
+        case TKT_OP3IMMED:
+        case TKT_OP3NAMED:
+            return NAMETYPE_OP3;
+
+        case TKT_FCNIMMED:
+        case TKT_FCNNAMED:
+        case TKT_FCNARRAY:              // ***FIXMED*** -- Unused
+        case TKT_FCNDFN:
+        case TKT_FCNAFO:
+            return NAMETYPE_FN12;       // ***FIXME*** -- NAMETYPE_FN0
+
+        case DFNTYPE_UNK:
+        defstop
+            return NAMETYPE_UNK;
+    } // End SWITCH
+} // End TranslateTknTypeToNameType
 
 
 //***************************************************************************
@@ -400,6 +537,7 @@ IMM_TYPES TranslateNameTypeToImmType
 {
     switch (nameType)
     {
+        case NAMETYPE_FN0:
         case NAMETYPE_FN12:
             return IMMTYPE_PRIMFCN;
 
@@ -412,7 +550,6 @@ IMM_TYPES TranslateNameTypeToImmType
         case NAMETYPE_OP3:
             return IMMTYPE_PRIMOP3;
 
-        case NAMETYPE_FN0:
         case NAMETYPE_UNK:
         case NAMETYPE_VAR:
         case NAMETYPE_FILL1:
@@ -993,6 +1130,9 @@ LPAPLCHAR TranslateFcnOprToStr
             return WS_UTF16_SLOPEBAR;
 
         default:
+            // Ensure properly terminated
+            lpFcnOpr[1] = WC_EOS;
+
             return lpFcnOpr;
     } // End SWITCH
 } // End TranslateFcnOprToStr

@@ -554,6 +554,10 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
                       lpMemDfnHdr->numRhtArgSTE,
                       (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE)))
         goto WSFULL_UNLOCALIZE_EXIT;
+
+    // Setup the Del STEs
+    InitDelSTEs (lpMemDfnHdr);
+
     // We no longer need this ptr
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
@@ -734,15 +738,22 @@ void LocalizeAll
           LocalizeLabels (lpSymEntryNxt,
                           lpMemDfnHdr,
                           lpMemPTD);
+        // Localize the various Dels
+        lpSymEntryNxt =
+          LocalizeDels (lpSymEntryNxt,
+                        lpMemDfnHdr,
+                        lpMemPTD);
         // Save the # LPSYMENTRYs localized
         lpMemPTD->lpSISNxt->numSymEntries = (UINT) (lpSymEntryNxt - lpSymEntryBeg);
 
         Assert (lpMemPTD->lpSISNxt->numSymEntries EQ
                 (lpMemDfnHdr->numResultSTE
                + lpMemDfnHdr->numLftArgSTE
-               + (lpMemDfnHdr->steLftOpr NE NULL)
+               + (lpMemDfnHdr->steLftOpr  NE NULL)
                + (lpMemDfnHdr->steAxisOpr NE NULL)
-               + (lpMemDfnHdr->steRhtOpr NE NULL)
+               + (lpMemDfnHdr->steRhtOpr  NE NULL)
+               + (lpMemDfnHdr->steDel     NE NULL)
+               + (lpMemDfnHdr->steDelDel  NE NULL)
                + lpMemDfnHdr->numRhtArgSTE
                + lpMemDfnHdr->numLocalsSTE
                + lpMemDfnHdr->numLblLines));
@@ -1653,6 +1664,14 @@ void UnlocalizeSTEs
         // If there's a right operand,
         //   and it's not immediate, ...
         FreeZapSte (steRhtOpr);
+
+        // If there's a {del},
+        //   and it's not immediate, ...
+        FreeZapSte (steDel);
+
+        // If there's a {del}{del},
+        //   and it's not immediate, ...
+        FreeZapSte (steDelDel);
 #undef  FreeZapSte
 
         // We no longer need this ptr
@@ -1807,23 +1826,65 @@ void UnlocalizeSTEs
 
 
 //***************************************************************************
+//  $LocalizeDels
+//
+//  Localize and initialize the Del STEs
+//***************************************************************************
+
+LPSYMENTRY LocalizeDels
+    (LPSYMENTRY   lpSymEntryNxt,        // Ptr to next SYMENTRY save area
+     LPDFN_HEADER lpMemDfnHdr,          // Ptr to user-defined function/operator header
+     LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
+
+{
+    STFLAGS stFlags;                    // STE flags
+
+    // Initialize the Del STEs
+    // Lookup the name in the symbol table
+    // SymTabLookupName sets the .ObjName enum,
+    //   and the .Inuse flag
+    ZeroMemory (&stFlags, sizeof (stFlags));
+    lpMemDfnHdr->steDel       = SymTabLookupNameLength (WS_UTF16_DEL,
+                                                        1,
+                                                       &stFlags);
+    ZeroMemory (&stFlags, sizeof (stFlags));
+    lpMemDfnHdr->steDelDel    = SymTabLookupNameLength (WS_UTF16_DELDEL,
+                                                        2,
+                                                       &stFlags);
+    // Localize and clear the Del STEs
+    lpSymEntryNxt =
+      LocalizeSymEntries (lpSymEntryNxt,
+                          1,
+                         &lpMemDfnHdr->steDel,
+                          lpMemPTD);
+    lpSymEntryNxt =
+      LocalizeSymEntries (lpSymEntryNxt,
+                          1,
+                         &lpMemDfnHdr->steDelDel,
+                          lpMemPTD);
+
+    return lpSymEntryNxt;
+} // End LocalizeDels
+
+
+//***************************************************************************
 //  $LocalizeLabels
 //
 //  Localize and initialize all line labels
 //***************************************************************************
 
 LPSYMENTRY LocalizeLabels
-    (LPSYMENTRY   lpSymEntryNxt,    // Ptr to next SYMENTRY save area
-     LPDFN_HEADER lpMemDfnHdr,      // Ptr to user-defined function/operator header
-     LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+    (LPSYMENTRY   lpSymEntryNxt,        // Ptr to next SYMENTRY save area
+     LPDFN_HEADER lpMemDfnHdr,          // Ptr to user-defined function/operator header
+     LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
 
 {
     UINT           numLblLines,         // # labeled lines in the function
                    uLineNum1;           // Line # (origin-1)
-    LPFCNLINE      lpFcnLines;      // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    LPTOKEN_HEADER lptkHdr;         // Ptr to header of tokenized line
-    LPTOKEN        lptkLine;        // Ptr to tokenized line
-    STFLAGS stFlagsClr = {0};       // Flags for clearing an STE
+    LPFCNLINE      lpFcnLines;          // Ptr to array of function line structs (FCNLINE[numFcnLines])
+    LPTOKEN_HEADER lptkHdr;             // Ptr to header of tokenized line
+    LPTOKEN        lptkLine;            // Ptr to tokenized line
+    STFLAGS        stFlagsClr = {0};    // Flags for clearing an STE
 
     // Set the Inuse flag
     stFlagsClr.Inuse = TRUE;
@@ -2414,6 +2475,7 @@ UBOOL InitFcnSTEs
 
                 case TKT_FCNARRAY:
                 case TKT_FCNAFO:
+
                 case TKT_FCNDFN:
                 case TKT_OP1DFN:
                 case TKT_OP2DFN:
@@ -2436,12 +2498,12 @@ UBOOL InitFcnSTEs
 ////////////////////(*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_ERROR;    // ...
                     (*lplpSymEntry)->stFlags.Value      = TRUE;
                     (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
-                    (*lplpSymEntry)->stFlags.stNameType = TranslateDfnToNameType (lpMemDfnHdr->DfnType, lpMemDfnHdr->FcnValence);
+                    (*lplpSymEntry)->stFlags.stNameType = TranslateDfnTypeToNameType (lpMemDfnHdr->DfnType, lpMemDfnHdr->FcnValence);
                     (*lplpSymEntry)->stFlags.UsrDfn     = (GetSignatureGlb_PTB (hGlbDfnHdr) EQ DFN_HEADER_SIGNATURE);
                     (*lplpSymEntry)->stFlags.DfnAxis    = (*lplpSymEntry)->stFlags.UsrDfn ? lpMemDfnHdr->DfnAxis : FALSE;
 ////////////////////(*lplpSymEntry)->stFlags.FcnDir     = FALSE;            // Already zero from above
 
-
+                    // If the object is a UDFO, ...
                     if (lpYYArg->tkToken.tkFlags.TknType EQ TKT_FCNDFN
                      || lpYYArg->tkToken.tkFlags.TknType EQ TKT_OP1DFN
                      || lpYYArg->tkToken.tkFlags.TknType EQ TKT_OP2DFN)
@@ -2550,6 +2612,7 @@ UBOOL InitFcnSTEs
                 case TKT_AXISIMMED:
                 case TKT_VARIMMED:
                 case TKT_FCNIMMED:
+
                 case TKT_OP1IMMED:
                 case TKT_OP2IMMED:
                 case TKT_OP3IMMED:
@@ -2559,6 +2622,7 @@ UBOOL InitFcnSTEs
 
                 case TKT_VARNAMED:
                 case TKT_FCNNAMED:
+
                 case TKT_OP1NAMED:
                 case TKT_OP2NAMED:
                 case TKT_OP3NAMED:
@@ -2593,6 +2657,49 @@ WSFULL_EXIT:
                               &lpYYArg->tkToken);
     return FALSE;
 } // End InitFcnSTEs
+
+
+//***************************************************************************
+//  $InitDelSTEs
+//
+//  Initialize function hyperand STEs
+//***************************************************************************
+
+void InitDelSTEs
+    (LPDFN_HEADER lpMemDfnHdr)      // Ptr to user-defined function/operator header
+
+{
+    NAME_TYPES nameTypeFcn;         // Niladic or Ambivalent function name type
+
+    // Distinguish between Niladic and Ambivalent functions
+    nameTypeFcn = (lpMemDfnHdr->FcnValence EQ FCNVALENCE_NIL)
+                ? NAMETYPE_FN0
+                : NAMETYPE_FN12;
+    // {del} is always a function
+    lpMemDfnHdr->steDel->stFlags.stNameType = nameTypeFcn;
+
+    // Split cases based upon the parent Dfn type
+    switch (lpMemDfnHdr->DfnType)
+    {
+        case DFNTYPE_FCN:
+            lpMemDfnHdr->steDelDel   ->stFlags.stNameType = nameTypeFcn;
+
+            break;
+
+        case DFNTYPE_OP1:
+            lpMemDfnHdr->steDelDel   ->stFlags.stNameType = NAMETYPE_OP1;
+
+            break;
+
+        case DFNTYPE_OP2:
+            lpMemDfnHdr->steDelDel   ->stFlags.stNameType = NAMETYPE_OP2;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+} // End InitDelSTEs
 
 
 //***************************************************************************

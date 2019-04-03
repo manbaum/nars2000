@@ -40,16 +40,19 @@ UBOOL AssignName_EM
                  stNamFlags;        // ...         name's   ...
     HGLOBAL      hGlbSrc;           // Source's global memory handle
     UBOOL        bFcnOpr,           // TRUE iff source is a function/operator
+                 bFcnOprVar,        // TRUE iff source is a function/operator/variable
                  bRet = TRUE;       // TRUE iff result is valid
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to UDFO header
 
-    // It's a named variable or function
+    // It's a named variable, function, or operator
     Assert (lptkNam->tkFlags.TknType EQ TKT_VARNAMED
          || lptkNam->tkFlags.TknType EQ TKT_FCNNAMED
          || lptkNam->tkFlags.TknType EQ TKT_FCNIMMED
+
          || lptkNam->tkFlags.TknType EQ TKT_FCNAFO
          || lptkNam->tkFlags.TknType EQ TKT_OP1AFO
          || lptkNam->tkFlags.TknType EQ TKT_OP2AFO
+
          || lptkNam->tkFlags.TknType EQ TKT_OP1NAMED
          || lptkNam->tkFlags.TknType EQ TKT_OP2NAMED
          || lptkNam->tkFlags.TknType EQ TKT_OP3NAMED);
@@ -147,8 +150,7 @@ UBOOL AssignName_EM
                 //   it gets to this point.
                 hGlbSrc = CopyUDFO (hGlbSrc, lptkNam->tkData.tkSym);
 
-            // Copy the source global memory handle
-            //   and save it as the new global memory ptr
+            // Save the new source global memory handle as the new global memory handle
             lptkNam->tkData.tkSym->stData.stGlbData    = hGlbSrc;
 
             // We no longer need this ptr
@@ -309,41 +311,15 @@ UBOOL AssignName_EM
 
         case TKT_OP1IMMED:
         case TKT_OPJOTDOT:
-            // Free the old value for this name
-            FreeResultName (lptkNam);
-
-            // It's an immediate primitive operator
-            lptkNam->tkData.tkSym->stFlags.Imm        = TRUE;
-            lptkNam->tkData.tkSym->stFlags.ImmType    = IMMTYPE_PRIMOP1;
-            lptkNam->tkData.tkSym->stFlags.stNameType = NAMETYPE_OP1;
-
-            // Copy the constant data
-            lptkNam->tkData.tkSym->stData.stLongest   = *GetPtrTknLongest (lptkSrc);
-
-            break;
-
         case TKT_OP2IMMED:
-            // Free the old value for this name
-            FreeResultName (lptkNam);
-
-            // It's an immediate primitive operator
-            lptkNam->tkData.tkSym->stFlags.Imm        = TRUE;
-            lptkNam->tkData.tkSym->stFlags.ImmType    = IMMTYPE_PRIMOP2;
-            lptkNam->tkData.tkSym->stFlags.stNameType = NAMETYPE_OP2;
-
-            // Copy the constant data
-            lptkNam->tkData.tkSym->stData.stLongest   = *GetPtrTknLongest (lptkSrc);
-
-            break;
-
         case TKT_OP3IMMED:
             // Free the old value for this name
             FreeResultName (lptkNam);
 
             // It's an immediate primitive operator
             lptkNam->tkData.tkSym->stFlags.Imm        = TRUE;
-            lptkNam->tkData.tkSym->stFlags.ImmType    = IMMTYPE_PRIMOP3;
-            lptkNam->tkData.tkSym->stFlags.stNameType = NAMETYPE_OP3;
+            lptkNam->tkData.tkSym->stFlags.stNameType = TranslateTknTypeToNameType (lptkSrc->tkFlags.TknType);
+            lptkNam->tkData.tkSym->stFlags.ImmType    = TranslateNameTypeToImmType (lptkNam->tkData.tkSym->stFlags.stNameType);
 
             // Copy the constant data
             lptkNam->tkData.tkSym->stData.stLongest   = *GetPtrTknLongest (lptkSrc);
@@ -380,63 +356,24 @@ UBOOL AssignName_EM
     } // End SWITCH
 
     // If the source is not an internal function
-    //   and is a named function or operator,
-    //   mark the source with its type
-    if ((lptkSrc->tkFlags.TknType EQ TKT_FCNNAMED
-      || lptkSrc->tkFlags.TknType EQ TKT_OP1NAMED
-      || lptkSrc->tkFlags.TknType EQ TKT_OP2NAMED
-      || lptkSrc->tkFlags.TknType EQ TKT_OP3NAMED)
-     && !lptkSrc->tkData.tkSym->stFlags.FcnDir)     // Valid as the TknType is TKT_xxxNAMED
-        lptkSrc->tkData.tkSym->stFlags.stNameType = GetNameType (lptkSrc);
+    //   and is a           function, operator, or hyperator, ...
+    bFcnOpr    = ((!IsTknNamed   (lptkSrc) || !lptkSrc->tkData.tkSym->stFlags.FcnDir)
+               && IsTknFcnOpr    (lptkSrc));
 
-    // If the source is a function or operator
-    //   mark the name as such
-    bFcnOpr = (lptkSrc->tkFlags.TknType EQ TKT_FCNNAMED
-            || lptkSrc->tkFlags.TknType EQ TKT_FCNIMMED
-            || lptkSrc->tkFlags.TknType EQ TKT_FCNARRAY
-            || lptkSrc->tkFlags.TknType EQ TKT_OP1NAMED
-            || lptkSrc->tkFlags.TknType EQ TKT_OP1IMMED
-            || lptkSrc->tkFlags.TknType EQ TKT_OP2NAMED
-            || lptkSrc->tkFlags.TknType EQ TKT_OP2IMMED
-            || lptkSrc->tkFlags.TknType EQ TKT_OP3NAMED
-            || lptkSrc->tkFlags.TknType EQ TKT_OP3IMMED);
-    if (bFcnOpr)
+    // If the source is not an internal function
+    //   and is a variable, function, operator, or hyperator, ...
+    bFcnOprVar = ((!IsTknNamed   (lptkSrc) || !lptkSrc->tkData.tkSym->stFlags.FcnDir)
+               && IsTknFcnOprVar (lptkSrc));
+
+    // If the source is not an internal function
+    //   and is a variable, function, or operator, ...
+    if (bFcnOprVar)
     {
         // Set the name type
         lptkNam->tkData.tkSym->stFlags.stNameType = GetNameType (lptkSrc);
 
-        // Split cases based upon the underlying NAMETYPE_xxx
-        switch (lptkNam->tkData.tkSym->stFlags.stNameType)
-        {
-            case NAMETYPE_FN0:
-                lptkNam->tkFlags.TknType = TKT_FCNNAMED;
-
-                break;
-
-            case NAMETYPE_TRN:
-            case NAMETYPE_FN12:
-                lptkNam->tkFlags.TknType = TKT_FCNNAMED;
-
-                break;
-
-            case NAMETYPE_OP1:
-                lptkNam->tkFlags.TknType = TKT_OP1NAMED;
-
-                break;
-
-            case NAMETYPE_OP2:
-                lptkNam->tkFlags.TknType = TKT_OP2NAMED;
-
-                break;
-
-            case NAMETYPE_OP3:
-                lptkNam->tkFlags.TknType = TKT_OP3NAMED;
-
-                break;
-
-            defstop
-                break;
-        } // End SWITCH
+        // Translate the NAMETYPE_xxx to the corresponding named token type
+        lptkNam->tkFlags.TknType = TranslateNameTypeToTknTypeNamed (lptkNam->tkData.tkSym->stFlags.stNameType);
     } // End IF
 
     // Mark as Inuse and valued
@@ -488,7 +425,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $GetNameType
 //
-//  Return the NAMETYPE_xxx of a function token
+//  Return the NAMETYPE_xxx of a token
 //***************************************************************************
 
 NAME_TYPES GetNameType
@@ -503,6 +440,7 @@ NAME_TYPES GetNameType
     switch (lptkFunc->tkFlags.TknType)
     {
         case TKT_VARIMMED:
+        case TKT_VARARRAY:
             return NAMETYPE_VAR;
 
         case TKT_VARNAMED:
@@ -583,6 +521,9 @@ NAME_TYPES GetNameType
         case TKT_OP3IMMED:
             return NAMETYPE_OP3;
 
+        case TKT_FILLJOT:
+            return NAMETYPE_UNK;
+
         case TKT_DEL:       // Del      -- always a function
         case TKT_DELDEL:    // Del Del  -- either a monadic or dyadic operator
             hGlbData = lptkFunc->tkData.tkSym->stData.stGlbData;
@@ -620,7 +561,7 @@ NAME_TYPES GetNameType
 
 #define lpHeader    ((LPDFN_HEADER) lpMem)
         case DFN_HEADER_SIGNATURE:
-            fnNameType = TranslateDfnToNameType (lpHeader->DfnType, lpHeader->FcnValence);
+            fnNameType = TranslateDfnTypeToNameType (lpHeader->DfnType, lpHeader->FcnValence);
 
             break;
 #undef  lpHeader

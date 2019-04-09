@@ -4208,11 +4208,11 @@ int PASCAL WinMain
             return -1;
     } // End IF/ELSE
 #endif
-    // Ensure that the system meets our minimum requirements (WinXP = 5.1)
-    if (!IsWindowsXPSP3OrGreater ())
+    // Ensure that the system meets our minimum requirements (Win7 = 6.1)
+    if (!IsWindows7OrGreater ())
     {
         MessageBoxW (hWndMF,
-                    L"Sorry, but the minimum OS version for " WS_APPNAME L" is WinXP SP3.",
+                    L"Sorry, but the minimum OS version for " WS_APPNAME L" is Win7.",
                      lpwszAppName,
                      MB_OK | MB_ICONERROR);
         return -1;

@@ -81,6 +81,10 @@ UBOOL ArrayDisplay_EM
     {
         LPPL_YYSTYPE lpYYBox;
 
+        // Check for NoDisplay flag
+        if (lptkRes->tkFlags.NoDisplay)
+            goto NORMAL_EXIT;
+
         // Turn it OFF to avoid recursion
         gbBoxState = FALSE;
 

@@ -1,6 +1,28 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2080 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In )BOX ON
+* Note Minimum OS Version is Win7
+
+Directory branches/bsmith/NanTypes:
+
+DISPLAY.C:
+  Fix bug in )BOX ON when displaying an array to include check for NoDisplay flag.
+
+MAIN.C:
+MAKEFILE.INC:
+  Note that the minimum OS version is Win7.
+
+
+Directory branches/bsmith/NanTypes/htdocs:
+
+INDEX-BODY.AHTML:
+  Note that the minimum OS version is Win7.
+
+
 Build #2078 -- Version 0.6.0.xx
 -------------------------------
 

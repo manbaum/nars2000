@@ -1,6 +1,21 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2081 -- Version 0.5.10.xx
+--------------------------------
+
+* Rename <FcnCurry> To <OpLCurry> To Parallel The Name <OpRCurry>
+
+Directory branches/bsmith/NewTypes:
+
+FREE.C:
+PARSELINE.C:
+PL_PARSE.H:
+STRAND.C:
+YYFNS.C:
+  Rename <FcnCurry> to <OpLCurry> to parallel the name <OpRCurry>.
+
+
 Build #2079 -- Version 0.5.10.xx
 --------------------------------
 

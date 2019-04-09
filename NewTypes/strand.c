@@ -1936,7 +1936,7 @@ UBOOL UnFcnStrand_EM
     if (!IsTknFcnArray (&lpYYArg->tkToken)
      || lpYYArg->lpplYYIdxCurry NE NULL
      || lpYYArg->lpplYYOpRCurry NE NULL
-     || lpYYArg->lpplYYFcnCurry NE NULL)
+     || lpYYArg->lpplYYOpLCurry NE NULL)
     {
         // Get this thread's LocalVars ptr
         lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);

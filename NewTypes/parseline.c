@@ -578,16 +578,16 @@ LPPL_YYSTYPE plRedLNR_SPA
             goto ERROR_EXIT;
     } // End IF
 
-    // If the left fcn is present (select spec as in NAM F {is} A), ...
-    if (lpplYYLstRht->lpplYYFcnCurry NE NULL)
+    // If the left fcn/operand is present (select spec as in NAM F {is} A), ...
+    if (lpplYYLstRht->lpplYYOpLCurry NE NULL)
     {
-        Assert (!lpplYYCurObj->YYStranding && !lpplYYLstRht->lpplYYFcnCurry->YYStranding);
+        Assert (!lpplYYCurObj->YYStranding && !lpplYYLstRht->lpplYYOpLCurry->YYStranding);
         Assert ( lpplYYCurObj->tkToken.tkSynObj EQ soLNR);
 
         // Modify assign the names
         bRet =
           ModifyAssignNamedVars_EM (lpplYYCurObj,
-                                    lpplYYLstRht->lpplYYFcnCurry,
+                                    lpplYYLstRht->lpplYYOpLCurry,
                                    &lpplYYLstRht->tkToken);
     } else
         // Assign the names
@@ -606,16 +606,16 @@ LPPL_YYSTYPE plRedLNR_SPA
 
     return lpplYYLstRht;
 ERROR_EXIT:
-    // If there is a curried fcn, ...
-    if (lpplYYLstRht->lpplYYFcnCurry NE NULL)
+    // If there is a curried fcn/left operand, ...
+    if (lpplYYLstRht->lpplYYOpLCurry NE NULL)
     {
-        // If the curried function is not an AFO, ...
-        if (!IsTknAFO (&lpplYYLstRht->lpplYYFcnCurry->tkToken))
+        // If the curried function/left operand is not an AFO, ...
+        if (!IsTknAFO (&lpplYYLstRht->lpplYYOpLCurry->tkToken))
             // Free it recursively
-            FreeResult (lpplYYLstRht->lpplYYFcnCurry);
+            FreeResult (lpplYYLstRht->lpplYYOpLCurry);
 
         // YYFree it
-        YYFree (lpplYYLstRht->lpplYYFcnCurry); lpplYYLstRht->lpplYYFcnCurry = NULL;
+        YYFree (lpplYYLstRht->lpplYYOpLCurry); lpplYYLstRht->lpplYYOpLCurry = NULL;
     } // End IF
 
     // YYFree the last right object
@@ -1708,13 +1708,13 @@ LPPL_YYSTYPE plRedA_FFR
     // Start with the root
     lpYYRes = lpplYYLstRht;
 
-    // Look for an empty ->lpplYYFcnCurry
-    while (lpYYRes->lpplYYFcnCurry NE NULL)
-        // Recurse through the root to the next available lpplYYFcnCurry
-        lpYYRes = lpYYRes->lpplYYFcnCurry;
+    // Look for an empty ->lpplYYOpLCurry
+    while (lpYYRes->lpplYYOpLCurry NE NULL)
+        // Recurse through the root to the next available lpplYYOpLCurry
+        lpYYRes = lpYYRes->lpplYYOpLCurry;
 
     // Link in the new function
-    lpYYRes->lpplYYFcnCurry = lpplYYCurObj;
+    lpYYRes->lpplYYOpLCurry = lpplYYCurObj;
 
     // The result is the root
     lpYYRes = lpplYYLstRht;
@@ -1966,11 +1966,11 @@ LPPL_YYSTYPE plRedMF_A
         // Point to the curried arg
         lplpYYArgCurry = &lpplYYCurObj->lpplYYArgCurry;
     else
-    // If there is a curried function with a curried arg, ...
-    if (lpplYYCurObj->lpplYYFcnCurry NE NULL
-     && lpplYYCurObj->lpplYYFcnCurry->lpplYYArgCurry)
+    // If there is a curried function/left operand with a curried arg, ...
+    if (lpplYYCurObj->lpplYYOpLCurry NE NULL
+     && lpplYYCurObj->lpplYYOpLCurry->lpplYYArgCurry)
         // Point to the curried arg
-        lplpYYArgCurry = &lpplYYCurObj->lpplYYFcnCurry->lpplYYArgCurry;
+        lplpYYArgCurry = &lpplYYCurObj->lpplYYOpLCurry->lpplYYArgCurry;
 
     // If a left arg is present, ...
     if (lplpYYArgCurry NE NULL)
@@ -2683,17 +2683,17 @@ LPPL_YYSTYPE plRedLftOper_MOP
         lpYYRes->lpplYYIdxCurry = lpplYYCurObj;
     } else
     {
-        LPPL_YYSTYPE lpplYYFcnCurry;
+        LPPL_YYSTYPE lpplYYOpLCurry;
 
-        // Copy ptr to lpplYYFcnCurry
-        lpplYYFcnCurry = lpYYRes;
+        // Copy ptr to lpplYYOpLCurry
+        lpplYYOpLCurry = lpYYRes;
 
-        // Look for an empty ->lpplYYFcnCurry
-        while (lpplYYFcnCurry->lpplYYFcnCurry NE NULL)
-            lpplYYFcnCurry = lpplYYFcnCurry->lpplYYFcnCurry;
+        // Look for an empty ->lpplYYOpLCurry
+        while (lpplYYOpLCurry->lpplYYOpLCurry NE NULL)
+            lpplYYOpLCurry = lpplYYOpLCurry->lpplYYOpLCurry;
 
         // Append the left operand to the function strand
-        lpplYYFcnCurry->lpplYYFcnCurry = lpplYYCurObj;
+        lpplYYOpLCurry->lpplYYOpLCurry = lpplYYCurObj;
     } // End IF/ELSE
 
     // Change the tkSynObj
@@ -2761,11 +2761,11 @@ LPPL_YYSTYPE plRedF_FR
     Assert (lpplYYCurObj->lpplYYOpRCurry EQ NULL);
 
     // Link in the functions
-    Assert (lpYYRes     ->lpplYYFcnCurry EQ NULL);
-    lpYYRes     ->lpplYYFcnCurry = lpplYYLstRht;
+    Assert (lpYYRes->lpplYYOpLCurry EQ NULL);
+    lpYYRes->lpplYYOpLCurry = lpplYYLstRht;
 
-    Assert (lpplYYLstRht->lpplYYFcnCurry EQ NULL);
-    lpplYYLstRht->lpplYYFcnCurry = lpplYYCurObj;
+    Assert (lpplYYLstRht->lpplYYOpLCurry EQ NULL);
+    lpplYYLstRht->lpplYYOpLCurry = lpplYYCurObj;
 
     // Change the tkSynObj
     lpYYRes->tkToken.tkSynObj = soType;
@@ -2820,13 +2820,13 @@ LPPL_YYSTYPE plRedF_FFR
     // Start with the root
     lpYYRes = lpplYYLstRht;
 
-    // While the FcnCurry slot is in use, ...
-    while (lpYYRes->lpplYYFcnCurry NE NULL)
-        // Recurse through the root to the next available lpplYYFcnCurry
-        lpYYRes = lpYYRes->lpplYYFcnCurry;
+    // While the OpLCurry slot is in use, ...
+    while (lpYYRes->lpplYYOpLCurry NE NULL)
+        // Recurse through the root to the next available lpplYYOpLCurry
+        lpYYRes = lpYYRes->lpplYYOpLCurry;
 
     // Link in the new function
-    lpYYRes->lpplYYFcnCurry = lpplYYCurObj;
+    lpYYRes->lpplYYOpLCurry = lpplYYCurObj;
 
     // The result is the root
     lpYYRes = lpplYYLstRht;
@@ -3417,7 +3417,7 @@ LPPL_YYSTYPE plRedF_SPA
 {
     LPPL_YYSTYPE lpYYRes;               // Ptr to the result
 
-    Assert (lpplYYLstRht->lpplYYFcnCurry EQ NULL);
+    Assert (lpplYYLstRht->lpplYYOpLCurry EQ NULL);
 
     // If the last right object is a niladic function, ...
     if (lpplYYLstRht->tkToken.tkSynObj EQ soSPNF)
@@ -3438,23 +3438,23 @@ LPPL_YYSTYPE plRedF_SPA
     lpYYRes = lpplYYLstRht;
 
     // Copy to the function curry object
-    lpYYRes->lpplYYFcnCurry = lpplYYCurObj;
+    lpYYRes->lpplYYOpLCurry = lpplYYCurObj;
 
     // Change the tkSynObj
     lpYYRes->tkToken.tkSynObj = soType;
 
     return lpYYRes;
 ERROR_EXIT:
-    // If there is a curried fcn, ...
-    if (lpplYYLstRht->lpplYYFcnCurry NE NULL)
+    // If there is a curried fcn/left operand, ...
+    if (lpplYYLstRht->lpplYYOpLCurry NE NULL)
     {
-        // If the curried function is not an AFO, ...
-        if (!IsTknAFO (&lpplYYLstRht->lpplYYFcnCurry->tkToken))
+        // If the curried function/left operand is not an AFO, ...
+        if (!IsTknAFO (&lpplYYLstRht->lpplYYOpLCurry->tkToken))
             // Free it recursively
-            FreeResult (lpplYYLstRht->lpplYYFcnCurry);
+            FreeResult (lpplYYLstRht->lpplYYOpLCurry);
 
         // YYFree it
-        YYFree (lpplYYLstRht->lpplYYFcnCurry); lpplYYLstRht->lpplYYFcnCurry = NULL;
+        YYFree (lpplYYLstRht->lpplYYOpLCurry); lpplYYLstRht->lpplYYOpLCurry = NULL;
     } // End IF
 
     // YYFree the last right object
@@ -3632,13 +3632,13 @@ LPPL_YYSTYPE plRedNAM_ISPA
     if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
         bRet = FALSE;
     else
-    // If the left fcn is present (select spec as in NAM[A] F {is} A), ...
-    if (lpplYYLstRht->lpplYYFcnCurry NE NULL)
+    // If the left fcn/operand is present (select spec as in NAM[A] F {is} A), ...
+    if (lpplYYLstRht->lpplYYOpLCurry NE NULL)
         // Assign the value to the indexed name via the modify function
         bRet =
           ArrayIndexFcnSet_EM (&lpplYYCurObj->tkToken,
                                &lpYYIdx->tkToken,
-                                lpplYYLstRht->lpplYYFcnCurry,
+                                lpplYYLstRht->lpplYYOpLCurry,
                                &lpplYYLstRht->tkToken);
     else
         // Assign the value to the indexed name
@@ -3812,17 +3812,17 @@ LPPL_YYSTYPE plRedNAM_SPCom
         UnFcnStrand_EM (&lpplYYLstRht, TranslateSOTypeToNameType (lpplYYLstRht->tkToken.tkSynObj), TRUE);
 
     // If the left fcn is present (select spec as in NAM F {is} A), ...
-    if (lpplYYLstRht->lpplYYFcnCurry NE NULL)
+    if (lpplYYLstRht->lpplYYOpLCurry NE NULL)
     {
-        Assert (!lpplYYCurObj->YYStranding && !lpplYYLstRht->lpplYYFcnCurry->YYStranding);
+        Assert (!lpplYYCurObj->YYStranding && !lpplYYLstRht->lpplYYOpLCurry->YYStranding);
 
         if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
             lpYYRes = NULL;
         else
             lpYYRes =
-              ExecFunc_EM_YY (&lpplYYCurObj->tkToken, lpplYYLstRht->lpplYYFcnCurry, &lpplYYLstRht->tkToken);
+              ExecFunc_EM_YY (&lpplYYCurObj->tkToken, lpplYYLstRht->lpplYYOpLCurry, &lpplYYLstRht->tkToken);
         // Free the function (including YYFree)
-        FreeResult (lpplYYLstRht->lpplYYFcnCurry); YYFree (lpplYYLstRht->lpplYYFcnCurry); lpplYYLstRht->lpplYYFcnCurry = NULL;
+        FreeResult (lpplYYLstRht->lpplYYOpLCurry); YYFree (lpplYYLstRht->lpplYYOpLCurry); lpplYYLstRht->lpplYYOpLCurry = NULL;
 
         // Free (unnamed) and YYFree the last right object
         FreeTempResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL;
@@ -5322,7 +5322,7 @@ PARSELINE_DONE:
             // Set flag for sink
             bSink = !bAssignName
                  && (curSynObj EQ soSPA)
-                 && (lpplYYCurObj->lpplYYFcnCurry EQ NULL);
+                 && (lpplYYCurObj->lpplYYOpLCurry EQ NULL);
 
             // Check for SYNTAX ERROR
             if ( curSynObj EQ soA
@@ -6411,7 +6411,7 @@ PL_YYLEX_FCNNAMED:
                             // Check for #1 & #2
                             bAssignName |= ((lptkRht1 NE NULL)
                                          && ((lptkRht1->tkSynObj EQ soSPA) || (lptkRht1->tkSynObj EQ soISPA))
-                                         && (lpYYRht1->lpplYYFcnCurry NE NULL))
+                                         && (lpYYRht1->lpplYYOpLCurry NE NULL))
                                           ;
                             // Check for #3
                             bAssignName |= ((lptkRht1 NE NULL)
@@ -6488,7 +6488,7 @@ PL_YYLEX_FCNNAMED:
                                    || (lptkRht1->tkSynObj EQ soNR)
                                    || (lptkRht1->tkSynObj EQ soNNR))
                                   && (lptkRht2->tkSynObj EQ soSPA)
-                                  && (lpYYRht2->lpplYYFcnCurry NE NULL))
+                                  && (lpYYRht2->lpplYYOpLCurry NE NULL))
                                 {
                                     // Mark as being assigned into
                                     lpplYYLval->tkToken.tkFlags.bAssignName = bAssignName = TRUE;
@@ -7707,7 +7707,7 @@ LPPL_YYSTYPE plExecuteFn0Glb
 
     Assert (lpYYFn0->lpplYYArgCurry EQ NULL);
     Assert (lpYYFn0->lpplYYIdxCurry EQ NULL);
-////Assert (lpYYFn0->lpplYYFcnCurry EQ NULL);   // Handled in UnFcnStrand_EM
+////Assert (lpYYFn0->lpplYYOpLCurry EQ NULL);   // Handled in UnFcnStrand_EM
 ////Assert (lpYYFn0->lpplYYOpRCurry EQ NULL);   // ...
 
     // Execute the Niladic Function returning an array
@@ -7744,7 +7744,7 @@ LPPL_YYSTYPE plExecuteFn0
 
     Assert (lpYYFn0->lpplYYArgCurry EQ NULL);
     Assert (lpYYFn0->lpplYYIdxCurry EQ NULL);
-////Assert (lpYYFn0->lpplYYFcnCurry EQ NULL);   // Handled in UnFcnStrand_EM
+////Assert (lpYYFn0->lpplYYOpLCurry EQ NULL);   // Handled in UnFcnStrand_EM
 ////Assert (lpYYFn0->lpplYYOpRCurry EQ NULL);   // ...
 
     // Unstrand the function if appropriate

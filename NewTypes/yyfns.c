@@ -290,7 +290,7 @@ void YYCopyToMem
     lpYYDst->lpplYYIdxCurry =
     lpYYDst->lpplYYOpRCurry =
 ////lpYYDst->lpplYYArgCurry =           // Allowed as in (4{rho}){each}1 2 3
-    lpYYDst->lpplYYFcnCurry = NULL;
+    lpYYDst->lpplYYOpLCurry = NULL;
 } // End YYCopyToMem
 
 
@@ -431,12 +431,12 @@ UINT YYCountFcnStr
     TknCount = max (TknCount, 1);
 
     // Count the # entries in the strand
-    if (lpYYArg->lpplYYIdxCurry)
+    if (lpYYArg->lpplYYIdxCurry NE NULL)
         TknCount++;
-    if (lpYYArg->lpplYYOpRCurry)
+    if (lpYYArg->lpplYYOpRCurry NE NULL)
         TknCount += YYCountFcnStr (lpYYArg->lpplYYOpRCurry);
-    if (lpYYArg->lpplYYFcnCurry)
-        TknCount += YYCountFcnStr (lpYYArg->lpplYYFcnCurry);
+    if (lpYYArg->lpplYYOpLCurry NE NULL)
+        TknCount += YYCountFcnStr (lpYYArg->lpplYYOpLCurry);
     if (IsTknFcnArray (&lpYYArg->tkToken)
      || IsTknTrain    (&lpYYArg->tkToken))
     {
@@ -487,8 +487,8 @@ UINT YYCountFcnTrn
         Assert (lpYYArg->lpplYYOpRCurry EQ NULL);
 
         // Count the # entries in the strand
-        if (lpYYArg->lpplYYFcnCurry)
-            lpYYArg = lpYYArg->lpplYYFcnCurry;
+        if (lpYYArg->lpplYYOpLCurry NE NULL)
+            lpYYArg = lpYYArg->lpplYYOpLCurry;
         else
             break;
     } // End WHILE
@@ -556,7 +556,7 @@ LPPL_YYSTYPE YYCopyFcnStr
             Assert (lpYYArgI[i].lpplYYArgCurry EQ NULL);
             Assert (lpYYArgI[i].lpplYYIdxCurry EQ NULL);
             Assert (lpYYArgI[i].lpplYYOpRCurry EQ NULL);
-            Assert (lpYYArgI[i].lpplYYFcnCurry EQ NULL);
+            Assert (lpYYArgI[i].lpplYYOpLCurry EQ NULL);
         } // End FOR
 #endif
         // Initialize the count
@@ -615,7 +615,7 @@ LPPL_YYSTYPE YYCopyFcnStr
             TknCount = 0;
 
         // If the token has an axis operator, ...
-        if (lpYYArg[i].lpplYYIdxCurry)
+        if (lpYYArg[i].lpplYYIdxCurry NE NULL)
         {
             // Copy the token
             YYCopyToMem (lpYYMem++, lpYYArg[i].lpplYYIdxCurry);
@@ -631,7 +631,7 @@ LPPL_YYSTYPE YYCopyFcnStr
         } // End IF
 
         // If the token has a right operand, ...
-        if (lpYYArg->lpplYYOpRCurry)
+        if (lpYYArg->lpplYYOpRCurry NE NULL)
         {
             LPPL_YYSTYPE lpYYLclRoot;       // Ptr to temporary YYSTYPE
 
@@ -655,8 +655,8 @@ LPPL_YYSTYPE YYCopyFcnStr
             TknCount += TmpCount;
         } // End IF
 
-        // If the token has a curried function, ...
-        if (lpYYArg->lpplYYFcnCurry)
+        // If the token has a curried function/left operand, ...
+        if (lpYYArg->lpplYYOpLCurry NE NULL)
         {
             LPPL_YYSTYPE lpYYLclRoot;       // Ptr to temporary YYSTYPE
 
@@ -666,8 +666,8 @@ LPPL_YYSTYPE YYCopyFcnStr
             // Copy the global root as a local root
             lpYYLclRoot = *lplpYYMemRoot;
 
-            // Copy the curried function
-            lpYYMemC = YYCopyFcnStr (lplpYYMemRoot, lpYYMem, lpYYArg[i].lpplYYFcnCurry, &TmpCount);
+            // Copy the curried function/left operand
+            lpYYMemC = YYCopyFcnStr (lplpYYMemRoot, lpYYMem, lpYYArg[i].lpplYYOpLCurry, &TmpCount);
 
             // If the copied token is an operator, ...
             if (IsTknOp1 (&lpYYMem->tkToken)
@@ -692,7 +692,7 @@ LPPL_YYSTYPE YYCopyFcnStr
             lpYYMem = lpYYMemC;
 
             // YYFree it
-            YYFree (lpYYArg[i].lpplYYFcnCurry); lpYYArg[i].lpplYYFcnCurry = NULL;
+            YYFree (lpYYArg[i].lpplYYOpLCurry); lpYYArg[i].lpplYYOpLCurry = NULL;
 
             // Include in the token count
             TknCount += TmpCount;
@@ -838,13 +838,13 @@ LPPL_YYSTYPE YYCopyFcnTrn
         Assert (lpYYArg->lpplYYIdxCurry EQ NULL);
         Assert (lpYYArg->lpplYYOpRCurry EQ NULL);
 
-        // If there's a curried function, ...
-        if (lpYYArg->lpplYYFcnCurry NE NULL)
+        // If there's a curried function/left operand, ...
+        if (lpYYArg->lpplYYOpLCurry NE NULL)
         {
             LPPL_YYSTYPE lpYYTmp;
 
-            // Copy the curried function ptr
-            lpYYTmp = lpYYArg->lpplYYFcnCurry;
+            // Copy the curried function/left operand ptr
+            lpYYTmp = lpYYArg->lpplYYOpLCurry;
 
             // If this is OPTRAIN, avoid duplicate YYFree
             if (lpYYArg->tkToken.tkFlags.TknType NE TKT_OP1IMMED

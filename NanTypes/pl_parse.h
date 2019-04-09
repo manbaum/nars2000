@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
            *lpYYStrandBase,         // 28:  Ptr to this token's strand base
            *lpplYYArgCurry,         // 2C:  Ptr to left argument curry
            *lpplYYIdxCurry,         // 30:  Ptr to axis curry
-           *lpplYYFcnCurry,         // 34:  ...         function ...
+           *lpplYYOpLCurry,         // 34:  ...    function/left operand ...
            *lpplYYOpRCurry;         // 38:  ...    right operand ...
     LPTOKEN lptkLftBrace,           // 3C:  Ptr to the AFO's left brace token
             lptkRhtBrace;           // 40:  ...              right ...

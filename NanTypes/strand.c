@@ -2082,12 +2082,16 @@ UBOOL UnFcnStrand_EM
     // If the actual type is a Train, use that
     if (actNameType EQ NAMETYPE_TRN)
         fnNameType = NAMETYPE_TRN;
-
+#ifdef DEBUG
+    else
+    if (actNameType EQ NAMETYPE_UNK)
+        nop ();
+#endif
     // If it's not a function array, ...
     if (!IsTknFcnArray (&lpYYArg->tkToken)
      || lpYYArg->lpplYYIdxCurry NE NULL
      || lpYYArg->lpplYYOpRCurry NE NULL
-     || lpYYArg->lpplYYFcnCurry NE NULL)
+     || lpYYArg->lpplYYOpLCurry NE NULL)
     {
         // Get this thread's LocalVars ptr
         lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -2175,14 +2179,14 @@ UBOOL UnFcnStrand_EM
             // If it's a Train, ...
             if (fnNameType EQ NAMETYPE_TRN)
                 // Copy the PL_YYSTYPEs in the Train to the global memory
-                lpYYMemData = YYCopyFcnTrn ( lpYYMemData, lpYYArg, &TknCount);
+                YYCopyFcnTrn ( lpYYMemData, lpYYArg, &TknCount);
             else
                 // Copy the PL_YYSTYPEs in the Function Strand to the global memory
-                lpYYMemData = YYCopyFcnStr (&lpYYMemRoot, lpYYMemData, lpYYArg, &TknCount);
+                YYCopyFcnStr (&lpYYMemRoot, lpYYMemData, lpYYArg, &TknCount);
 
-           if (bSaveTxtLine)
-               // Make a function array text line
-               MakeTxtLine (lpMemHdrStr);
+            if (bSaveTxtLine)
+                // Make a function array text line
+                MakeTxtLine (lpMemHdrStr);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbStr); lpMemHdrStr = NULL;

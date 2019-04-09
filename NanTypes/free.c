@@ -103,15 +103,15 @@ void FreeResultCurry
     } // End IF
 
     // If there is a curried left operand, ...
-    if (lpYYRes->lpplYYFcnCurry NE NULL)
+    if (lpYYRes->lpplYYOpLCurry NE NULL)
     {
         // If the curried left operand is not an AFO, ...
-        if (!IsTknAFO (&lpYYRes->lpplYYFcnCurry->tkToken))
+        if (!IsTknAFO (&lpYYRes->lpplYYOpLCurry->tkToken))
             // Free it recursively
-            FreeResult (lpYYRes->lpplYYFcnCurry);
+            FreeResult (lpYYRes->lpplYYOpLCurry);
 
         // YYFree it
-        YYFree (lpYYRes->lpplYYFcnCurry); lpYYRes->lpplYYFcnCurry = NULL;
+        YYFree (lpYYRes->lpplYYOpLCurry); lpYYRes->lpplYYOpLCurry = NULL;
     } // End IF
 
     // If there is a curried right operand, ...
@@ -743,7 +743,7 @@ UBOOL FreeResultGlobalFcn
             //   and are no longer present in the items
             Assert (lpYYToken->lpplYYIdxCurry EQ NULL);
             Assert (lpYYToken->lpplYYArgCurry EQ NULL);
-            Assert (lpYYToken->lpplYYFcnCurry EQ NULL);
+            Assert (lpYYToken->lpplYYOpLCurry EQ NULL);
             Assert (lpYYToken->lpplYYOpRCurry EQ NULL);
 
             // Split cases based upon the token type

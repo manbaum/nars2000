@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -144,6 +144,11 @@ void AppendLine
 
     dprintfWL9 (L"AppendLine: <%s> (%S#%d)", lpwszLine, FNLN);
 
+    // If requested, mark the line as continued from the previous line
+    if (bLineCont)
+        // Replace the selection (none) with WS_CRCRLF
+        SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) WS_CRCRLF);
+
     // Replace the selection (none) with the new line
     SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpwszLine);
 
@@ -237,8 +242,9 @@ void ReplaceLastLineCRPmt
     // Replace the last line
     ReplaceLastLineCR (lpwszLine);
 
-    // If this is not the active tab, display a prompt
+    // If this is not the active tab, ...
     if (!IsCurTabActive ())
+        // Display a prompt
         DisplayPrompt (GetThreadSMEC (), 8);
 } // End ReplaceLastLineCRPmt
 
@@ -353,7 +359,7 @@ void DrawAllLineCont
 #ifdef DEBUG
     } else
     {
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
 #endif
     } // End IF/ELSE/...
 
@@ -444,7 +450,7 @@ void DrawLineCont
 #ifdef DEBUG
     } else
     {
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
 #endif
     } // End IF/ELSE/...
 
@@ -564,7 +570,7 @@ void DrawLineContSub
 #ifdef DEBUG
         } else
         {
-            DbgBrk ();
+            DbgBrk ();              // #ifdef DEBUG
             bSyntClr = FALSE;
 #endif
         } // End IF/ELSE/...

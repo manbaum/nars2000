@@ -1,6 +1,19 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2083 -- Version 0.5.10.xx
+--------------------------------
+
+* Preserve Visual Fidelity When Mixing CRs, LFs, And BSs In Character Output
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+SC_FNOV.C:
+SESSMAN.C:
+  Preserve Visual Fidelity when mixing CRs, LFs, and BSs in character output.
+
+
 Build #2081 -- Version 0.5.10.xx
 --------------------------------
 

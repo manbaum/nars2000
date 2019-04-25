@@ -887,6 +887,9 @@ UBOOL DisplayGlbArr_EM
                                     // Output enough blanks to get back to the current position
                                     FillMemoryW (lpwszTemp, (APLU3264) uCurPos, L' ');
 
+                                    // Reset the maximum width
+                                    uMaxWidth = uCurPos;
+
                                     break;
                                 } else
                                 {
@@ -904,11 +907,7 @@ UBOOL DisplayGlbArr_EM
                                 // Zap the temp buffer at the maximum width
                                 lpwszTemp[uMaxWidth] = WC_EOS;
 
-                                // Output the line up to this point w/NL
-                                AppendLine (lpwszTemp, FALSE, TRUE);
-
-                                // Reset the maximum width and current position
-                                uMaxWidth =
+                                // Reset the current position (but not the max width)
                                 uCurPos   =
                                 uColCur   = 0;
                                 uColCur--;              // Count it out
@@ -1527,7 +1526,7 @@ LPAPLCHAR FormatAplIntFC
         u = (UINT) (aplInt % 10);
         wszTemp[i--] = u + L'0';
         aplInt = aplInt / 10;
-    } while (aplInt);
+    } while (aplInt NE 0);
 
     // Copy the digits to the result
     for (i++; i < MAXLEN; i++)
@@ -2020,7 +2019,7 @@ LPAPLCHAR FormatAplFltFC
                 if (bPowerOfTwo)
                     // Copy the remaining digits to the result
                     //   converting from one-byte ASCII to two-byte UTF16
-                    while (*s)
+                    while (*s NE AC_EOS)
                         *lpaplChar++ = *s++;
                 else
                 {
@@ -2109,7 +2108,7 @@ LPAPLCHAR FormatAplFltFC
 
                     // Copy the remaining digits to the result
                     //   converting from one-byte ASCII to two-byte UTF16
-                    while (*s)
+                    while (*s NE AC_EOS)
                         *lpaplChar++ = *s++;
                 } else
                 {
@@ -2143,7 +2142,7 @@ LPAPLCHAR FormatAplFltFC
                             *lpaplChar++ = aplCharDecimal;
 
                             // Fill with trailing digits
-                            while (nDigits > 0 && *s)
+                            while (nDigits > 0 && *s NE AC_EOS)
                             {
                                 *lpaplChar++ = *s++;
                                 nDigits--;
@@ -4583,6 +4582,7 @@ UBOOL DisplayGlbVector
               lpaplCharNxt;         // Ptr to next char
     APLINT    iSizeof;              // sizeof () datatype
     UBOOL     bRet = FALSE,         // TRUE iff we succeeded
+              bLineCont = FALSE,    // TRUE iff a continued line
               bBoolAPA = FALSE;     // TRUE iff the type is BOOL or APA
     HWND      hWndSM,               // Window handle for the Session Manager
               hWndEC;               // ...                                  Edit Ctrl
@@ -4602,7 +4602,7 @@ UBOOL DisplayGlbVector
     {
         case ARRAY_CHAR:
             // Continue until we're out of cols
-            while (aplDimNCols)
+            while (aplDimNCols NE 0)
             {
                 // Check for Ctrl-Break
                 if (CheckCtrlBreak (lpbCtrlBreak))
@@ -4624,7 +4624,8 @@ UBOOL DisplayGlbVector
                                        &lpaplChar,              // Ptr to ptr to output save area
                                        &uCurPos,                // Ptr to current position
                                        &uMaxPos,                // Ptr to maximum position
-                                       &uIniPos))               // Initial position
+                                       &uIniPos,                // Ptr to initial position
+                                       &bLineCont))             // Ptr to TRUE iff a continued line
                     {
                         // Skip over the next two chars
                         uCnt                   += 2;
@@ -4632,14 +4633,14 @@ UBOOL DisplayGlbVector
                     } // End IF
                 } // End FOR
 
-                // Ensure properly terminated
-                lpaplChar[0] = WC_EOS;
+                // Ensure properly terminated at the max width
+                lpaplChar[uMaxPos] = WC_EOS;
 
                 // Account for it
                 aplDimNCols -= uCnt;
 
                 // Display the continued line with or without ending CRLF
-                AppendLine (lpaplCharIni, aplDimNCols > 0, bEndingCR || (aplDimNCols > 0));
+                AppendLine (lpaplCharIni, bLineCont, bEndingCR || (aplDimNCols > 0));
 
                 // Reset ptrs
                 lpaplChar = lpaplCharIni;
@@ -4810,7 +4811,8 @@ UBOOL CheckTermCodes
      LPAPLCHAR *lplpaplChar,    // Ptr to ptr to output save area
      APLUINT   *lpuCurPos,      // Ptr to current position
      APLUINT   *lpuMaxPos,      // Ptr to maximum position
-     APLUINT   *lpuIniPos)      // Ptr to initial position
+     APLUINT   *lpuIniPos,      // Ptr to initial position
+     LPUBOOL    lpbLineCont)    // Ptr to TRUE iff a continued line
 
 {
     APLUINT uSpaces;            // # spaces to fill in for HT
@@ -4881,18 +4883,11 @@ UBOOL CheckTermCodes
             break;
 
         case WC_CR:
-            // Ensure properly terminated
+            // Ensure properly terminated at the max width
             lpaplCharIni[*lpuMaxPos - *lpuIniPos] = WC_EOS;
 
-            // Display the continued line with ending CRLF
-            AppendLine (lpaplCharIni, TRUE, TRUE);
-
-            // Fill the line up to the current position with blanks
-            FillMemoryW (lpaplCharIni, (APLU3264) *lpuCurPos, L' ');
-
-            // Reset the ptrs and counters to the start of the line
+            // Reset the ptrs and counters (but not max width) to the start of the line
             (*lplpaplChar) = lpaplCharIni;
-            (*lpuMaxPos)   =
             (*lpuCurPos)   =
             (*lpuIniPos)   = 0;
 
@@ -4927,6 +4922,21 @@ UBOOL CheckTermCodes
 
                 bRet = TRUE;
             } // End IF
+
+            break;
+
+        case WC_LF:
+            // Ensure properly terminated at the max width
+            lpaplCharIni[*lpuMaxPos - *lpuIniPos] = WC_EOS;
+
+            // Display the (possibly continued) line without ending CRLF
+            AppendLine (lpaplCharIni, *lpbLineCont, FALSE);
+
+            // Mark the following lines as continued
+            *lpbLineCont = TRUE;
+
+            // Fill the line up to the current position with blanks
+            FillMemoryW (lpaplCharIni, (APLU3264) *lpuCurPos, L' ');
 
             break;
 

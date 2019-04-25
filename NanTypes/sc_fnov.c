@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -132,7 +132,7 @@ UBOOL CmdFops_EM
 //***************************************************************************
 //  $IzitFOPS
 //
-//  Return TRUE iff the object type is that of a fucntion/operator
+//  Return TRUE iff the object type is that of a function/operator
 //***************************************************************************
 
 UBOOL IzitFOPS
@@ -359,7 +359,7 @@ UBOOL CmdFNOV_EM
         lpwszFormat[uLineChar] = WC_EOS;
 
         // Output the current line
-        AppendLine (lpwszFormat, TRUE, TRUE);
+        AppendLine (lpwszFormat, bLineCont, TRUE);
     } // End IF
 
     return FALSE;

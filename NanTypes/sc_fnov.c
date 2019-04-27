@@ -311,7 +311,7 @@ UBOOL CmdFNOV_EM
             lpwszFormat[min (uLineChar, uQuadPW)] = WC_EOS;
 
             // Output the current line
-            AppendLine (lpwszFormat, bLineCont, TRUE);
+            AppendLine (lpwszFormat, bLineCont, FALSE);
 
             // Mark all lines from here on as continuations
             bLineCont = TRUE;

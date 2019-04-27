@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2086 -- Version 0.6.0.xx
+-------------------------------
+
+* Preserve Visual Fidelity When Mixing CRs, LFs, And BSs In Character Output, Part 2
+
+Directory branches/bsmith/NanTypes:
+
+SC_FNOV.C:
+  Fix bug when displaying the result of )FNS, )VARS, etc.
+
+
 Build #2084 -- Version 0.6.0.xx
 -------------------------------
 

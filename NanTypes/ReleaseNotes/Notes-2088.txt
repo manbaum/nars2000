@@ -1,0 +1,9 @@
+Build #2088 -- Version 0.6.0.xx
+-------------------------------
+
+* Preserve Visual Fidelity When Mixing CRs, LFs, And BSs In Character Output, Part 3
+
+Directory branches/bsmith/NanTypes:
+
+SC_LIB.C:
+  Fix bug when displaying the result of )LIB.

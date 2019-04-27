@@ -484,7 +484,7 @@ void DisplayLibNames
                     lpwszLine[min (uLineChar, uQuadPW)] = WC_EOS;
 
                     // Output the current line
-                    AppendLine (lpwszLine, bLineCont, TRUE);
+                    AppendLine (lpwszLine, bLineCont, FALSE);
 
                     // Mark all lines from here on as continuations
                     bLineCont = TRUE;
@@ -510,7 +510,7 @@ void DisplayLibNames
                 lpwszLine[min (uLineChar, uQuadPW)] = WC_EOS;
 
                 // Output the current line
-                AppendLine (lpwszLine, TRUE, TRUE);
+                AppendLine (lpwszLine, bLineCont, TRUE);
             } // End IF
 
             // We no longer need this storage

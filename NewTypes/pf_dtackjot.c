@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2916,11 +2916,13 @@ void AppendBlankRows
     (APLRANK  aplRank,          // Arg rank
      APLDIM   aplDimRow,        // Arg row count
      LPAPLDIM lpMemDim,         // Ptr to arg dimensions
+     LPUBOOL  lpbLineCont,      // Ptr to TRUE iff line continued
      LPUBOOL  lpbCtrlBreak)     // Ptr to Ctrl-Break flag
 
 {
     APLDIM aplDimAcc,           // Dimension product accumulator
            aplDimCol;           // Loop counter
+    UINT   uCnt = 0;            // Blank lines counter
 
     // Initialize the product accumulator
     aplDimAcc = 1;
@@ -2929,15 +2931,30 @@ void AppendBlankRows
     for (aplDimCol = 0; aplDimCol < (aplRank - 1); aplDimCol++)
     {
         aplDimAcc *= lpMemDim[(aplRank - 2) - aplDimCol];
-        if ((aplDimRow - 1) % aplDimAcc)
+        if (0 NE (aplDimRow - 1) % aplDimAcc)
             break;
 
         // Check for Ctrl-Break
         if (CheckCtrlBreak (lpbCtrlBreak))
             return;
-
-        AppendLine (L"", FALSE, TRUE);
+        // Count in another blank line
+        uCnt++;
     } // End FOR
+
+    // If there are any blank lines to display, ...
+    if (uCnt NE 0)
+    {
+        // If we're already displaying Line Continuations,
+        //   count in another blank line
+        uCnt += *lpbLineCont;
+
+        while (--uCnt)
+            // Append an empty line with trailing CRLF
+            AppendLine (L"", FALSE, TRUE);
+
+        // Mark as subsequent lines continued
+        *lpbLineCont = TRUE;
+    } // End IF
 } // End AppendBlankRows
 
 
@@ -2985,6 +3002,7 @@ LPAPLCHAR FormatArrSimple
     APLUINT     uQuadPW;            // []PW
     LPWCHAR     lpwcSep;            // Prt to decimal or rational separator
     UBOOL       bRptCol,            // TRUE iff we're to repeat a col
+                bLineCont = FALSE,  // TRUE iff the line is continued
                 bMoreCols;          // TRUE iff we're to process more cols of data in a row
     APLSTYPE    aplItmType;         // Item type if array type is hetero
 
@@ -3283,9 +3301,11 @@ LPAPLCHAR FormatArrSimple
                         lpwszOut = lpwszOutStart + aplLastDim;
                 } else
                 {
-                    // Handle blank lines between planes
-                    if (bRealRow && aplRealRow NE 1)        // Real row and not first row
-                        AppendBlankRows (aplRank, aplRealRow, lpMemDim, lpbCtrlBreak);
+                    // If it's a Real row and not first row, ...
+                    if (bRealRow && aplRealRow NE 1)
+                        // Handle blank lines between planes
+                        AppendBlankRows (aplRank, aplRealRow, lpMemDim, &bLineCont, lpbCtrlBreak);
+
                     // Ensure properly terminated
                     *lpwszOut = WC_EOS;
 
@@ -3296,7 +3316,7 @@ LPAPLCHAR FormatArrSimple
                     // If we're not already done with output for this row, ...
                     if (!lpFmtRowStr->bDone)
                         // Output the line
-                        AppendLine (lpwszOutStart, FALSE, bEndingCR || aplDimRow NE (aplDimNRows - 1));
+                        AppendLine (lpwszOutStart, bLineCont, !bLineCont);
 
                     // Reset the line start
                     lpwszOut = *lplpwszOut;
@@ -3314,6 +3334,11 @@ LPAPLCHAR FormatArrSimple
                 // Point to the next FMTROWSTR
                 lpFmtRowStr = lpFmtRowStr->lpFmtRowNxt;
             } // End FOR
+
+            // If we're Line Continuing, ...
+            if (bLineCont)
+                // Append an empty line with trailing CRLF
+                AppendLine (L"", FALSE, TRUE);
         } __except (CheckException (GetExceptionInformation (), WFCN L" #2"))
         {
             EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
@@ -3341,7 +3366,7 @@ LPAPLCHAR FormatArrSimple
         {
             // If the array is multirank, ...
             if (IsMultiRank (aplRank))
-                // Display a blank separator line
+                // Append an empty line with trailing CRLF
                 AppendLine (L"", FALSE, TRUE);
 
             // If we're not finished with this col, ...

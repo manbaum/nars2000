@@ -1,0 +1,10 @@
+Build #2089 -- Version 0.5.10.xx
+--------------------------------
+
+* Use Line Continuations In Output
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+SC_LOAD.C:
+  Use Line Continuations in output to better distinguish wrapped lines.

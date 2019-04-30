@@ -902,8 +902,11 @@ UBOOL DisplayGlbArr_EM
                                     // Zap the temp buffer at the maximum width
                                     lpwszTemp[uMaxWidth] = WC_EOS;
 
-                                    // Output the line up to this point w/NL
-                                    AppendLine (lpwszTemp, FALSE, TRUE);
+                                    // Output the line up to this point w/o NL
+                                    AppendLine (lpwszTemp, bLineCont, FALSE);
+
+                                    // Mark the following lines as continued
+                                    bLineCont = TRUE;
 
                                     // Output enough blanks to get back to the current position
                                     FillMemoryW (lpwszTemp, (APLU3264) uCurPos, L' ');
@@ -944,12 +947,12 @@ UBOOL DisplayGlbArr_EM
                     // Zap the temp buffer at the maximum width
                     lpwszTemp[uMaxWidth] = WC_EOS;          // Zap it
 
-                    // If we're at the last line, ...
-                    if (uColGrp EQ (uColLim - 1)
-                     && uFmtRow EQ (lpFmtHeader->uFmtRows - 1))
-                        AppendLine (lpwszTemp, bLineCont, bEndingCR); // Display the line
+                    // If we're in the first ColGrp and not the last row, ...
+                    if (uColGrp EQ 0
+                     && uFmtRow NE (lpFmtHeader->uFmtRows - 1))
+                        AppendLine (lpwszTemp, bLineCont, bEndingCR);       // Display the line
                     else
-                        AppendLine (lpwszTemp, bLineCont, TRUE);      // Display the line
+                        AppendLine (lpwszTemp, bLineCont, FALSE);           // Display the line
                 } // End FOR
 
                 // If we're not at the last line, and
@@ -967,11 +970,13 @@ UBOOL DisplayGlbArr_EM
             lpMemPTD->lpwszTemp = lpwszOrigTemp;
         } // End IF
 
-        // If this is an empty vector, make sure it skips a line
-        if (IsEmpty (lpFmtHeader->uFmtIntWid)
-         && IsVector (aplRank)
-         && bEndingCR
-         && !bRawOut)
+        // If we're continuing OR this is an empty vector, ...
+        if ((bLineCont
+          || (IsEmpty (lpFmtHeader->uFmtIntWid))
+          && IsVector (aplRank))
+          && bEndingCR
+          && !bRawOut)
+            // Make sure it skips a line
             AppendLine (L"", FALSE, TRUE);// Display the empty line
     } __except (CheckVirtAlloc (GetExceptionInformation (), WFCN))
     {
@@ -5313,8 +5318,8 @@ UBOOL DisplayGlbVector
                 // Account for it
                 aplDimNCols -= uCnt;
 
-                // Display the continued line with or without ending CRLF
-                AppendLine (lpaplCharIni, bLineCont, bEndingCR || (aplDimNCols > 0));
+                // Display the continued line w/o ending CRLF
+                AppendLine (lpaplCharIni, bLineCont, FALSE);
 
                 // Reset ptrs
                 lpaplChar = lpaplCharIni;
@@ -5325,8 +5330,11 @@ UBOOL DisplayGlbVector
 
                 // If there's more to display, ...
                 if (aplDimNCols NE 0)
-                    // Display the non-continued indent without ending CRLF
-                    AppendLine (wszIndent, FALSE, FALSE);
+                    // Display the continued indent w/o ending CRLF
+                    AppendLine (wszIndent, TRUE, FALSE);
+                else
+                    // Display an empty line with ending CRLF
+                    AppendLine (L"", FALSE, TRUE);
             } // End WHILE
 
             break;
@@ -5422,8 +5430,8 @@ UBOOL DisplayGlbVector
                     wc = lpaplChar[0];
                     lpaplChar[0] = WC_EOS;
 
-                    // Display the continued line with ending CRLF
-                    AppendLine (lpaplCharIni, TRUE, TRUE);
+                    // Display the line w/o ending CRLF
+                    AppendLine (lpaplCharIni, FALSE, FALSE);
 
                     // Restore the zapped digit
                     lpaplChar[0] = wc;
@@ -5441,8 +5449,8 @@ UBOOL DisplayGlbVector
                     uCopyLen = (APLU3264) uQuadPW - DEF_INDENT;
                     uIniPos = uCurPos = DEF_INDENT;
 
-                    // Display the non-continued indent without ending CRLF
-                    AppendLine (wszIndent, FALSE, FALSE);
+                    // Display the continued indent w/o ending CRLF
+                    AppendLine (wszIndent, TRUE, FALSE);
                 } // End WHILE
 
                 // Reset the current ptr
@@ -5459,7 +5467,7 @@ UBOOL DisplayGlbVector
                 // Terminate the string
                 lpaplChar[0] = WC_EOS;
 
-                // Display the non-continued line with ending CRLF
+                // Display the line with ending CRLF
                 AppendLine (lpaplCharIni, FALSE, TRUE);
             } // End IF
 
@@ -5607,7 +5615,7 @@ UBOOL CheckTermCodes
             // Ensure properly terminated at the max width
             lpaplCharIni[*lpuMaxPos - *lpuIniPos] = WC_EOS;
 
-            // Display the line without ending CRLF
+            // Display the (possibly continued) line w/o ending CRLF
             AppendLine (lpaplCharIni, *lpbLineCont, FALSE);
 
             // Mark the following lines as continued

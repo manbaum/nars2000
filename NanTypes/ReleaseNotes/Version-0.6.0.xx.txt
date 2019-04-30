@@ -1,6 +1,18 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2090 -- Version 0.6.0.xx
+-------------------------------
+
+* Use Line Continuations In Output For Wrapped Lines
+
+Directory branches/bsmith/NanTypes:
+
+DISPLAY.C:
+PF_DTACKJOT.C:
+  Use Line Continuations in output to better distinguish wrapped lines.
+
+
 Build #2088 -- Version 0.6.0.xx
 -------------------------------
 

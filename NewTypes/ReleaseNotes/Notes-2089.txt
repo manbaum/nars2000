@@ -1,10 +1,10 @@
 Build #2089 -- Version 0.5.10.xx
 --------------------------------
 
-* Use Line Continuations In Output
+* Use Line Continuations In Output For Wrapped Lines
 
 Directory branches/bsmith/NewTypes:
 
 DISPLAY.C:
-SC_LOAD.C:
+PF_DTACKJOT.C:
   Use Line Continuations in output to better distinguish wrapped lines.

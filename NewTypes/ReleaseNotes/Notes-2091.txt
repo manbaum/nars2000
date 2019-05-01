@@ -1,0 +1,10 @@
+Build #2091 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bug When Assigning System Function To A Name
+
+Directory branches/bsmith/NewTypes:
+
+ASSIGN.C:
+SYMTAB.C:
+  Fix Bug when assigning a System Function to a name.

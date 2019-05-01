@@ -1990,7 +1990,8 @@ LPSYMENTRY SymTabHTSLookupNameLength
 
 {
     LPHSHENTRY   lpHshEntry;
-    STFLAGS      stMaskFlags = {0};
+    STFLAGS      stMaskFlags = {0},
+                 stFlags2 = {0};    // Ptr to secondary flags filter
     UINT         uHash;
     LPSYMENTRY   lpSymEntry = NULL;
     WCHAR        sysName[32];       // Temp storage for sysnames in lowercase
@@ -2055,6 +2056,14 @@ LPSYMENTRY SymTabHTSLookupNameLength
             lpstFlags->ObjName = OBJNAME_USR;
     } // End IF
 
+    // If the OBJNAME is USR, ...
+    if (lpstFlags->ObjName EQ OBJNAME_USR)
+    {
+        // Also allow OBJNAME_SYS
+        stFlags2.ObjName = OBJNAME_SYS;     // In case of "foo{is}[]NL {diamond} []NC 'foo'"
+        stFlags2.Inuse   = TRUE;
+    } // End IF
+
     // Mark as in use
     lpstFlags->Inuse   = TRUE;
 
@@ -2067,12 +2076,18 @@ LPSYMENTRY SymTabHTSLookupNameLength
         for (lpHshEntry = &lphtsPTD->lpHshTab[MaskTheHash (uHash, lphtsPTD)];
              lpHshEntry NE LPHSHENTRY_NONE;
              lpHshEntry = lpHshEntry->NextSameHash)
+        // Check the flags
+        if (lpHshEntry->htFlags.Inuse
+         && !lpHshEntry->htFlags.CharIsValid)
         {
-            // Check the flags
-            if (lpHshEntry->htFlags.Inuse
-             && !lpHshEntry->htFlags.CharIsValid
-             && (((*(UINT *) &lpHshEntry->htSymEntry->stFlags) & *(UINT *) &stMaskFlags)
-              EQ ((*(UINT *) lpstFlags)                        & *(UINT *) &stMaskFlags)))
+            UINT uMaskFlags;
+
+            // Calculate uMaskFlags
+            uMaskFlags = (*(UINT *) &lpHshEntry->htSymEntry->stFlags) & *(UINT *) &stMaskFlags;
+
+            // Compare the flags
+            if (uMaskFlags EQ ((*(UINT *) lpstFlags) & *(UINT *) &stMaskFlags)
+             || uMaskFlags EQ ((*(UINT *) &stFlags2) & *(UINT *) &stMaskFlags))
             {
                 LPWCHAR  lpwGlbName;
                 APLU3264 iCmp, iCnt;
@@ -2110,7 +2125,7 @@ LPSYMENTRY SymTabHTSLookupNameLength
                     break;
                 } // End IF
             } // End IF
-        } // End FOR
+        } // End FOR/IF
 
         if (lpSymEntry NE NULL
          || lphtsPTD->lphtsPrvSrch EQ NULL

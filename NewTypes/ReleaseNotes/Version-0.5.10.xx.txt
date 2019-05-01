@@ -1,15 +1,27 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2091 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bug When Assigning System Function To A Name
+
+Directory branches/bsmith/NewTypes:
+
+ASSIGN.C:
+SYMTAB.C:
+  Fix Bug when assigning a System Function to a name.
+
+
 Build #2089 -- Version 0.5.10.xx
 --------------------------------
 
-* Use Line Continuations In Output
+* Use Line Continuations In Output For Wrapped Lines
 
 Directory branches/bsmith/NewTypes:
 
 DISPLAY.C:
-SC_LOAD.C:
+PF_DTACKJOT.C:
   Use Line Continuations in output to better distinguish wrapped lines.
 
 

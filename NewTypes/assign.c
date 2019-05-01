@@ -92,7 +92,8 @@ UBOOL AssignName_EM
     //   or it's an internal function, ...
     if (lptkNam->tkData.tkSym->stFlags.DfnLabel
      || (lptkNam->tkData.tkSym->stFlags.FcnDir
-      && lptkNam->tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS))
+      && lptkNam->tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS
+      && IsTknSysName (lptkNam, TRUE)))
         // Signal a SYNTAX ERROR
         goto SYNTAX_EXIT;
 
@@ -225,9 +226,9 @@ UBOOL AssignName_EM
                     lptkNam->tkData.tkSym->stData =
                     lptkSrc->tkData.tkSym->stData;
 
-                    // Copy the direct function flag
-                    lptkNam->tkData.tkSym->stFlags.FcnDir =
-                    lptkSrc->tkData.tkSym->stFlags.FcnDir;
+                    // Copy the SYMENTRY's flags
+                    lptkNam->tkData.tkSym->stFlags =
+                    lptkSrc->tkData.tkSym->stFlags;
                 } else
                 {
                     HGLOBAL hGlbNam;            // Target's global memory handle

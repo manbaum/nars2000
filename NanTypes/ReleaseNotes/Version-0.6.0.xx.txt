@@ -1,6 +1,18 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2092 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug When Assigning System Function To A Name
+
+Directory branches/bsmith/NanTypes:
+
+ASSIGN.C:
+SYMTAB.C:
+  Fix Bug when assigning a System Function to a name.
+
+
 Build #2090 -- Version 0.6.0.xx
 -------------------------------
 

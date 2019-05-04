@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 
 
 // Length of a Newline
-#define NL_LEN      1
+#define NL_LEN      2   //  = strcountof (WS_CRLF)
 
 
 //***************************************************************************
@@ -72,7 +72,7 @@ void BreakMessage
             lpMemName = MyGlobalLockWsz (lpSISCur->hGlbFcnName);
 
 ////////////// Copy the leading text
-////////////strcpyW (lpMemPTD->lpwszTemp, ERRMSG_INTERRUPT WS_CR);
+////////////strcpyW (lpMemPTD->lpwszTemp, ERRMSG_INTERRUPT WS_CRLF);
 ////////////
 ////////////// Calculate the length so far
 ////////////aplNELMRes = lstrlenW (lpMemPTD->lpwszTemp);
@@ -483,8 +483,11 @@ void ErrorMessageDirect
 
     // If there's a trailing part to the error message, ...
     if ((uNameLen NE 0) || (uErrLinLen NE 0) || (uCaret NE NEG1U))
+    {
         // Copy a line terminator to the result
         *lpMemRes++ = WC_CR;
+        *lpMemRes++ = WC_LF;
+    } // End IF
 
     // Copy the function name[line #] to the result
     CopyMemoryW (lpMemRes, lpMemPTD->lpwszTemp, uNameLen);
@@ -501,6 +504,7 @@ void ErrorMessageDirect
 
         // Close the last line
         *lpMemRes++ = WC_CR;
+        *lpMemRes++ = WC_LF;
 
         // Get the # leading blanks
         uLen = uCaret + uNameLen;

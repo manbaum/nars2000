@@ -5259,6 +5259,7 @@ UBOOL DisplayGlbVector
     WCHAR     wc;                   // Temp var
     LPAPLCHAR lpaplChar,            // Prt to current output save char
               lpaplCharNxt;         // Ptr to next char
+    LPAPLCHAR lpMemArrIni;          // Ptr to initial array global memory
     APLINT    iSizeof;              // sizeof () datatype
     UBOOL     bRet = FALSE,         // TRUE iff we succeeded
               bLineCont = FALSE,    // TRUE iff a continued line
@@ -5280,6 +5281,9 @@ UBOOL DisplayGlbVector
     switch (aplType)
     {
         case ARRAY_CHAR:
+            // Save the initial ptr
+            lpMemArrIni = lpMemArr;
+
             // Continue until we're out of cols
             while (aplDimNCols NE 0)
             {
@@ -5298,6 +5302,7 @@ UBOOL DisplayGlbVector
 
                     // Check for Terminal Control chars
                     if (CheckTermCodes ((LPAPLCHAR) lpMemArr,   // Ptr to current char to test
+                                        lpMemArrIni,            // ...    initial ...
                                         hWndEC,                 // EditCtrl window handle
                                         lpaplCharIni,           // Ptr to initial output save area
                                        &lpaplChar,              // Ptr to ptr to output save area
@@ -5312,8 +5317,8 @@ UBOOL DisplayGlbVector
                     } // End IF
                 } // End FOR
 
-                // Ensure properly terminated at the max width
-                lpaplChar[uMaxPos] = WC_EOS;
+                // Ensure properly terminated
+                lpaplChar[0] = WC_EOS;
 
                 // Account for it
                 aplDimNCols -= uCnt;
@@ -5492,6 +5497,7 @@ ERROR_EXIT:
 
 UBOOL CheckTermCodes
     (LPWCHAR    lpwc,           // Ptr to Temp var
+     LPWCHAR    lpwcIni,        // Ptr to initial ...
      HWND       hWndEC,         // Window handle of the EditCtrl
      LPAPLCHAR  lpaplCharIni,   // Ptr to initial output save area
      LPAPLCHAR *lplpaplChar,    // Ptr to ptr to output save area
@@ -5502,7 +5508,8 @@ UBOOL CheckTermCodes
 
 {
     APLUINT uSpaces;            // # spaces to fill in for HT
-    UBOOL   bRet = FALSE;       // TRUE iff the caller is to skip over CR, LF
+    UBOOL   bRet = FALSE,       // TRUE iff the caller is to skip over CR, LF
+            bPrevCR;            // TRUE iff the preceding char is WC_CR
 
     // Split cases based upon the char value
     switch (*lpwc)
@@ -5615,11 +5622,17 @@ UBOOL CheckTermCodes
             // Ensure properly terminated at the max width
             lpaplCharIni[*lpuMaxPos - *lpuIniPos] = WC_EOS;
 
-            // Display the (possibly continued) line w/o ending CRLF
-            AppendLine (lpaplCharIni, *lpbLineCont, FALSE);
+            // Is the preceding char WC_CR?
+            bPrevCR = (lpwcIni < lpwc
+                    && lpwc[-1] EQ WC_CR);
 
-            // Mark the following lines as continued
-            *lpbLineCont = TRUE;
+            // Display the (possibly continued) line with or w/o ending CRLF
+            AppendLine (lpaplCharIni, *lpbLineCont, bPrevCR);
+
+            // If the preceding char isn't WC_CR, ...
+            if (!bPrevCR)
+                // Mark the following lines as continued
+                *lpbLineCont = TRUE;
 
             // Fill the line up to the current position with blanks
             FillMemoryW (lpaplCharIni, (APLU3264) *lpuCurPos, L' ');

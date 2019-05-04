@@ -1,0 +1,13 @@
+Build #2094 -- Version 0.6.0.xx
+-------------------------------
+
+* Handle CR,LF As Not Continuing To The Next Line
+* Use CR,LF Instead Of CR In Error Messages
+
+Directory branches/bsmith/NanTypes:
+
+DISPLAY.C:
+  Handle CR,LF as not continuing to the next line.
+
+ERRMSG.C:
+  Use CR,LF instead of CR in Error Messages.

@@ -4779,7 +4779,7 @@ __try
         defstop
             break;
     } // End SWITCH
-} __except (CheckVirtAlloc (GetExceptionInformation (), L"PrimFnDydDownTackJot_EM_YY"))
+} __except (CheckVirtAlloc (GetExceptionInformation (), WFCN))
 {
     // Split cases based upon the exception code
     switch (MyGetExceptionCode ())

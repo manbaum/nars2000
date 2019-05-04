@@ -1,6 +1,24 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2093 -- Version 0.5.10.xx
+--------------------------------
+
+* Handle CR,LF As Not Continuing To The Next Line
+* Use CR,LF Instead Of CR In Error Messages
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Handle CR,LF as not continuing to the next line.
+
+ERRMSG.C:
+  Use CR,LF instead of CR in Error Messages.
+
+PF_DTACKJOT.C:
+  Use macro instead of literal in DEBUG name.
+
+
 Build #2091 -- Version 0.5.10.xx
 --------------------------------
 

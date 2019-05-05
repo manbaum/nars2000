@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -413,13 +413,14 @@ UBOOL IsValid2ndCharInName
 
 
 //***************************************************************************
-//  $IsSymDel
+//  $IsSymDelLen
 //
-//  Return TRUE iff the SYMENTRY is {del}
+//  Return TRUE iff the SYMENTRY is {del} or {del}{del}
 //***************************************************************************
 
-UBOOL IsSymDel
-    (LPSYMENTRY lpSymEntry)
+UBOOL IsSymDelLen
+    (LPSYMENTRY lpSymEntry,
+     size_t    *lpuLen)         // Output save area for length (1, 2, 3) (may be NULL)
 
 {
     HGLOBAL htGlbName;
@@ -432,13 +433,31 @@ UBOOL IsSymDel
     // Lock the memory to get a ptr to it
     lpMemName = MyGlobalLockInt (htGlbName);
 
-    // If the name is {del}, ...
-    bRet = (lstrcmpW (lpMemName, WS_UTF16_DEL) EQ 0);
+    // If the name is {del} or {del}{del}, ...
+    bRet = (lstrcmpW (lpMemName, WS_UTF16_DEL      ) EQ 0
+         || lstrcmpW (lpMemName, WS_UTF16_DELDEL   ) EQ 0);
+    // If the caller requests the length, ...
+    if (lpuLen NE NULL)
+        *lpuLen = lstrlenW (lpMemName);
 
     // We no longer need this ptr
     MyGlobalUnlock (htGlbName); lpMemName = NULL;
 
     return bRet;
+} // End IsSymDelLen
+
+
+//***************************************************************************
+//  $IsSymDel
+//
+//  Return TRUE iff the SYMENTRY is {del}, {del}{del}, or {del}{del}{del}
+//***************************************************************************
+
+UBOOL IsSymDel
+    (LPSYMENTRY lpSymEntry)
+
+{
+    return IsSymDelLen (lpSymEntry, NULL);
 } // End IsSymDel
 
 
@@ -500,20 +519,20 @@ LPSYMENTRY GetSymDel
 //   24 = Magic operator        (either # operands:  1 or 2)
 //
 //  Note that the left shifts (BIT0 <<) in <SysFnDydNL_EM_YY>
-//    assume that the name class values are limited to 63.  If
-//    you add nameclasses to invalidate that assumption, be sure
-//    to make <SysFnDydNL_EM_YY> work, too.
+//    assume that the name class values are <= 63.  If you add
+//    nameclasses to invalidate that assumption, be sure to
+//    make <SysFnDydNL_EM_YY> work, too.
 //***************************************************************************
 
 APLINT CalcNameClass
     (LPSYMENTRY lpSymEntry)
 
 {
-    // If the SYMENTRY is {del}, ...
-    if (IsSymDel (lpSymEntry))
-        // Call it a UDFO
-        return NAMECLASS_USRFCN;
-
+////// If the SYMENTRY is {del} or {del}{del}, ...
+////if (IsSymDel (lpSymEntry))
+////    // Call it a UDFO
+////    return NAMECLASS_USRFCN;
+////
     // Split cases based upon the Name Type
     switch (lpSymEntry->stFlags.stNameType)
     {

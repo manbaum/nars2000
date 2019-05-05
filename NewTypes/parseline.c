@@ -4423,7 +4423,12 @@ PARSELINE_SHIFT:
             PUSHRIGHT (lpplYYCurObj); lpplYYCurObj = POPLEFT; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
 #ifdef DEBUG
             if (bDebugPLTrace)
+            {
+                lftBndStr = LBIND (LFTSYNOBJ, CURSYNOBJ);
+                rhtBndStr = RBIND (CURSYNOBJ, RHTSYNOBJ);
+
                 TRACE (L"Shifted: ", L"", CURSYNOBJ, RHTSYNOBJ);
+            } // End IF
 #endif
 PARSELINE_SCAN:
             // Get the left, current, and right SynObj values
@@ -4945,10 +4950,17 @@ PARSELINE_REDUCE:
                  && curSynObj EQ soDOP
                  && lpplYYLstRht->tkToken.tkFlags.TknType EQ TKT_NUMSTRAND)
                 {
+#ifdef DEBUG
+                    if (bDebugPLTrace)
+                        TRACE (L"UnStrR:  ", L"", CURSYNOBJ, LSTSYNOBJ);
+#endif
                     // Split out the first item
                     if (!SplitStrandFirst (lpplYYLstRht, lpMemPTD))
                         goto PARSELINE_WSFULL;
-
+#ifdef DEBUG
+                    if (bDebugPLTrace)
+                        TRACE (L"UnStrXR: ", L"", CURSYNOBJ, LSTSYNOBJ);
+#endif
                     // Respecify as they have changed
                     rhtSynObj = soA; Assert (IsValidSO (rhtSynObj));
                     lstSynObj = soA; Assert (IsValidSO (lstSynObj));
@@ -4963,11 +4975,26 @@ PARSELINE_REDUCE:
 
                         // If the righthand part of the split is still a numeric strand, ...
                         if (lpplYYTmpRht->tkToken.tkFlags.TknType EQ TKT_NUMSTRAND)
+                        {
+#ifdef DEBUG
+                            if (bDebugPLTrace)
+                                TRACE (L"UnStrR2 :", L"", CURSYNOBJ, LSTSYNOBJ);
+#endif
                             // Split out the first item
                             if (!SplitStrandFirst (lpplYYTmpRht, lpMemPTD))
                                 goto PARSELINE_WSFULL;
+#ifdef DEBUG
+                            if (bDebugPLTrace)
+                                TRACE (L"UnStrXR2:", L"", CURSYNOBJ, LSTSYNOBJ);
+#endif
+                        } // End IF
+
                         // Put it back onto the righthand stack
                         PUSHRIGHT (lpplYYTmpRht);
+#ifdef DEBUG
+                        if (bDebugPLTrace)
+                            TRACE (L"UnStrPR: ", L"", CURSYNOBJ, LSTSYNOBJ);
+#endif
                     } // End IF
                 } // End IF
 #ifdef DEBUG
@@ -5222,10 +5249,10 @@ PARSELINE_ERROR:
                      || IsTknTypeVar    (lpplYYCurObj->tkToken.tkFlags.TknType))
                         // Free the object and its curries only if not named
                         // N.B.: when A[...][...]{is}B fails on an INDEX ERROR, we must not free 'A'
-                        FreeTempResult (lpplYYCurObj);
-
-                    // YYFree the current object's currys
-                    FreeResultCurry (lpplYYCurObj);
+                        FreeTempAFOResult (lpplYYCurObj);
+                    else
+                        // YYFree the current object's currys
+                        FreeResultCurry (lpplYYCurObj, FALSE);
 
                     // YYFree the current object
                     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
@@ -6702,99 +6729,17 @@ PL_YYLEX_FCNNAMED:
             // Search up the SIS chain to see what this is
             lpSISCur = SrchSISForDfn (lpMemPTD, FALSE);
 
-            // If the ptr is valid, ...
-            if (lpSISCur NE NULL)
-            {
-                // Fill in the ptr to the function header
-                //   in both the return value and the token stream
-                     lpplYYLval->tkToken.tkData.tkVoid   =
-                lpplLocalVars->lptkNext->tkData.tkVoid   = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
-                     lpplYYLval->tkToken.tkFlags.TknType =
-                lpplLocalVars->lptkNext->tkFlags.TknType = TKT_DELAFO;
-                     lpplYYLval->tkToken.tkSynObj        =
-                lpplLocalVars->lptkNext->tkSynObj        = soF;
-
-                // If we should not restore the token stack ptr, ...
-                if (!bRestoreStk)
-                    // Increment the refcnt
-                    DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  {del}{each}
-            } else
-            {
-                // Mark it as a SYNTAX ERROR
-                // Change the token type
-                lpplYYLval->tkToken.tkSynObj = soSYNR;
-
-                break;
-            } // End IF/ELSE
+            // Fill in the YYSTYPE for {del}
+            FillInDel    (lpSISCur, lpplYYLval, lpMemPTD, !bRestoreStk);
 
             break;
 
-        case TKT_DELDEL:            // Del Del -- either a monadic or dyadic operator
+        case TKT_DELDEL:            // Del Del -- either a monadic/dyadic operator
             // Search up the SIS chain to see what this is
             lpSISCur = SrchSISForDfn (lpMemPTD, FALSE);
 
-            // If the ptr is valid, ...
-            if (lpSISCur NE NULL)
-            {
-                // Fill in the ptr to the function header
-                //   in both the return value and the token stream
-                     lpplYYLval->tkToken.tkData.tkVoid =
-                lpplLocalVars->lptkNext->tkData.tkVoid = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
-
-                // If we should not restore the token stack ptr, ...
-                if (!bRestoreStk)
-                    // Increment the refcnt twice
-                    DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  {del}{del}{each}
-
-                // Split case based upon the function type
-                switch (lpSISCur->DfnType)
-                {
-////////////////////case DFNTYPE_FCN:
-////////////////////    // Change it into an anonymous function
-////////////////////    //   in both the return value and the token stream
-////////////////////         lpplYYLval->tkToken.tkFlags.TknType =
-////////////////////    lpplLocalVars->lptkNext->tkFlags.TknType = TKT_FCNAFO;
-////////////////////    lpplLocalVars->lptkNext->tkFlags.TknType = TKT_FCNAFO;
-////////////////////         lpplYYLval->tkToken.tkSynObj        =
-////////////////////    lpplLocalVars->lptkNext->tkSynObj        = soF;
-////////////////////
-////////////////////    break
-////////////////////
-                    case DFNTYPE_OP1:
-                        // Change it into an anonymous monadic operator
-                        //   in both the return value and the token stream
-                             lpplYYLval->tkToken.tkFlags.TknType =
-                        lpplLocalVars->lptkNext->tkFlags.TknType = TKT_OP1AFO;
-                             lpplYYLval->tkToken.tkSynObj        =
-                        lpplLocalVars->lptkNext->tkSynObj        = soMOP;
-
-                        break;
-
-                    case DFNTYPE_OP2:
-                        // Change it into an anonymous dyadic operator
-                        //   in both the return value and the token stream
-                             lpplYYLval->tkToken.tkFlags.TknType =
-                        lpplLocalVars->lptkNext->tkFlags.TknType = TKT_OP2AFO;
-                             lpplYYLval->tkToken.tkSynObj        =
-                        lpplLocalVars->lptkNext->tkSynObj        = soDOP;
-
-                        break;
-
-                    default:
-                        // Mark it as a SYNTAX ERROR
-                        // Change the token type
-                        lpplYYLval->tkToken.tkSynObj = soSYNR;
-
-                        break;
-                } // End SWITCH
-            } else
-            {
-                // Mark it as a SYNTAX ERROR
-                // Change the token type
-                lpplYYLval->tkToken.tkSynObj = soSYNR;
-
-                break;
-            } // End IF/ELSE
+            // Fill in the YYSTYPE for {del}{del}
+            FillInDelDel (lpSISCur, lpplYYLval, lpMemPTD, !bRestoreStk);
 
             break;
 
@@ -6954,7 +6899,10 @@ PL_YYLEX_OP3NAMED:
                         // Change the token type
                         lpplYYLval->tkToken.tkFlags.TknType = TKT_FILLJOT;
                         lpplYYLval->tkToken.tkSynObj        = soF;
-                    } // End IF
+                    } else
+                    {
+                        nop ();
+                    } // End IF/ELSE
 
                     break;
 
@@ -7061,6 +7009,250 @@ PL_YYLEX_OP3NAMED:
 
     Assert (IsValidSO (lpplYYLval->tkToken.tkSynObj));
 } // End pl_yylexCOM
+
+
+//***************************************************************************
+//  $AllocDel
+//
+//  Allocate storage for and fill in the {del}s
+//***************************************************************************
+
+HGLOBAL AllocDel
+    (ENUM_ORDER   uLen,             // # {del}s
+     LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+
+{
+    LPSIS_HEADER lpSISCur;
+    HGLOBAL      hGlbFcn;
+
+    // Search up the SIS chain to see what this is
+    lpSISCur = SrchSISForDfn (lpMemPTD, TRUE);
+
+    // If the ptr is valid, ...
+    if (lpSISCur NE NULL)
+    {
+        LPPL_YYSTYPE lpplYYLval;
+        NAME_TYPES   nameType;
+        LPDFN_HEADER lpMemDfnHdr;
+
+        // Allocate a new YYRes
+        lpplYYLval = YYAlloc ();
+
+        // Split cases based upon the order of the object
+        switch (uLen)
+        {
+            case ENUMORDER_FCN:
+                // Fill in the YYSTYPE for {del}
+                FillInDel    (lpSISCur, lpplYYLval, lpMemPTD, TRUE);
+
+                break;
+
+            case ENUMORDER_OPR:
+                // Fill in the YYSTYPE for {del}{del}
+                FillInDelDel (lpSISCur, lpplYYLval, lpMemPTD, TRUE);
+
+                break;
+
+            defstop
+                break;
+        } // End *SWITCH
+
+        // Get the suspended/pendent global memory handle
+        hGlbFcn = lpSISCur->hGlbDfnHdr;
+
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbFcn);
+
+        // Get the resulting name type
+        nameType = TranslateDfnTypeToNameType (lpMemDfnHdr->DfnType, lpMemDfnHdr->FcnValence);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;
+
+        // Unstrand the function if appropriate
+        UnFcnStrand_EM (&lpplYYLval, nameType, TRUE);
+
+        // Get the {del}s global memory handle
+        hGlbFcn = GetGlbHandle (&lpplYYLval->tkToken);
+
+        // We no longer need this resource
+        YYFree (lpplYYLval); lpplYYLval = NULL;
+    } else
+        // Not the signature of anything we know
+        return NULL;
+    return hGlbFcn;
+} // End AllocDel
+
+
+//***************************************************************************
+//  $FillInDel
+//
+//  Fill in the {del} function
+//***************************************************************************
+
+void FillInDel
+    (LPSIS_HEADER lpSISCur,     // Ptr to current SIS layer
+     LPPL_YYSTYPE lpplYYLval,   // Ptr to YYSTYPE to fill in
+     LPPERTABDATA lpMemPTD,     // Ptr to PerTabData global memory
+     UBOOL        bIncrRefCnt)  // TRUE iff we shoudl increment the RefCnt
+
+{
+    // If the ptr is valid, ...
+    if (lpSISCur NE NULL)
+    {
+        HGLOBAL      hGlbDfnHdr;
+        LPDFN_HEADER lpMemDfnHdr;
+        TOKEN_TYPES  tknType;
+
+        // Get the global memory handle
+        hGlbDfnHdr = lpSISCur->hGlbDfnHdr;
+
+        Assert (hGlbDfnHdr NE NULL);
+
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
+
+        // Set the AFO v. DFN token type
+        tknType = (lpMemDfnHdr->bAFO) ? TKT_FCNAFO : TKT_FCNDFN;
+
+        // Split case based upon the function type
+        switch (lpSISCur->DfnType)
+        {
+            case DFNTYPE_FCN:
+                // Fill in the ptr to the function header
+                //   in the return value
+                lpplYYLval->tkToken.tkFlags.TknType  = tknType;
+                lpplYYLval->tkToken.tkData.tkGlbData = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
+                lpplYYLval->tkToken.tkSynObj         = soF;
+////            lpplYYLval->lpYYFcnBase              =
+////            lpplYYLval->lpYYStrandBase           =
+
+                // Should we increment the RefCnt?
+                if (bIncrRefCnt)
+                    // Increment the refcnt
+                    DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  {del}{each}
+
+                break;
+
+            case DFNTYPE_OP1:       // Bind the left operand
+                lpplYYLval->tkToken.tkFlags.TknType  = tknType;
+                lpplYYLval->tkToken.tkData.tkGlbData = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
+                lpplYYLval->tkToken.tkSynObj         = soF;
+////            lpplYYLval->lpYYFcnBase              =
+////            lpplYYLval->lpYYStrandBase           =
+
+                // Should we increment the RefCnt?
+                if (bIncrRefCnt)
+                {
+                    // Call common code to setup a function with LftOpr
+                    SetupFcnDels (&lpplYYLval->lpplYYOpLCurry,  // Ptr to curried object
+                                   lpMemDfnHdr->steLftOpr);     // Left operand STE
+                    // Increment the refcnt
+                    DbgIncrRefCntTkn (&lpplYYLval->tkToken);
+                } // End IF
+
+                break;
+
+            case DFNTYPE_OP2:       // Bind the left & right operands
+                lpplYYLval->tkToken.tkFlags.TknType  = tknType;
+                lpplYYLval->tkToken.tkData.tkGlbData = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
+                lpplYYLval->tkToken.tkSynObj         = soF;
+////            lpplYYLval->lpYYFcnBase              =
+////            lpplYYLval->lpYYStrandBase           =
+
+                // Should we increment the RefCnt?
+                if (bIncrRefCnt)
+                {
+                    // Call common code to setup a function with RhtOpr
+                    SetupFcnDels (&lpplYYLval->lpplYYOpRCurry,  // Ptr to curried object
+                                   lpMemDfnHdr->steRhtOpr);     // Right operand STE
+                    // Call common code to setup a function with LftOpr
+                    SetupFcnDels (&lpplYYLval->lpplYYOpLCurry,  // Ptr to curried object
+                                   lpMemDfnHdr->steLftOpr);     // Left operand STE
+                    // Increment the refcnt
+                    DbgIncrRefCntTkn (&lpplYYLval->tkToken);
+                } // End IF
+
+                break;
+
+            default:
+                // Mark it as a SYNTAX ERROR
+                // Change the token type
+                lpplYYLval->tkToken.tkSynObj = soSYNR;
+
+                break;
+        } // End SWITCH
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } else
+        // Mark it as a SYNTAX ERROR
+        // Change the token type
+        lpplYYLval->tkToken.tkSynObj = soSYNR;
+} // End FillInDel
+
+
+//***************************************************************************
+//  $FillInDelDel
+//
+//  Fill in the {del}{del} function
+//***************************************************************************
+
+void FillInDelDel
+    (LPSIS_HEADER lpSISCur,     // Ptr to current SIS layer
+     LPPL_YYSTYPE lpplYYLval,   // Ptr to YYSTYPE to fill in
+     LPPERTABDATA lpMemPTD,     // Ptr to PerTabData global memory
+     UBOOL        bIncrRefCnt)  // TRUE iff we shoudl increment the RefCnt
+
+{
+    // If the ptr is valid, ...
+    if (lpSISCur NE NULL)
+    {
+        HGLOBAL      hGlbDfnHdr;
+        LPDFN_HEADER lpMemDfnHdr;
+
+        // Get the global memory handle
+        hGlbDfnHdr = lpSISCur->hGlbDfnHdr;
+
+        Assert (hGlbDfnHdr NE NULL);
+
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
+
+        // Split case based upon the function type
+        switch (lpSISCur->DfnType)
+        {
+            case DFNTYPE_FCN:
+            case DFNTYPE_OP1:
+            case DFNTYPE_OP2:
+                // Fill in the ptr to the function header
+                //   in the return value
+                lpplYYLval->tkToken.tkFlags.TknType  = TranslateDfnTypeToDfnTknType (lpSISCur->DfnType);
+                lpplYYLval->tkToken.tkData.tkGlbData = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
+                lpplYYLval->tkToken.tkSynObj         = TranslateDfnTypeToSOType (lpMemDfnHdr);
+
+                // Should we increment the RefCnt?
+                if (bIncrRefCnt)
+                    // Increment the refcnt
+                    DbgIncrRefCntTkn (&lpplYYLval->tkToken);
+
+                break;
+
+            default:
+                // Mark it as a SYNTAX ERROR
+                // Change the token type
+                lpplYYLval->tkToken.tkSynObj = soSYNR;
+
+                break;
+        } // End SWITCH
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } else
+        // Mark it as a SYNTAX ERROR
+        // Change the token type
+        lpplYYLval->tkToken.tkSynObj = soSYNR;
+} // End FillInDelDel
 
 
 #ifdef DEBUG
@@ -7810,6 +8002,8 @@ void ConvertNamedFopToUnnamed
         // Get the global memory handle
         hGlbFcn = GetGlbHandle (&lpplYYLval->tkToken);
 
+        Assert (hGlbFcn NE NULL);
+
         // Split cases based upon the array signature
         switch (GetSignatureGlb_PTB (hGlbFcn))
         {
@@ -7856,6 +8050,99 @@ void ConvertNamedFopToUnnamed
         // Mark it as a Fcn/Opx so it can't be re-assigned.
         lpplYYLval->tkToken.tkSynObj = soTKN_IMMED;
 } // End ConvertNamedFopToUnnamed
+
+
+//***************************************************************************
+//  $SetupFcnDels
+//
+//  Setup a function for the Dels
+//***************************************************************************
+
+void SetupFcnDels
+    (LPPL_YYSTYPE *lplpplYYCurry,   // Ptr to ptr to curried object
+     LPSYMENTRY    ste)             // Ptr to corresponding STE
+
+{
+    LPPL_YYSTYPE lpYYCurry;
+
+    Assert ((*lplpplYYCurry) EQ NULL);
+
+    (*lplpplYYCurry) = lpYYCurry = YYAlloc ();
+
+    // Check for NAMETYPE_UNK (a.k.a. TKT_FILLJOT)
+    if (ste->stFlags.stNameType EQ NAMETYPE_UNK)
+    {
+        lpYYCurry->tkToken.tkFlags.TknType = TKT_FILLJOT;
+        lpYYCurry->tkToken.tkData.tkChar   = UTF16_JOT;
+        lpYYCurry->tkToken.tkSynObj        = soNVAL;
+    } else
+    {
+        lpYYCurry->tkToken.tkFlags.TknType = TranslateNameTypeToTknTypeNamed (ste->stFlags.stNameType);
+        lpYYCurry->tkToken.tkData.tkSym    = ste;
+        lpYYCurry->tkToken.tkSynObj        = TranslateNameTypeToSOType (ste->stFlags.stNameType);
+    } // End IF/ELSE
+
+    lpYYCurry->TknCount                = 1;
+////lpYYCurry->lpYYFcnBase             =
+////lpYYCurry->lpYYStrandBase          =
+
+    // Split cases based upon the NAMETYPE_xxx
+    switch (ste->stFlags.stNameType)
+    {
+        case NAMETYPE_VAR:
+            // If it's an immediate, ...
+            if (lpYYCurry->tkToken.tkData.tkSym->stFlags.Imm)
+            {
+                // Convert this to an unnamed immediate var
+                lpYYCurry->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+                lpYYCurry->tkToken.tkFlags.ImmType   = lpYYCurry->tkToken.tkData.tkSym->stFlags.ImmType;
+                lpYYCurry->tkToken.tkData .tkLongest = lpYYCurry->tkToken.tkData.tkSym->stData.stLongest;
+            } else
+            {
+                // Convert this to an unnamed global var
+                lpYYCurry->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+                lpYYCurry->tkToken.tkData .tkGlbData = lpYYCurry->tkToken.tkData.tkSym->stData.stGlbData;
+            } // End IF/ELSE
+
+            // Mark it as an Array so it can't be re-assigned.
+            lpYYCurry->tkToken.tkSynObj = soA;
+
+            // Increment the refcnt
+            DbgIncrRefCntTkn (&lpYYCurry->tkToken);    // EXAMPLE:  any unassigned named var
+
+            break;
+
+        case NAMETYPE_FN0:
+        case NAMETYPE_FN12:
+            // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
+            //   INCREMENT THE RefCnt
+            ConvertNamedFopToUnnamed (lpYYCurry, soF, TKT_FCNIMMED, TKT_FCNAFO, TKT_FCNDFN, TRUE);
+
+            break;
+
+        case NAMETYPE_OP1:
+            // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
+            //   INCREMENT THE RefCnt
+            ConvertNamedFopToUnnamed (lpYYCurry, soMOP, TKT_OP1IMMED, TKT_OP1AFO, TKT_OP1DFN, TRUE);
+
+            break;
+
+        case NAMETYPE_OP2:
+            // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
+            //   INCREMENT THE RefCnt
+            ConvertNamedFopToUnnamed (lpYYCurry, soDOP, TKT_OP2IMMED, TKT_OP2AFO, TKT_OP2DFN, TRUE);
+
+            break;
+
+        case NAMETYPE_UNK:      // TKT_FILLJOT
+            break;
+
+        case NAMETYPE_OP3:
+        case NAMETYPE_TRN:
+        defstop
+            break;
+    } // End SWITCH
+} // End SetupFcnDels
 
 
 //***************************************************************************

@@ -351,7 +351,7 @@ void FormatSTE
 
             lpHshEntry = lpSymEntry->stHshEntry;
 
-            if (lpHshEntry)
+            if (lpHshEntry NE NULL)
             {
                 Assert (lpHshEntry->htGlbName NE NULL);
 
@@ -385,7 +385,7 @@ void FormatSTE
 
             lpHshEntry = lpSymEntry->stHshEntry;
 
-            if (lpHshEntry)
+            if (lpHshEntry NE NULL)
             {
                 MySprintfW (lpwszTemp,
                             iTempMaxSize,
@@ -652,7 +652,7 @@ void DisplayGlobals
                             if (IsEmpty (lpHeader->NELM))
                             {
                                 aplArrChar[0] = L'0';
-                                aplArrChar[1] = L'v';
+                                aplArrChar[1] = DEF_VFPSEP;
                                 aplArrChar[2] = WC_EOS;
                             } else
                             {
@@ -973,7 +973,7 @@ void DisplayGlobals
         uValid = TRUE;
     } // End FOR/IF
 
-    if (uValid)
+    if (uValid NE 0)
         DbgMsgW (L"********** End Semaphores ******************************\r\n");
 
     UpdateDBWindow ();
@@ -1011,7 +1011,7 @@ void DisplayGlbVar
     lpwszTemp += lstrlenW (lpwLabel);
 
     // If the global memory handle is valid, ...
-    if (hGlb)
+    if (hGlb NE NULL)
         // Do the rest in a subroutine so we may use it recursively
         lpwszTemp =
           DisplayGlbVarSub (hGlb, lpwszTemp);
@@ -1343,7 +1343,8 @@ void DisplayTokens
     int          i,                 // Loop counter
                  iLen;              // Token count
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    WCHAR        wszTemp[1024];     // Ptr to temporary output area
+    WCHAR        wszTemp[1024],     // Ptr to temporary output area
+                 wszName[ 256];     // Ptr to temporary name
     LPTOKEN      lpMemTknLine;      // Ptr to tokenized line
 
     DbgMsgW (L"********** Start Tokens ********************************\r\n");
@@ -1373,13 +1374,27 @@ void DisplayTokens
 
     for (i = 0; i < iLen; i++, lpMemTknLine++)
     {
+        UINT TknType = lpMemTknLine->tkFlags.TknType;
+        LPWCHAR lpwName;
+
+        if (IsTknTypeNamedVar (TknType))
+        {
+            MySprintfW (wszName,
+                        sizeof (wszName),
+                       L"Name = %s,  ",
+                        lpMemTknLine->tkData.tkSym->stHshEntry->lpwCharName);
+            lpwName = &wszName[0];
+        } else
+            lpwName = L"";
+
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"(%2d) Data=%I64X, CharIndex=%2d, Type=%S, so=<%s>\r\n",
+                   L"(%2d) Data=%I64X, CharIndex=%2d, Type=%S, %sso=<%s>\r\n",
                     i,
                     *(LPAPLINT) &lpMemTknLine->tkData.tkFloat,
                     lpMemTknLine->tkCharIndex,
-                    GetTokenTypeName (lpMemTknLine->tkFlags.TknType),
+                    GetTokenTypeName (TknType),
+                    lpwName,
                     (lpMemTknLine->tkSynObj EQ soNONE) ? L"NONE"
                                                        : soNames[lpMemTknLine->tkSynObj]);
         DbgMsgW (wszTemp);
@@ -1587,6 +1602,7 @@ void DisplayFcnStrand
             break;
 
         case TKT_FCNIMMED:
+
         case TKT_OP1IMMED:
         case TKT_OP2IMMED:
         case TKT_OP3IMMED:
@@ -1602,6 +1618,7 @@ void DisplayFcnStrand
             break;
 
         case TKT_FCNNAMED:
+
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
         case TKT_OP3NAMED:
@@ -1813,6 +1830,10 @@ LPWCHAR DisplayFcnMem
                          lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                          lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
                          lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
+    // If it ends with a space, ...
+    if (IsWhiteW (lpaplChar[-1]))
+        *--lpaplChar = WC_EOS;
+
     return lpaplChar;
 } // End DisplayFcnMem
 
@@ -2618,7 +2639,17 @@ LPWCHAR DisplayVarSub
             // We no longer need this ptr
             MyGlobalUnlock (hGlbData); lpMemData = NULL;
         } else
+        // If the array is {zilde}, ...
+        if (IsSimpleNH (aplType)
+         && IsVector (aplRank)
+         && IsEmpty (aplNELM))
         {
+            // Append {zilde}
+            *lpaplChar++ = UTF16_ZILDE;
+            *lpaplChar++ = L' ';                        // N.B.:  trailing blank is significant
+        } else
+        {
+            // Cop out with an ellipsis
             *lpaplChar++ = UTF16_HORIZELLIPSIS;
             *lpaplChar++ = L' ';                        // N.B.:  trailing blank is significant
         } // End IF/ELSE
@@ -2649,7 +2680,7 @@ LPWCHAR FillDfnName
 
 {
     // If there's a callback function, use it
-    if (lpSavedWsGlbFcnConv)
+    if (lpSavedWsGlbFcnConv NE NULL)
         return
           (*lpSavedWsGlbFcnConv) (lpaplChar,                // Ptr to output save area
                                   MakePtrTypeGlb (hGlbData),// Object global memory handle
@@ -2719,7 +2750,7 @@ void DisplayFcnLine
         return;
 
     // If the handle is valid, ...
-    if (hGlbTxtLine)
+    if (hGlbTxtLine NE NULL)
         // Lock the memory to get a ptr to it
         lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
@@ -2742,7 +2773,7 @@ void DisplayFcnLine
     MyGlobalUnlock (lpMemPTD->lpSISCur->hGlbFcnName); lpMemFcnName = NULL;
 
     // If the handle is valid, ...
-    if (hGlbTxtLine)
+    if (hGlbTxtLine NE NULL)
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 } // End DisplayFcnline
@@ -3000,42 +3031,52 @@ void DisplayUndo
 
 #ifdef DEBUG
 //***************************************************************************
-//  $DisplayFcnHdr
+//  $ReturnFcnHdr
 //
-//  Display the function header
+//  Return a ptr to a character representation of the function header
 //***************************************************************************
 
-void DisplayFcnHdr
-    (LPFHLOCALVARS lpfhLocalVars)       // Ptr to Function Header local vars
+LPWCHAR ReturnFcnHdr
+    (LPDFN_HEADER lpMemDfnHdr)  // Ptr to UDFO header
 
 {
-    WCHAR     wszTemp[1024];            // Ptr to temporary output area
-    HGLOBAL   hGlbName;
-    LPAPLCHAR lpMemName;
-    UINT      uLen, uItm;
+    static WCHAR wszTemp[1024];
+    HGLOBAL      hGlbName;
+    LPAPLCHAR    lpMemName;
+    size_t       uLen, uItm;
+    LPSYMENTRY  *lplpSymEntry;  // Ptr to 1st STE in a list
 
-    // Check debug level
-    if (gDbgLvl < gFcnLvl)
-        return;
+    // Initialize
+    wszTemp[0] = WC_EOS;
 
-    // Initialize the output string
-    strcpyW (wszTemp, L"Saving function header:  " WS_UTF16_DEL L" ");
+    //***************************************************************
+    // Result
+    //***************************************************************
 
     // Check for result
-    if (lpfhLocalVars->lpYYResult)
+    if (lpMemDfnHdr->numResultSTE NE 0)
     {
-        // Get the strand length
-        uLen = lpfhLocalVars->lpYYResult->uStrandLen;
+        // Get the # entries
+        uLen = lpMemDfnHdr->numResultSTE;
 
+        // Append a separator
+        if (lpMemDfnHdr->NoDispRes)
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L"{");
         // Append a separator
         if (uLen > 1)
             MyStrcatW (wszTemp,
                        sizeof (wszTemp),
                       L"(");
+        // Get ptr to 1st STE
+        lplpSymEntry = (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offResultSTE);
+
+        // Loop through the entries
         for (uItm = 0; uItm < uLen; uItm++)
         {
             // Get the Name's global memory handle
-            hGlbName = lpfhLocalVars->lpYYResult[uItm].tkToken.tkData.tkSym->stHshEntry->htGlbName;
+            hGlbName = lplpSymEntry[uItm]->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLockWsz (hGlbName);
@@ -3058,6 +3099,11 @@ void DisplayFcnHdr
             MyStrcatW (wszTemp,
                        sizeof (wszTemp),
                       L")");
+        // Append a separator
+        if (lpMemDfnHdr->NoDispRes)
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L"}");
         // Append a left arrow
         MyStrcatW (wszTemp,
                    sizeof (wszTemp),
@@ -3069,13 +3115,13 @@ void DisplayFcnHdr
     //***************************************************************
 
     // Check for left argument
-    if (lpfhLocalVars->lpYYLftArg)
+    if (lpMemDfnHdr->numLftArgSTE NE 0)
     {
-        // Get the strand length
-        uLen = lpfhLocalVars->lpYYLftArg->uStrandLen;
+        // Get the # entries
+        uLen = lpMemDfnHdr->numLftArgSTE;
 
         // Append a separator
-        if (lpfhLocalVars->FcnValence EQ FCNVALENCE_AMB)
+        if (lpMemDfnHdr->FcnValence EQ FCNVALENCE_AMB)
             MyStrcatW (wszTemp,
                        sizeof (wszTemp),
                       L"{");
@@ -3084,10 +3130,14 @@ void DisplayFcnHdr
             MyStrcatW (wszTemp,
                        sizeof (wszTemp),
                       L"(");
+        // Get ptr to 1st STE
+        lplpSymEntry = (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE);
+
+        // Loop through the entries
         for (uItm = 0; uItm < uLen; uItm++)
         {
             // Get the Name's global memory handle
-            hGlbName = lpfhLocalVars->lpYYLftArg[uItm].tkToken.tkData.tkSym->stHshEntry->htGlbName;
+            hGlbName = lplpSymEntry[uItm]->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLockWsz (hGlbName);
@@ -3106,7 +3156,7 @@ void DisplayFcnHdr
         } // End FOR
 
         // Append a separator
-        if (lpfhLocalVars->FcnValence EQ FCNVALENCE_AMB)
+        if (lpMemDfnHdr->FcnValence EQ FCNVALENCE_AMB)
             MyStrcatW (wszTemp,
                        sizeof (wszTemp),
                       L"}");
@@ -3121,221 +3171,154 @@ void DisplayFcnHdr
                   L" ");
     } // End IF
 
-    // Split cases based upon the user-defined function/operator type
-    switch (lpfhLocalVars->DfnType)
+    //***************************************************************
+    // Left Operand
+    //***************************************************************
+
+    // If there's a left operand, ...
+    if (lpMemDfnHdr->steLftOpr NE NULL)
     {
-        case DFNTYPE_OP1:
-        case DFNTYPE_OP2:
-            // Append a separator
+        // Append a separator
+        MyStrcatW (wszTemp,
+                   sizeof (wszTemp),
+                  L"(");
+        // Get the Name's global memory handle
+        hGlbName = lpMemDfnHdr->steLftOpr->stHshEntry->htGlbName;
+
+        // Lock the memory to get a ptr to it
+        lpMemName = MyGlobalLockWsz (hGlbName);
+
+        // Copy the name
+        MyStrcatW (wszTemp,
+                   sizeof (wszTemp),
+                   lpMemName);
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbName); lpMemName = NULL;
+
+        // Append a separator
+        MyStrcatW (wszTemp,
+                   sizeof (wszTemp),
+                  L" ");
+    } // End IF
+
+    //***************************************************************
+    // Function/Operator Name
+    //***************************************************************
+
+    // If there's an operator name, ...
+    if (lpMemDfnHdr->steFcnName NE NULL)
+    {
+        // Get the Name's global memory handle
+        hGlbName = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
+
+        // Lock the memory to get a ptr to it
+        lpMemName = MyGlobalLockWsz (hGlbName);
+
+        // Copy the name
+        MyStrcatW (wszTemp,
+                   sizeof (wszTemp),
+                   lpMemName);
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbName); lpMemName = NULL;
+    } // End IF
+
+    //***************************************************************
+    // Axis Operand
+    //***************************************************************
+
+    // Check for axis operand
+    if (lpMemDfnHdr->steAxisOpr NE NULL)
+    {
+        // Append a separator
+        MyStrcatW (wszTemp,
+                   sizeof (wszTemp),
+                  L"[");
+        // If there's an axis opr name, ...
+        if (lpMemDfnHdr->steAxisOpr->stHshEntry NE NULL)
+        {
+            // Get the Name's global memory handle
+            hGlbName = lpMemDfnHdr->steAxisOpr->stHshEntry->htGlbName;
+
+            // Lock the memory to get a ptr to it
+            lpMemName = MyGlobalLockWsz (hGlbName);
+
+            // Copy the name
             MyStrcatW (wszTemp,
                        sizeof (wszTemp),
-                      L"(");
-            //***************************************************************
-            // Left Operand
-            //***************************************************************
+                       lpMemName);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbName); lpMemName = NULL;
+        } // End IF
 
-            // If there's a left opr name, ...
-            if (lpfhLocalVars->lpYYLftOpr->tkToken.tkData.tkSym->stHshEntry NE NULL)
-            {
-                // Get the Name's global memory handle
-                hGlbName = lpfhLocalVars->lpYYLftOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
+        // Append a separator
+        MyStrcatW (wszTemp,
+                   sizeof (wszTemp),
+                  L"]");
+    } // End IF
 
-                // Lock the memory to get a ptr to it
-                lpMemName = MyGlobalLockWsz (hGlbName);
+    //***************************************************************
+    // Right Operand
+    //***************************************************************
 
-                // Copy the name
-                MyStrcatW (wszTemp,
-                           sizeof (wszTemp),
-                           lpMemName);
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbName); lpMemName = NULL;
-            } // End IF
+    // Check for right operand
+    if (lpMemDfnHdr->steRhtOpr NE NULL)
+    {
+        // Append a separator
+        MyStrcatW (wszTemp,
+                   sizeof (wszTemp),
+                  L" ");
+        // If there's a rht opr name, ...
+        if (lpMemDfnHdr->steRhtOpr->stHshEntry NE NULL)
+        {
+            // Get the Name's global memory handle
+            hGlbName = lpMemDfnHdr->steRhtOpr->stHshEntry->htGlbName;
 
-            // Append a separator
+            // Lock the memory to get a ptr to it
+            lpMemName = MyGlobalLockWsz (hGlbName);
+
+            // Copy the name
             MyStrcatW (wszTemp,
                        sizeof (wszTemp),
-                      L" ");
-            //***************************************************************
-            // Operator Name
-            //***************************************************************
+                       lpMemName);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbName); lpMemName = NULL;
+        } // End IF
+    } // End IF
 
-            // If there's a function name, ...
-            if (lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry NE NULL)
-            {
-                // Get the Name's global memory handle
-                hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry->htGlbName;
-
-                // Lock the memory to get a ptr to it
-                lpMemName = MyGlobalLockWsz (hGlbName);
-
-                // Copy the name
-                MyStrcatW (wszTemp,
-                           sizeof (wszTemp),
-                           lpMemName);
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbName); lpMemName = NULL;
-            } // End IF
-
-            //***************************************************************
-            // Axis Operand
-            //***************************************************************
-
-            // Check for axis operand
-            if (lpfhLocalVars->lpYYAxisOpr)
-            {
-                // Append a separator
-                MyStrcatW (wszTemp,
-                           sizeof (wszTemp),
-                          L"[");
-                // If there's an axis opr name, ...
-                if (lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry NE NULL)
-                {
-                    // Get the Name's global memory handle
-                    hGlbName = lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
-
-                    // Lock the memory to get a ptr to it
-                    lpMemName = MyGlobalLockWsz (hGlbName);
-
-                    // Copy the name
-                    MyStrcatW (wszTemp,
-                               sizeof (wszTemp),
-                               lpMemName);
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbName); lpMemName = NULL;
-                } // End IF
-
-                // Append a separator
-                MyStrcatW (wszTemp,
-                           sizeof (wszTemp),
-                          L"]");
-            } // End IF
-
-            //***************************************************************
-            // Right Operand
-            //***************************************************************
-
-            // Check for right operand
-            if (lpfhLocalVars->lpYYRhtOpr)
-            {
-                // Append a separator
-                MyStrcatW (wszTemp,
-                           sizeof (wszTemp),
-                          L" ");
-                // If there's a rht opr name, ...
-                if (lpfhLocalVars->lpYYRhtOpr->tkToken.tkData.tkSym->stHshEntry NE NULL)
-                {
-                    // Get the Name's global memory handle
-                    hGlbName = lpfhLocalVars->lpYYRhtOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
-
-                    // Lock the memory to get a ptr to it
-                    lpMemName = MyGlobalLockWsz (hGlbName);
-
-                    // Copy the name
-                    MyStrcatW (wszTemp,
-                               sizeof (wszTemp),
-                               lpMemName);
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbName); lpMemName = NULL;
-                } // End IF
-            } // End IF
-
-            // Append a separator
-            MyStrcatW (wszTemp,
-                       sizeof (wszTemp),
-                      L")");
-            break;
-
-        case DFNTYPE_FCN:
-            //***************************************************************
-            // Function Name
-            //***************************************************************
-
-            // If there's a function name, ...
-            if (lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry NE NULL)
-            {
-                // Get the Name's global memory handle
-                hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry->htGlbName;
-
-                // Lock the memory to get a ptr to it
-                lpMemName = MyGlobalLockWsz (hGlbName);
-
-                // Copy the name
-                MyStrcatW (wszTemp,
-                           sizeof (wszTemp),
-                           lpMemName);
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbName); lpMemName = NULL;
-            } // End IF
-
-            //***************************************************************
-            // Axis Operand
-            //***************************************************************
-
-            // Check for axis operand
-            if (lpfhLocalVars->lpYYAxisOpr)
-            {
-                // Append a separator
-                MyStrcatW (wszTemp,
-                           sizeof (wszTemp),
-                          L"[");
-                // If there's an axis opr name, ...
-                if (lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry NE NULL)
-                {
-                    // Get the Name's global memory handle
-                    hGlbName = lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
-
-                    // Lock the memory to get a ptr to it
-                    lpMemName = MyGlobalLockWsz (hGlbName);
-
-                    // Copy the name
-                    MyStrcatW (wszTemp,
-                               sizeof (wszTemp),
-                               lpMemName);
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbName); lpMemName = NULL;
-                } // End IF
-
-                // Append a separator
-                MyStrcatW (wszTemp,
-                           sizeof (wszTemp),
-                          L"]");
-            } // End IF
-
-            break;
-
-        case DFNTYPE_UNK:
-            MyStrcatW (wszTemp,
-                       sizeof (wszTemp),
-                      L"<empty>");
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
+    // If there's a left operand, ...
+    if (lpMemDfnHdr->steLftOpr NE NULL)
+        // Append a separator
+        MyStrcatW (wszTemp,
+                   sizeof (wszTemp),
+                  L")");
 
     //***************************************************************
     // Right Argument
     //***************************************************************
 
     // Check for right argument
-    if (lpfhLocalVars->lpYYRhtArg)
+    if (lpMemDfnHdr->numRhtArgSTE NE 0)
     {
         // Append a separator
         MyStrcatW (wszTemp,
                    sizeof (wszTemp),
                   L" ");
-        // Get the strand length
-        uLen = lpfhLocalVars->lpYYRhtArg->uStrandLen;
+        // Get the # entries
+        uLen = lpMemDfnHdr->numRhtArgSTE;
 
         // Append a separator
         if (uLen > 1)
             MyStrcatW (wszTemp,
                        sizeof (wszTemp),
                       L"(");
+        // Get ptr to 1st STE
+        lplpSymEntry = (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE);
+
+        // Loop through the entries
         for (uItm = 0; uItm < uLen; uItm++)
         {
             // Get the Name's global memory handle
-            hGlbName = lpfhLocalVars->lpYYRhtArg[uItm].tkToken.tkData.tkSym->stHshEntry->htGlbName;
+            hGlbName = lplpSymEntry[uItm]->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLockWsz (hGlbName);
@@ -3360,8 +3343,400 @@ void DisplayFcnHdr
                       L")");
     } // End IF
 
-    // Display it in the debug window
-    DbgMsgW (wszTemp);
+    return &wszTemp[0];
+} // End ReturnFcnHdr
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $DisplayFcnHdr
+//
+//  Display the function header
+//***************************************************************************
+
+void DisplayFcnHdr
+    (LPFHLOCALVARS lpfhLocalVars)       // Ptr to Function Header local vars
+
+{
+    WCHAR     wszTemp[1024];            // Ptr to temporary output area
+    HGLOBAL   hGlbName;
+    LPAPLCHAR lpMemName;
+    UINT      uLen, uItm;
+
+    // If we're debugging, ...
+    if (bDebugFH)
+    {
+        // Initialize the output string
+        strcpyW (wszTemp, L"Saving function header:  " WS_UTF16_DEL L" ");
+
+        //***************************************************************
+        // Result
+        //***************************************************************
+
+        // Check for result
+        if (lpfhLocalVars->lpYYResult NE NULL)
+        {
+            // Get the strand length
+            uLen = lpfhLocalVars->lpYYResult->uStrandLen;
+
+            // Append a separator
+            if (uLen > 1)
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L"(");
+            // Loop through the entries
+            for (uItm = 0; uItm < uLen; uItm++)
+            {
+                // Get the Name's global memory handle
+                hGlbName = lpfhLocalVars->lpYYResult[uItm].tkToken.tkData.tkSym->stHshEntry->htGlbName;
+
+                // Lock the memory to get a ptr to it
+                lpMemName = MyGlobalLockWsz (hGlbName);
+
+                // Copy the name
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                           lpMemName);
+                // If we're not at the last item, separate with a space
+                if (uItm < (uLen - 1))
+                    MyStrcatW (wszTemp,
+                               sizeof (wszTemp),
+                              L" ");
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbName); lpMemName = NULL;
+            } // End FOR
+
+            // Append a separator
+            if (uLen > 1)
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L")");
+            // Append a left arrow
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                       WS_UTF16_LEFTARROW);
+        } // End IF
+
+        //***************************************************************
+        // Left Argument
+        //***************************************************************
+
+        // Check for left argument
+        if (lpfhLocalVars->lpYYLftArg NE NULL)
+        {
+            // Get the strand length
+            uLen = lpfhLocalVars->lpYYLftArg->uStrandLen;
+
+            // Append a separator
+            if (lpfhLocalVars->FcnValence EQ FCNVALENCE_AMB)
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L"{");
+            else
+            if (uLen > 1)
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L"(");
+            // Loop through the entries
+            for (uItm = 0; uItm < uLen; uItm++)
+            {
+                // Get the Name's global memory handle
+                hGlbName = lpfhLocalVars->lpYYLftArg[uItm].tkToken.tkData.tkSym->stHshEntry->htGlbName;
+
+                // Lock the memory to get a ptr to it
+                lpMemName = MyGlobalLockWsz (hGlbName);
+
+                // Copy the name
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                           lpMemName);
+                // If we're not at the last item, separate with a space
+                if (uItm < (uLen - 1))
+                    MyStrcatW (wszTemp,
+                               sizeof (wszTemp),
+                              L" ");
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbName); lpMemName = NULL;
+            } // End FOR
+
+            // Append a separator
+            if (lpfhLocalVars->FcnValence EQ FCNVALENCE_AMB)
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L"}");
+            else
+            if (uLen > 1)
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L")");
+            // Append a separator
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L" ");
+        } // End IF
+
+        // Split cases based upon the user-defined function/operator type
+        switch (lpfhLocalVars->DfnType)
+        {
+            case DFNTYPE_OP1:
+            case DFNTYPE_OP2:
+                //***************************************************************
+                // Left Operand
+                //***************************************************************
+
+                // If there's a left opr name, ...
+                if (lpfhLocalVars->lpYYLftOpr                                   NE NULL
+                 && lpfhLocalVars->lpYYLftOpr->tkToken.tkData.tkSym             NE NULL
+                 && lpfhLocalVars->lpYYLftOpr->tkToken.tkData.tkSym->stHshEntry NE NULL)
+                {
+                    // Append a separator
+                    MyStrcatW (wszTemp,
+                               sizeof (wszTemp),
+                              L"(");
+                    // Get the Name's global memory handle
+                    hGlbName = lpfhLocalVars->lpYYLftOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemName = MyGlobalLockWsz (hGlbName);
+
+                    // Copy the name
+                    MyStrcatW (wszTemp,
+                               sizeof (wszTemp),
+                               lpMemName);
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbName); lpMemName = NULL;
+                } // End IF
+
+                // Append a separator
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L" ");
+
+                //***************************************************************
+                // Function/Operator Name
+                //***************************************************************
+
+                // If there's an operator name, ...
+                if (lpfhLocalVars->lpYYFcnName                                   NE NULL
+                 && lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym             NE NULL
+                 && lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry NE NULL)
+                {
+                    // Get the Name's global memory handle
+                    hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry->htGlbName;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemName = MyGlobalLockWsz (hGlbName);
+
+                    // Copy the name
+                    MyStrcatW (wszTemp,
+                               sizeof (wszTemp),
+                               lpMemName);
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbName); lpMemName = NULL;
+                } // End IF
+
+                //***************************************************************
+                // Axis Operand
+                //***************************************************************
+
+                // Check for axis operand
+                if (lpfhLocalVars->lpYYAxisOpr                                   NE NULL
+                 && lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym             NE NULL
+                 && lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry NE NULL)
+                {
+                    // Append a separator
+                    MyStrcatW (wszTemp,
+                               sizeof (wszTemp),
+                              L"[");
+                    // If there's an axis opr name, ...
+                    if (lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry NE NULL)
+                    {
+                        // Get the Name's global memory handle
+                        hGlbName = lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
+
+                        // Lock the memory to get a ptr to it
+                        lpMemName = MyGlobalLockWsz (hGlbName);
+
+                        // Copy the name
+                        MyStrcatW (wszTemp,
+                                   sizeof (wszTemp),
+                                   lpMemName);
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbName); lpMemName = NULL;
+                    } // End IF
+
+                    // Append a separator
+                    MyStrcatW (wszTemp,
+                               sizeof (wszTemp),
+                              L"]");
+                } // End IF
+
+                // Append a separator
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L" ");
+
+                //***************************************************************
+                // Right Operand
+                //***************************************************************
+
+                // Check for right operand
+                if (lpfhLocalVars->lpYYRhtOpr                                   NE NULL
+                 && lpfhLocalVars->lpYYRhtOpr->tkToken.tkData.tkSym             NE NULL
+                 && lpfhLocalVars->lpYYRhtOpr->tkToken.tkData.tkSym->stHshEntry NE NULL)
+                {
+                    // If there's a rht opr name, ...
+                    if (lpfhLocalVars->lpYYRhtOpr->tkToken.tkData.tkSym->stHshEntry NE NULL)
+                    {
+                        // Get the Name's global memory handle
+                        hGlbName = lpfhLocalVars->lpYYRhtOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
+
+                        // Lock the memory to get a ptr to it
+                        lpMemName = MyGlobalLockWsz (hGlbName);
+
+                        // Copy the name
+                        MyStrcatW (wszTemp,
+                                   sizeof (wszTemp),
+                                   lpMemName);
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbName); lpMemName = NULL;
+                    } // End IF
+                } // End IF
+
+                // If there's a left operand, ...
+                if (lpfhLocalVars->lpYYLftOpr                                   NE NULL
+                 && lpfhLocalVars->lpYYLftOpr->tkToken.tkData.tkSym             NE NULL
+                 && lpfhLocalVars->lpYYLftOpr->tkToken.tkData.tkSym->stHshEntry NE NULL)
+                    // Append a separator
+                    MyStrcatW (wszTemp,
+                               sizeof (wszTemp),
+                              L")");
+                break;
+
+            case DFNTYPE_FCN:
+                //***************************************************************
+                // Function Name
+                //***************************************************************
+
+                // If there's a function name, ...
+                if (lpfhLocalVars->lpYYFcnName                                   NE NULL
+                 && lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym             NE NULL
+                 && lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry NE NULL)
+                {
+                    // Get the Name's global memory handle
+                    hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry->htGlbName;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemName = MyGlobalLockWsz (hGlbName);
+
+                    // Copy the name
+                    MyStrcatW (wszTemp,
+                               sizeof (wszTemp),
+                               lpMemName);
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbName); lpMemName = NULL;
+                } // End IF
+
+                //***************************************************************
+                // Axis Operand
+                //***************************************************************
+
+                // Check for axis operand
+                if (lpfhLocalVars->lpYYAxisOpr                                   NE NULL
+                 && lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym             NE NULL
+                 && lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry NE NULL)
+                {
+                    // Append a separator
+                    MyStrcatW (wszTemp,
+                               sizeof (wszTemp),
+                              L"[");
+                    // If there's an axis opr name, ...
+                    if (lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry NE NULL)
+                    {
+                        // Get the Name's global memory handle
+                        hGlbName = lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
+
+                        // Lock the memory to get a ptr to it
+                        lpMemName = MyGlobalLockWsz (hGlbName);
+
+                        // Copy the name
+                        MyStrcatW (wszTemp,
+                                   sizeof (wszTemp),
+                                   lpMemName);
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbName); lpMemName = NULL;
+                    } // End IF
+
+                    // Append a separator
+                    MyStrcatW (wszTemp,
+                               sizeof (wszTemp),
+                              L"]");
+                } // End IF
+
+                break;
+
+            case DFNTYPE_UNK:
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L"<empty>");
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        //***************************************************************
+        // Right Argument
+        //***************************************************************
+
+        // Check for right argument
+        if (lpfhLocalVars->lpYYRhtArg NE NULL)
+        {
+            // Append a separator
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L" ");
+            // Get the strand length
+            uLen = lpfhLocalVars->lpYYRhtArg->uStrandLen;
+
+            // Append a separator
+            if (uLen > 1)
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L"(");
+            // Loop through the entries
+            for (uItm = 0; uItm < uLen; uItm++)
+            {
+                // Get the Name's global memory handle
+                hGlbName = lpfhLocalVars->lpYYRhtArg[uItm].tkToken.tkData.tkSym->stHshEntry->htGlbName;
+
+                // Lock the memory to get a ptr to it
+                lpMemName = MyGlobalLockWsz (hGlbName);
+
+                // Copy the name
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                           lpMemName);
+                // If we're not at the last item, separate with a space
+                if (uItm < (uLen - 1))
+                    MyStrcatW (wszTemp,
+                               sizeof (wszTemp),
+                              L" ");
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbName); lpMemName = NULL;
+            } // End FOR
+
+            // Append a separator
+            if (uLen > 1)
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L")");
+        } // End IF
+
+        // Display it in the debug window
+        DbgMsgW (wszTemp);
+    } // End IF
 } // End DisplayFcnHdr
 #endif
 

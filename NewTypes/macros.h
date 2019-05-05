@@ -472,6 +472,9 @@
 // Define macro for detecting a Fill Jot token
 #define IsTknFillJot(Tkn)               ((Tkn)->tkFlags.TknType EQ TKT_FILLJOT)
 
+// Define macro for detecting a Named Var
+#define IsTknTypeNamedVar(a)            ((a) EQ TKT_VARNAMED)
+
 // Define macro for detecting a Function Array
 #define IsTknFcnArray(Tkn)              ((Tkn)->tkFlags.TknType EQ TKT_FCNARRAY)
 

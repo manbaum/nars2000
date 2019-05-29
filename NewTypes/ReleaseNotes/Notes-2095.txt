@@ -9,8 +9,8 @@ Directory branches/bsmith/NewTypes:
 DISPDBG.C:
   In IF/WHILE stmts always compare ptr against NULL and value against 0.
   In <DisplayTokens>, display the name of the variable if present.
-  In <DisplayFcnMem>, if the display ends with a blank, zap
-  In <DisplayVGarSub>, show {zilde} if present.
+  In <DisplayFcnMem>, if the display ends with a blank, zap it.
+  In <DisplayVarSub>, show {zilde} if present.
   Define function <ReturnFcnHdr> for use in 0 []CR.
   In <DisplayFcnHdr>, normalize the spacing between objects.
 

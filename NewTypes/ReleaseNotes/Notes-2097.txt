@@ -1,0 +1,9 @@
+Build #2097 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bug Of Text From Previous Line Leaking Into Current Line
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  In <CheckTermCodes> set the maximum position so as to avoid text from a previous line leaking into the current line.

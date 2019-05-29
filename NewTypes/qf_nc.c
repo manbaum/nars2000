@@ -528,11 +528,6 @@ APLINT CalcNameClass
     (LPSYMENTRY lpSymEntry)
 
 {
-////// If the SYMENTRY is {del} or {del}{del}, ...
-////if (IsSymDel (lpSymEntry))
-////    // Call it a UDFO
-////    return NAMECLASS_USRFCN;
-////
     // Split cases based upon the Name Type
     switch (lpSymEntry->stFlags.stNameType)
     {

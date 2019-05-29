@@ -1,6 +1,17 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2097 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bug Of Text From Previous Line Leaking Into Current Line
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  In <CheckTermCodes> set the maximum position so as to avoid text from a previous line leaking into the current line.
+
+
 Build #2095 -- Version 0.5.10.xx
 --------------------------------
 
@@ -12,8 +23,8 @@ Directory branches/bsmith/NewTypes:
 DISPDBG.C:
   In IF/WHILE stmts always compare ptr against NULL and value against 0.
   In <DisplayTokens>, display the name of the variable if present.
-  In <DisplayFcnMem>, if the display ends with a blank, zap
-  In <DisplayVGarSub>, show {zilde} if present.
+  In <DisplayFcnMem>, if the display ends with a blank, zap it.
+  In <DisplayVarSub>, show {zilde} if present.
   Define function <ReturnFcnHdr> for use in 0 []CR.
   In <DisplayFcnHdr>, normalize the spacing between objects.
 

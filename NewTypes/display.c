@@ -2670,7 +2670,7 @@ LPAPLCHAR FormatAplVfpFC
             // If the # significant digits is smaller than the exponent, ...
             if (iLen < (bNeg + expptr))
             {
-                // Fill in trailing underscores up to but not including the decimal point
+                // Fill in trailing underbars up to but not including the decimal point
                 FillMemoryW (&lpaplChar[iLen], (APLU3264) (bNeg + expptr - iLen), DEF_UNDERFLOW);
                 iLen = bNeg + expptr;
             } else
@@ -4955,6 +4955,9 @@ UBOOL CheckTermCodes
             if (!bPrevCR)
                 // Mark the following lines as continued
                 *lpbLineCont = TRUE;
+            else
+                // Reset the maximum position
+                *lpuMaxPos = 0;
 
             // Fill the line up to the current position with blanks
             FillMemoryW (lpaplCharIni, (APLU3264) *lpuCurPos, L' ');

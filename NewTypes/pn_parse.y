@@ -1129,7 +1129,9 @@ int pn_yylex
 
 {
     UCHAR uChar;
+#ifdef DEBUG
     static UINT uCnt = 0;
+#endif
 
 #ifdef DEBUG
     if (bDebugPNLex)
@@ -1175,8 +1177,13 @@ int pn_yylex
         lpYYLval->chCur = AC_EOS;
     else
     {
-        // Get the next char
-        lpYYLval->chCur = lppnLocalVars->lpszStart[lppnLocalVars->uNumCur++];
+        do
+        {
+            // Get the next char
+            lpYYLval->chCur = lppnLocalVars->lpszStart[lppnLocalVars->uNumCur++];
+        }
+            // Skip over Underbar
+            while (lpYYLval->chCur EQ L'_');
 
         // If the character is 'x' and
         //   is the last in the sequence, ...

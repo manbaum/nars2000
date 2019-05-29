@@ -437,6 +437,18 @@ typedef enum tagENUM_CT
 
 
 //***************************************************************************
+//  Order types
+//***************************************************************************
+
+typedef enum tagORDER
+{
+    ENUMORDER_ARR = 0,      // 00:  Array
+    ENUMORDER_FCN    ,      // 01:  Function
+    ENUMORDER_OPR    ,      // 02:  Operator
+} ENUM_ORDER, *LPENUM_ORDER;
+
+
+//***************************************************************************
 //  Hypercomplex Multiplication Variants
 //***************************************************************************
 

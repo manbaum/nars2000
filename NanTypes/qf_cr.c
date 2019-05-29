@@ -89,7 +89,7 @@ LPPL_YYSTYPE SysFnMonCR_EM_YY
 //***************************************************************************
 
 LPPL_YYSTYPE SysFnCR_Common_EM_YY
-    (APLRANK aplRankRes,                // Result rank
+    (APLRANK aplRankRes,                // Result rank (0, 1, 2)
      LPTOKEN lptkFunc,                  // Ptr to function token
      LPTOKEN lptkRhtArg,                // Ptr to right arg token
      LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
@@ -103,6 +103,9 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     APLNELM           aplNELMRht,           // Right arg NELM
                       aplNELMRes;           // Result    ...
     APLRANK           aplRankRht;           // Right arg rank
+#ifdef DEBUG
+    APLRANK           aplRankOrig;          // Original value for <aplRankRes>
+#endif
     HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
                       hGlbRes = NULL,       // Result    ...
                       hGlbFcn = NULL,       // Function  ...
@@ -119,6 +122,11 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
     VARS_TEMP_OPEN
 
+#ifdef DEBUG
+    // Save the original value of <aplRankRes>
+    aplRankOrig = aplRankRes;
+    aplRankRes = max (aplRankRes, 1);
+#endif
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
@@ -205,26 +213,34 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
             hGlbRes = SysFnMonCR_ALLOC_EM (aplNELMRes, aplRankRes, lpwszTemp, lptkFunc);
         } else
         {
+            size_t uLen;                // Count of {del}s
+            UBOOL  bFreeGlbFcn = FALSE; // TRUE iff we should free hGlbFcn when done
+
             // If the SYMENTRY is {del}, ...
-            if (IsSymDel (lpSymEntry))
+            if (IsSymDelLen (lpSymEntry, &uLen))
             {
-                LPSIS_HEADER lpSISCur;
+                // The call to <MakeTxtLine> in <UnFcnStrand_EM> uses the TEMP_OPEN vars
+                EXIT_TEMP_OPEN
 
-                // Search up the SIS chain to see what this is
-                lpSISCur = SrchSISForDfn (lpMemPTD, TRUE);
+                // Allocate and fill in the {del}s
+                hGlbFcn = AllocDel (uLen, lpMemPTD);
 
-                // If the ptr is valid, ...
-                if (lpSISCur NE NULL)
-                    // Get the suspended/pendent global memory handle
-                    hGlbFcn = lpSISCur->hGlbDfnHdr;
-                else
+                // Get ptr to temporary storage
+                lpwszTemp = lpMemPTD->lpwszTemp;
+                CHECK_TEMP_OPEN
+
+                // Check for error
+                if (hGlbFcn EQ NULL)
                 {
                     // Not the signature of anything we know
                     // Return an empty nested char vector or a 0 x 0 char matrix
                     hGlbRes = SysFnMonCR_ALLOC_EM (0, aplRankRes, NULL, lptkFunc);
 
                     goto YYALLOC_EXIT;
-                } // End IF/ELSE
+                } // End IF
+
+                // Mark as to be freed when we're done
+                bFreeGlbFcn = TRUE;
             } else
                 // Get the global memory ptr
                 hGlbFcn = lpSymEntry->stData.stGlbData;
@@ -267,7 +283,40 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
 
                     // Get ptr to user-defined function/operator header
                     lpMemDfnHdr = (LPDFN_HEADER) lpMemHdrFcn;
+#ifdef DEBUG
+                    // If we're returning the function header only, ...
+                    if (aplRankOrig EQ 0)
+                    {
+                        LPWCHAR lpwChar;
 
+                        // Return a ptr to the function header
+                        lpwChar = ReturnFcnHdr (lpMemDfnHdr);
+
+                        // Calculate the NELM
+                        aplNELMRes = lstrlenW (lpwChar);
+
+                        // Allocate space for the result
+                        hGlbRes = AllocateGlobalArray (ARRAY_CHAR, aplNELMRes, 1, &aplNELMRes);
+
+                        // Check for error
+                        if (hGlbRes EQ NULL)
+                            goto WSFULL_EXIT;
+
+                        // Lock the memory to get a ptr to it
+                        lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+
+                        // Skip over the header and dimensions to the data
+                        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+
+                        // Copy the function header to the result
+                        CopyMemoryW (lpMemRes, lpwChar, (size_t) aplNELMRes);
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+
+                        break;
+                    } // End IF
+#endif
                     // Get # function lines
                     uNumLines = lpMemDfnHdr->numFcnLines;
 
@@ -450,6 +499,13 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL;
+
+            // If we created this global memory handle, ...
+            if (bFreeGlbFcn)
+            {
+                // Free it
+                FreeResultGlobalDFLV (hGlbFcn); hGlbFcn = NULL;
+            } // End IF
         } // End IF/ELSE
     } // End IF/ELSE
 YYALLOC_EXIT:
@@ -901,6 +957,7 @@ LPAPLCHAR ConvSteName
 //  $SysFnDydCR_EM_YY
 //
 //  Dyadic []CR -- Canonical Representation (matrix or vector)
+//                 0 = return the reconstructed header (#ifdef DEBUG only)
 //                 1 = return as vector
 //                 2 = return as matrix
 //***************************************************************************
@@ -984,6 +1041,9 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
     // Check for LEFT DOMAIN ERROR
     if (!bRet
      || (aplLongestLft NE 1
+#ifdef DEBUG
+      && aplLongestLft NE 0
+#endif
       && aplLongestLft NE 2))
         goto LEFT_DOMAIN_EXIT;
 

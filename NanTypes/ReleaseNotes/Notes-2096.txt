@@ -1,0 +1,41 @@
+Build #2096 -- Version 0.6.0.xx
+-------------------------------
+
+* Handle 0 []CR In DEBUG Mode
+* Fix Bug With Not Freeing Certain Instances Of {del}s
+
+Directory branches/bsmith/NanTypes:
+
+DISPDBG.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  In <DisplayTokens>, display the name of the variable if present.
+  In <DisplayFcnMem>, if the display ends with a blank, zap it.
+  In <DisplayVarSub>, show {zilde} if present.
+  Define function <ReturnFcnHdr> for use in 0 []CR.
+  In <DisplayFcnHdr>, normalize the spacing between objects.
+
+ENUMS.H:
+  Define <ENUMORDER_xxx> for use when displaying a function header.
+
+FREE.C:
+  Define additional arg to <FreeResultCurry> to optionally free the AFO if present.
+  Define <FreeAFOResult> to free the HGLOBALs in an AFO.
+  Define <FreeTempAFOResult> to free a temporary AFO result for use in <parseline.c>.
+
+MACROS.H:
+  Define macro for detecting a Named Var.
+
+PARSELINE.C:
+  Define DEBUG stmts for Tracing.
+  Define DEBUG stmts for Tracing Unstranding a Numeric Strand.
+  Free a result iff it's a temporary AFO.
+  In <pl_yylexCOM/TKT_DEL/TLT_DELDEL>, call common code to handle {del} and {del}{del}.
+  Define function <AllocDel> to allocate storage for {del} and {del}{del} for use in []CR.
+  Define function <FillInDel> and <FillInDelDel> to handle {del} and {del}{del} in <pl_yylexCOM>.
+  Define function <SetupFcnDels> to handle {del} and {del}{del} in <FillInDel>.
+
+QF_CR.C:
+  Allow 0 []CR in DEBUG mode to return the function header.
+
+QF_NC.C:
+  Define function <IsSymDelLen> to return the # {del}s encountered in the symbol.

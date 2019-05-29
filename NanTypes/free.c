@@ -85,7 +85,8 @@ void FreeTopResult
 //***************************************************************************
 
 void FreeResultCurry
-    (LPPL_YYSTYPE lpYYRes)              // Ptr to YYSTYPE to free
+    (LPPL_YYSTYPE lpYYRes,              // Ptr to YYSTYPE to free
+     UBOOL        bFreeAFO)             // TRUE iff we should force free of AFO
 
 {
     // If there is a curried index, ...
@@ -105,8 +106,10 @@ void FreeResultCurry
     // If there is a curried left operand, ...
     if (lpYYRes->lpplYYOpLCurry NE NULL)
     {
-        // If the curried left operand is not an AFO, ...
-        if (!IsTknAFO (&lpYYRes->lpplYYOpLCurry->tkToken))
+        // If the curried left operand is not an AFO, or
+        //   we should free it anyway, ...
+        if (bFreeAFO
+         || !IsTknAFO (&lpYYRes->lpplYYOpLCurry->tkToken))
             // Free it recursively
             FreeResult (lpYYRes->lpplYYOpLCurry);
 
@@ -117,8 +120,10 @@ void FreeResultCurry
     // If there is a curried right operand, ...
     if (lpYYRes->lpplYYOpRCurry NE NULL)
     {
-        // If the curried right operand is not an AFO, ...
-        if (!IsTknAFO (&lpYYRes->lpplYYOpRCurry->tkToken))
+        // If the curried right operand is not an AFO, or
+        //   we should free it anyway, ...
+        if (bFreeAFO
+         || !IsTknAFO (&lpYYRes->lpplYYOpRCurry->tkToken))
             // Free it recursively
             FreeResult (lpYYRes->lpplYYOpRCurry);
 
@@ -141,7 +146,7 @@ void FreeResult
     if (lpYYRes NE NULL)
     {
         // Free the currys
-        FreeResultCurry (lpYYRes);
+        FreeResultCurry (lpYYRes, FALSE);
 
         Assert (lpYYRes->TknCount <= 1);
 
@@ -153,6 +158,33 @@ void FreeResult
             Assert (YYCheckInuse (lpYYRes));
     } // End IF
 } // End FreeResult
+
+
+//***************************************************************************
+//  $FreeAFOResult
+//
+//  Free the HGLOBALs and LPSYMENTRYs in an AFO result
+//***************************************************************************
+
+void FreeAFOResult
+    (LPPL_YYSTYPE lpYYRes)              // Ptr to YYSTYPE to free
+
+{
+    if (lpYYRes NE NULL)
+    {
+        // Free the currys
+        FreeResultCurry (lpYYRes, TRUE);
+
+        Assert (lpYYRes->TknCount <= 1);
+
+        // If the object is in use, ...
+        if (lpYYRes->YYInuse)
+            // Free it
+            FreeResultSub (&lpYYRes->tkToken, FALSE, FALSE);
+        else
+            Assert (YYCheckInuse (lpYYRes));
+    } // End IF
+} // End FreeAFOResult
 
 
 //***************************************************************************
@@ -1138,20 +1170,25 @@ void FreeTempResult
 
 
 //***************************************************************************
-//  $FreeListResult
+//  $FreeTempAFOResult
 //
-//  Free List result
+//  Free temporary (unnamed) result
 //***************************************************************************
 
-void FreeListResult
+void FreeTempAFOResult
     (LPPL_YYSTYPE lpYYRes)
 
 {
     Assert (lpYYRes->TknCount <= 1);
 
-    // Free the previous StrandBase token
-    FreeResult (lpYYRes->lpYYStrandBase);
-} // End FreeListResult
+    // If it's not named, ...
+    if (!IsTknNamed (&lpYYRes->tkToken))
+        FreeAFOResult (lpYYRes);
+#ifdef DEBUG
+    else
+        nop ();
+#endif
+} // End FreeTempAFOResult
 
 
 //***************************************************************************

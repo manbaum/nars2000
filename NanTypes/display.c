@@ -5633,6 +5633,9 @@ UBOOL CheckTermCodes
             if (!bPrevCR)
                 // Mark the following lines as continued
                 *lpbLineCont = TRUE;
+            else
+                // Reset the maximum position
+                *lpuMaxPos = 0;
 
             // Fill the line up to the current position with blanks
             FillMemoryW (lpaplCharIni, (APLU3264) *lpuCurPos, L' ');

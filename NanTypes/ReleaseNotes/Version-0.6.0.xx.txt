@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2098 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug Of Text From Previous Line Leaking Into Current Line
+
+Directory branches/bsmith/NanTypes:
+
+DISPLAY.C:
+  In <CheckTermCodes> set the maximum position so as to avoid text from a previous line leaking into the current line.
+
+
 Build #2096 -- Version 0.6.0.xx
 -------------------------------
 

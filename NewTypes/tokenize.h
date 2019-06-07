@@ -62,7 +62,7 @@ typedef enum tagTKCOL_INDICES       // FSA column indices for Tokenize
  TKCOL_LAMP         ,               // 1D:  Comment symbol
  TKCOL_SYS_NS       ,               // 1E:  System namespace
  TKCOL_DEL          ,               // 1F:  Del
- TKCOL_EOL          ,               // 2F:  End-Of-Line
+ TKCOL_EOL          ,               // 20:  End-Of-Line
  TKCOL_UNK          ,               // 21:  Unknown symbols
 
  TKCOL_LENGTH       ,               // 22:  # column indices (cols in fsaActTableTK)

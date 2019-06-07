@@ -1,0 +1,15 @@
+Build #2102 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug With Unknown System Name
+
+Directory branches/bsmith/NanTypes:
+
+TOKENIZE.C:
+  In <fnAlpDone>, handle unknown system name by passing new variable to <AppendNewTokenSynObj_EM>.
+  In <fnAsnDone>, check for unknown system name and skip over it.
+  Define new function <AppendNewTokenSynObj_EM> based on <AppendNewToken_EM>.
+  In <AppendNewTokenSynObj_EM>, if the new variable is valid, use it as the new SynObj.
+
+TOKENIZE.H:
+  Fix typo in comment.

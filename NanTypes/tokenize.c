@@ -1436,6 +1436,7 @@ UBOOL fnAlpDone
     TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
     TOKEN_DATA   tkData = {0};          // Token data  ...
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
+    SO_ENUM      tkSynObj = soA;        // Matching Syntax Object
 
     // Lock the memory to get a ptr to it
     lpwszStr = MyGlobalLockPad (lptkLocalVars->hGlbStr);
@@ -1508,8 +1509,13 @@ UBOOL fnAlpDone
 
                     goto ERROR_EXIT;
                 } else
+                {
                     // Just call it NoValueSys
                     lpSymEntry = htsGLB.steNoValueSys;
+
+                    // Set new SynObj
+                    tkSynObj = soVALR;
+                } // End IF/ELSE
             } // End IF
         } // End IF
     } else
@@ -1580,10 +1586,11 @@ ERROR_EXIT:
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
-        bRet = AppendNewToken_EM (lptkLocalVars,
-                                 &tkFlags,
-                                 &tkData,
-                                  -lptkLocalVars->iStrLen);
+        bRet = AppendNewTokenSynObj_EM (lptkLocalVars,
+                                       &tkFlags,
+                                        tkSynObj,
+                                       &tkData,
+                                        -lptkLocalVars->iStrLen);
     } // End IF/ELSE
 NORMAL_EXIT:
     //  Initialize the accumulation variables for the next constant
@@ -1785,7 +1792,9 @@ UBOOL fnAsnDone
         for (lptkCur = &lptkLocalVars->lptkNext[-1];
              lptkCur >= lptkLocalVars->lptkStart;
              lptkCur--)
-        if (IsTknNamed (lptkCur))
+        // If it's named and valid, ...
+        if (IsTknNamed (lptkCur)
+         && lptkCur->tkSynObj NE soVALR)
         {
             // If not the first name and not in a strand of names, ...
             if (!b1stName
@@ -1851,7 +1860,9 @@ UBOOL fnAsnDone
                     for (lptkCur2 = &lptkLocalVars->lptkNext[-1];
                          lptkCur2 >= lptkLocalVars->lptkStart;
                          lptkCur2--)
-                    if (IsTknNamed (lptkCur2))
+                    // If it's named and valid, ...
+                    if (IsTknNamed (lptkCur2)
+                     && lptkCur2->tkSynObj NE soVALR)
                     {
                         HGLOBAL hGlbName2;
                         LPWCHAR lpwszName2;
@@ -1871,7 +1882,7 @@ UBOOL fnAsnDone
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbName2); lpwszName2 = NULL;
-                    } // End IF
+                    } // End FOR/IF
                 } // End IF
 
                 // We no longer need this ptr
@@ -5654,6 +5665,34 @@ UBOOL AppendNewToken_EM
      int           iCharOffset)         // Offset from lpwszCur of the token (where the caret goes)
 
 {
+    return
+      AppendNewTokenSynObj_EM (lptkLocalVars,       // Ptr to Tokenize_EM local vars
+                               lptkFlags,           // Ptr to token flags
+                                soUNK,              // Default SynObj
+                               lptkData,            // Ptr to token data (may be NULL)
+                               iCharOffset);        // Offset from lpwszCur of the token (where the caret goes)
+
+} // End AppendNewToken_EM
+
+
+//***************************************************************************
+//  $AppendNewTokenSynObj_EM
+//
+//  Attempt to append as new token, check for TOKEN TABLE FULL,
+//    and resize as necessary.
+//
+//  The suffix _EM means that this function generates its own error message
+//    so the caller doesn't need to.
+//***************************************************************************
+
+UBOOL AppendNewTokenSynObj_EM
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
+     LPTKFLAGS     lptkFlags,           // Ptr to token flags
+     SO_ENUM       tkSynObj,            // SynObj to use unless EQ soUNK
+     LPTOKEN_DATA  lptkData,            // Ptr to token data (may be NULL)
+     int           iCharOffset)         // Offset from lpwszCur of the token (where the caret goes)
+
+{
     // If this token is an SOS, ...
     if (lptkFlags->TknType EQ TKT_SOS)
     {
@@ -5772,6 +5811,10 @@ UBOOL AppendNewToken_EM
 
     Assert (lptkFlags->TknType < tokenSoLen);
 
+    if (tkSynObj EQ soUNK)
+        // Set the appropriate Syntax Object value
+        tkSynObj = tokenSo[lptkFlags->TknType].tkSynObj;
+
     // If this token is a right arrow, ...
     if (lptkFlags->TknType EQ TKT_FCNIMMED
      && lptkData ->tkChar  EQ UTF16_RIGHTARROW)
@@ -5779,7 +5822,7 @@ UBOOL AppendNewToken_EM
         lptkLocalVars->lptkNext->tkSynObj = soGO;
     else
         // Set the appropriate Syntax Object value
-        lptkLocalVars->lptkNext->tkSynObj = tokenSo[lptkFlags->TknType].tkSynObj;
+        lptkLocalVars->lptkNext->tkSynObj = tkSynObj;
 
     // Count in another token
     lptkLocalVars->lpHeader->TokenCnt++;
@@ -5910,7 +5953,7 @@ UBOOL AppendNewToken_EM
     } // End SWITCH
 
     return TRUE;
-} // End AppendNewToken_EM
+} // End AppendNewTokenSynObj_EM
 
 
 //***************************************************************************

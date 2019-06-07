@@ -1,0 +1,9 @@
+Build #2104 -- Version 0.6.0.xx
+-------------------------------
+
+* Handle Scalar Right Args With Partitioned Enclose
+
+Directory branches/bsmith/NanTypes:
+
+PF_LSHOE.C:
+  In <PrimFnDydLeftShoe_EM_YY>, handle scalar right args by treating them as a one-element vector.

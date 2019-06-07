@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ CRACTSTR fsaActTableCR [][CRCOL_LENGTH]
   {CRROW_INFNAN  , crAccInf , NULL      },      // 06:  Infinity/NaN
   {CRROW_EXIT    , crEndInt , crExit    },      // 07:  All other chars
  },
-    // CRROW_INT1       Next of Integer State ('-0123456789')
+    // CRROW_INT1       Next of Integer State ('-0123456789_')
  {{CRROW_ERROR   , NULL     , crError   },      // 00:  Overbar or minus sign
   {CRROW_INT1    , crAccDig , NULL      },      // 01:  Digit
   {CRROW_DEC     , crAccDig , crIniDec  },      // 02:  Decimal point
@@ -92,7 +92,7 @@ CRACTSTR fsaActTableCR [][CRCOL_LENGTH]
   {CRROW_ERROR   , NULL     , crError   },      // 06:  Infinity/NaN
   {CRROW_ERROR   , NULL     , crError   },      // 07:  All other chars
  },
-    // CRROW_EXP1       Next of Exponent State ('-0123456789')
+    // CRROW_EXP1       Next of Exponent State ('-0123456789_')
  {{CRROW_ERROR   , NULL     , crError   },      // 00:  Overbar or minus sign
   {CRROW_EXP1    , crAccExp , NULL      },      // 01:  Digit
   {CRROW_ERROR   , NULL     , crError   },      // 02:  Decimal point
@@ -346,12 +346,16 @@ UBOOL crEndSeg
     (LPCRLOCALVARS lpcrLocalVars)       // Ptr to <mpq_set_str2> local vars
 
 {
-    LPCHAR lpDec = NULL;                // Ptr to decimal point (NULL if none)
-    int    res = 0;                     // mpq_set_str result
-    char   chZapChr,                    // Zapped char
-           chZapEOI;                    // ...
-     UBOOL bNegNum,                     // TRUE iff the numerator starts with a negative sign
-           bNegDen = FALSE;             // ...          denominator ...
+    LPCHAR  lpDec = NULL;               // Ptr to decimal point (NULL if none)
+    int     res = 0;                    // mpq_set_str result
+    size_t  iLen;                       // Length (in chars) of the integer part
+    LPCHAR  lpszInp,                    // Ptr to laundered input
+            p, q;                       // Temp ptrs
+    HGLOBAL hGlbInp = NULL;             // Temp global memory handle
+    char    chZapChr,                   // Zapped char
+            chZapEOI;                   // ...
+    UBOOL   bNegNum,                    // TRUE iff the numerator starts with a negative sign
+            bNegDen = FALSE;            // ...          denominator ...
 
     // Convert the segment from lpcrLocalVars.lpszStart into a rational number
     // This segment may include a decimal point
@@ -363,8 +367,33 @@ UBOOL crEndSeg
     // Check for negative sign in the numerator
     bNegNum = (lpcrLocalVars->lpszStart[0] EQ '-');
 
+    // Calculate the length of the input "+ 1" for the terminating zero
+    iLen = (lpcrLocalVars->lpszCur - lpcrLocalVars->lpszStart) + 1;
+
+    // Allocate space for that many chars
+    hGlbInp = DbgGlobalAlloc (GHND, iLen * sizeof (lpszInp[0]));
+
+    // Check for error
+    if (hGlbInp EQ NULL)
+        return crError (lpcrLocalVars);
+    // Lock the memory to get a ptr to it
+    p = lpszInp = MyGlobalLock (hGlbInp);
+    q = lpcrLocalVars->lpszStart;
+
+    // Copy the input to global memory omitting underbars
+    while (iLen-- > 0)
+    {
+        if (q[0] NE '_')
+            // Copy the value
+            *p++ = q[0];
+        // Skip to next input char
+        q++;
+    } // End WHILE
+
+    // Ensure properly terminated (the "+ 1" above ensures this)
+
     // Check for a decimal point
-    lpDec = strchr (lpcrLocalVars->lpszStart, '.');
+    lpDec = strchr (lpszInp, '.');
     if (lpDec NE NULL)
     {
         size_t frcLen;                  // Length (in chars) of the fractional part
@@ -376,14 +405,14 @@ UBOOL crEndSeg
         mpq_init (mpqt_div);
 
         // If the integer part is non-empty, ...
-        if (lpDec > &lpcrLocalVars->lpszStart[bNegNum])
+        if (lpDec > &lpszInp[bNegNum])
         {
             // Save and zap the decimal point so as to terminate the integer part of the string
             chZapChr = lpDec[0];
                        lpDec[0] = AC_EOS;
             // Convert the integer part of the string to a multiple precision integer
             res = mpq_set_str (lpcrLocalVars->mpqMul,
-                              &lpcrLocalVars->lpszStart[bNegNum],
+                              &lpszInp[bNegNum],
                                lpcrLocalVars->base);
             // Restore the zapped char
             lpDec[0] = chZapChr;
@@ -393,7 +422,7 @@ UBOOL crEndSeg
         } // End IF
 
         // Get the length of the fractional part
-        frcLen = strspn (&lpDec[1], "0123456789");
+        frcLen = strspn (&lpDec[1], "0123456789_");
 
         // If the fractional part is non-empty, ...
         if (frcLen NE 0)
@@ -437,27 +466,35 @@ ERROR_EXIT:
         mpq_clear (mpqt_frc);
     } else
     {
-        size_t intLen;                  // Length (in chars) of the integer part
-
         // Get the length of the integer part
-        intLen = strspn (lpcrLocalVars->lpszStart, OVERBAR1_STR INFINITY1_STR NaN1_STR "0123456789");
+        iLen = strspn (lpszInp, OVERBAR1_STR INFINITY1_STR NaN1_STR "0123456789");
 
         // Save and zap the ending char
-        chZapChr = lpcrLocalVars->lpszStart[intLen];
-                   lpcrLocalVars->lpszStart[intLen] = AC_EOS;
+        chZapChr = lpszInp[iLen];
+                   lpszInp[iLen] = AC_EOS;
 
         // Convert the integer part of the string to a multiple precision integer
         res = mpq_set_str (lpcrLocalVars->mpqMul,
-                           lpcrLocalVars->lpszStart,
+                           lpszInp,
                            lpcrLocalVars->base);
         // Restore the zapped char
-        lpcrLocalVars->lpszStart[intLen] = chZapChr;
+        lpszInp[iLen] = chZapChr;
     } // End IF/ELSE
 
     // If we zapped the EOI char, ...
     if (chZapEOI NE AC_EOS)
         // Restore it
         lpcrLocalVars->lpszCur[0] = chZapEOI;
+
+    // If it's valid, ...
+    if (hGlbInp NE NULL)
+    {
+        // Unlock the memory so we may free it
+        MyGlobalUnlock (hGlbInp); lpszInp = NULL;
+
+        // Free the temp input global memory handle
+        DbgGlobalFree (hGlbInp); hGlbInp = NULL;
+    } // End IF
 
     if (res EQ 0)
     {
@@ -492,20 +529,50 @@ UBOOL crEndExp
     size_t  expLen;                     // # chars in exponent
     mpir_si expVal;                     // (Signed) value of the exponent
     char    chZap;                      // Zapped char
+    size_t  iLen;                       // Length (in chars) of the integer part
+    LPCHAR  lpszInp,                    // Ptr to laundered input
+            p, q;                       // Temp ptrs
+    HGLOBAL hGlbInp;                    // Temp global memory handle
 
     Assert (lpcrLocalVars->lpszStart[-1] EQ 'e'
          || lpcrLocalVars->lpszStart[-1] EQ 'E');
 
     // Get the length of the exponent part
-    expLen = strspn (lpcrLocalVars->lpszStart, OVERBAR1_STR "0123456789");
+    expLen = strspn (lpcrLocalVars->lpszStart, OVERBAR1_STR "0123456789_");
 
     // Save and zap the next char
     chZap = lpcrLocalVars->lpszStart[expLen];
             lpcrLocalVars->lpszStart[expLen] = AC_EOS;
 
-    // Convert the exponent at lpcrLocalVars.lpszStart into a rational number
+    // Copy the length of the input "+ 1" for the terminating zero
+    iLen = expLen + 1;
+
+    // Allocate space for that many chars
+    hGlbInp = DbgGlobalAlloc (GHND, iLen * sizeof (lpszInp[0]));
+
+    // Check for error
+    if (hGlbInp EQ NULL)
+        return crError (lpcrLocalVars);
+
+    // Lock the memory to get a ptr to it
+    p = lpszInp = MyGlobalLock (hGlbInp);
+    q = lpcrLocalVars->lpszStart;
+
+    // Copy the input to global memory omitting underbars
+    while (iLen-- > 0)
+    {
+        if (q[0] NE '_')
+            // Copy the value
+            *p++ = q[0];
+        // Skip to next input char
+        q++;
+    } // End WHILE
+
+    // Ensure properly terminated (the "+ 1" above ensures this)
+
+    // Convert the exponent at lpszInp into a rational number
     res = mpq_set_str (lpcrLocalVars->mpqExp,
-                       lpcrLocalVars->lpszStart,
+                       lpszInp,
                        lpcrLocalVars->base);
     // Restore the zapped char
     lpcrLocalVars->lpszStart[expLen] = chZap;
@@ -532,6 +599,16 @@ UBOOL crEndExp
                  lpcrLocalVars->mpqMul,
                  lpcrLocalVars->mpqExp);
 ERROR_EXIT:
+    // If it's valid, ...
+    if (hGlbInp NE NULL)
+    {
+        // Unlock the memory so we may free it
+        MyGlobalUnlock (hGlbInp); lpszInp = NULL;
+
+        // Free the temp input global memory handle
+        DbgGlobalFree (hGlbInp); hGlbInp = NULL;
+    } // End IF
+
     if (res EQ 0)
         return TRUE;
 
@@ -689,6 +766,7 @@ CRCOLINDICES CharTransCR
         case '7':
         case '8':
         case '9':
+        case '_':
             return CRCOL_DIGIT;
 
         case '.':

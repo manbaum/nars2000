@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -180,14 +180,14 @@ typedef struct tagPNLOCALVARS       // Point Notation Local Vars
 #define PN_DOMAIN       "domain error"
 
 // Text strings
-#define INT_CHARS       "0123456789-"
+#define INT_CHARS       "0123456789-_"
 #define INT_CHARS_WS    WIDEN (INT_CHARS)
 #define DEC_CHARS       INT_CHARS "eE."
 #define DEC_CHARS_WS    WIDEN (DEC_CHARS)
 #define ARB_CHARS       DEC_CHARS DEF_ARBSEP_S
 #define ARB_CHARS_WS    WIDEN (ARB_CHARS)
 #define HC_SEPS         "sijJklo"
-#define HC_CHARS        HC_SEPS "adu0123456789rv.eE" OVERBAR1_STR
+#define HC_CHARS        HC_SEPS "adu0123456789_rv.eE" OVERBAR1_STR
 
 
 //***************************************************************************

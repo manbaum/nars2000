@@ -1,0 +1,24 @@
+Build #2100 -- Version 0.6.0.xx
+-------------------------------
+
+* Allow Underbar In Numeric Input
+
+Directory branches/bsmith/NanTypes:
+
+CR_PROC.C:
+  Handle underbars when converting decimal numeric input to a Rational number.
+  In <crEndSeg> and <crEndExp>, copy the input to temp global memory and skip over underbars.
+
+PN_PARSE.H:
+  Include underbar as an allowed character in numeric input.
+
+PN_PARSE.Y:
+  In <pn_yylex>, ignore underbars when parsing numeric input.
+
+TOKENIZE.C:
+  Define new FSA column for Underbar.
+  Change column # for Underbar from _ALPHA to _UNDERBAR.
+  Keep <GetColName> up-to-date.
+
+TOKENIZE.H:
+  Define new FSA column for Underbar.

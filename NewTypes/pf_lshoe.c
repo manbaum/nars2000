@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1490,6 +1490,15 @@ LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    APLSTYPE          aplTypeRht;       // Array storage type
+    HGLOBAL           hGlbRes = NULL;   // Global memory handle
+    LPVARARRAY_HEADER lpMemHdrRes;      // Ptr to global memory header
+    IMM_TYPES         immType;          // Immediate datatype
+    APLNELM           aplNELMRht = 1;   // Right arg NELM
+    APLRANK           aplRankRht = 1;   // ...       Rank
+    APLLONGEST        aplLongest;       // ...       data
+    LPPL_YYSTYPE      lpYYRes;          // The result
+
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
     {
@@ -1511,10 +1520,18 @@ LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
 
             // Handle the immediate case
 
-            // Fall through to TKT_VARIMMED case to signal a RANK ERROR
+            // Copy the immediate right arg type and value
+            immType    = lptkRhtArg->tkData.tkSym->stFlags.ImmType;
+            aplLongest = lptkRhtArg->tkData.tkSym->stData.stLongest;
+
+            break;
 
         case TKT_VARIMMED:
-            goto RANK_EXIT;
+            // Copy the immediate right arg type and value
+            immType    = lptkRhtArg->tkFlags.ImmType;
+            aplLongest = lptkRhtArg->tkData.tkLongest;
+
+            break;
 
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
@@ -1528,8 +1545,38 @@ LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
             return NULL;
     } // End SWITCH
 
-RANK_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+    // Calculate the array storage type
+    aplTypeRht = TranslateImmTypeToArrayType (immType);
+
+    // Allocate memory for the one-element vector
+    hGlbRes = AllocateGlobalArray (aplTypeRht, aplNELMRht, aplRankRht, &aplNELMRht);
+
+    // Check for error
+    if (hGlbRes EQ NULL)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+
+    // Copy the data to global memory
+    CopyMemory (VarArrayDataFmBase (lpMemHdrRes), &aplLongest, TranslateArrayTypeToSizeof (aplTypeRht));
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+
+    // Call the global right arg function
+   lpYYRes =
+     PrimFnDydLeftShoeGlb_EM (lptkLftArg,
+                              hGlbRes,
+                              lptkAxis,
+                              lptkFunc);
+    // We no longer need this storage
+    DbgGlobalFree (hGlbRes); hGlbRes = NULL;
+
+    return lpYYRes;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
     return NULL;
 } // End PrimFnDydLeftShoe_EM_YY

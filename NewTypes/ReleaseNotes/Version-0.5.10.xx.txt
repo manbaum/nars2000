@@ -1,6 +1,17 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2103 -- Version 0.5.10.xx
+--------------------------------
+
+* Handle Scalar Right Args With Partitioned Enclose
+
+Directory branches/bsmith/NewTypes:
+
+PF_LSHOE.C:
+  In <PrimFnDydLeftShoe_EM_YY>, handle scalar right rgs by treating them as a one-element vector.
+
+
 Build #2101 -- Version 0.5.10.xx
 --------------------------------
 

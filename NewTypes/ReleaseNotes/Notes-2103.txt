@@ -6,4 +6,4 @@ Build #2103 -- Version 0.5.10.xx
 Directory branches/bsmith/NewTypes:
 
 PF_LSHOE.C:
-  In <PrimFnDydLeftShoe_EM_YY>, handle scalar right rgs by treating them as a one-element vector.
+  In <PrimFnDydLeftShoe_EM_YY>, handle scalar right args by treating them as a one-element vector.

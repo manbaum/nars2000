@@ -676,6 +676,9 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                 case ARRAY_HC2V:
                 case ARRAY_HC4V:
                 case ARRAY_HC8V:
+
+                case ARRAY_HETERO:
+                case ARRAY_NESTED:
                 {
                     HGLOBAL           hGlbRiR;
                     LPVARARRAY_HEADER lpMemHdrRiR = NULL;
@@ -951,6 +954,16 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                     // Loop through all of the parts
                     for (i = 0; i < iHCDimRht; i++)
                         mpfr_init_copy (((LPAPLVFP) lpMemRes)++, &((LPAPLVFP)   lpMemRht)[i + iHCDimRht * lpMemTmp[*lpMemGup]]);
+                    break;
+
+                case ARRAY_HETERO:
+                case ARRAY_NESTED:
+                    // Trundle through the right arg via the grade-up
+                    //   copying elements to the result
+                    for (uRht = 0; uRht < aplNELMRes; uRht++, lpMemGup++)
+                    // Loop through all of the parts
+                    for (i = 0; i < iHCDimRht; i++)
+                        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (((LPAPLNESTED) lpMemRht)[i + iHCDimRht * lpMemTmp[*lpMemGup]]);
                     break;
 
                 defstop

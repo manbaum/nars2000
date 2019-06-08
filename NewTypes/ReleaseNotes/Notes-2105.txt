@@ -1,0 +1,9 @@
+Build #2105 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bug In Monadic DownShoe (Unique) Not Handling Hetero/Nested Arrays
+
+Directory branches/bsmith/NewTypes:
+
+PF_DSHOE.C:
+  In <PrimFnMonDownShoe_EM_YY>, handle the cases of Hetero/Nested arrays.

@@ -71,7 +71,9 @@ UBOOL ArrayDisplay_EM
     APLCHAR      aplChar;           // Immediate value if character
     UBOOL        bRet = TRUE,       // TRUE iff the result is valid
                  oldgbBoxState,     // Save area for old BoxState
-                 bBoxing = FALSE;   // TRUE iff we're displaying with boxing
+                 bFreeDisp = FALSE; // TRUE iff we're to free lptkDisp at the end
+    TOKEN        tkDisp = {0};      // Temporary token
+    LPTOKEN      lptkDisp;          // Ptr to token to display
 
     // Save the old value
     oldgbBoxState = gbBoxState;
@@ -92,18 +94,23 @@ UBOOL ArrayDisplay_EM
         lpYYBox = SysFnMonFMT_EM_YY (NULL,      // Ptr to function token
                                      lptkRes,   // Ptr to right arg token (should be NULL)
                                      NULL);     // Ptr to axis token (may be NULL)
-        // Copy the new token
-        CopyAll (lptkRes, &lpYYBox->tkToken);
+        // Copy the new token to local storage
+        CopyAll (&tkDisp, &lpYYBox->tkToken);
+
+        // Point to the new token to display and then free
+        lptkDisp = &tkDisp;
 
         // Free the YYSTYPE
         YYFree (lpYYBox); lpYYBox = NULL;
 
-        // Tell the trailing code to free lptkRes at the end
-        bBoxing = TRUE;
+        // Tell the trailing code to free lptkDisp at the end
+        bFreeDisp = TRUE;
 
         // Restore the previous state
         gbBoxState = oldgbBoxState;
-    } // End IF
+    } else
+        // Point to the old token to display
+        lptkDisp = lptkRes;
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -112,65 +119,65 @@ UBOOL ArrayDisplay_EM
     lpwszFormat = lpMemPTD->lpwszFormat;
 
     // Split cases based upon the token type
-    switch (lptkRes->tkFlags.TknType)
+    switch (lptkDisp->tkFlags.TknType)
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRes->tkData.tkVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkDisp->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // Check for NoValue
-            if (IsSymNoValue (lptkRes->tkData.tkSym))
+            if (IsSymNoValue (lptkDisp->tkData.tkSym))
                 goto NORMAL_EXIT;
 
             // If it's not immediate, it's an array
-            if (!lptkRes->tkData.tkSym->stFlags.Imm)
+            if (!lptkDisp->tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir_PTB (lptkRes->tkData.tkSym->stData.stVoid));
+                Assert (IsGlbTypeVarDir_PTB (lptkDisp->tkData.tkSym->stData.stVoid));
 
                 // Check for NoDisplay flag
-                if (!lptkRes->tkFlags.NoDisplay)
+                if (!lptkDisp->tkFlags.NoDisplay)
                 {
                     bRet =
-                      DisplayGlbArr_EM (lptkRes->tkData.tkSym->stData.stGlbData,
+                      DisplayGlbArr_EM (lptkDisp->tkData.tkSym->stData.stGlbData,
                                         bEndingCR,          // TRUE iff last line has CR
                                         lpbCtrlBreak,       // Ptr to Ctrl-Break flag
-                                        lptkRes);           // Ptr to function token
+                                        lptkDisp);          // Ptr to function token
                     goto NORMAL_EXIT;
                 } // End IF
             } // End IF
 
             // Check for NoDisplay flag
-            if (lptkRes->tkFlags.NoDisplay)
+            if (lptkDisp->tkFlags.NoDisplay)
                 goto NORMAL_EXIT;
 
             // Handle the immediate case
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRes->tkData.tkVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkDisp->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // stData is immediate
-            Assert (lptkRes->tkData.tkSym->stFlags.Imm);
+            Assert (lptkDisp->tkData.tkSym->stFlags.Imm);
 
             lpaplChar =
               FormatSymTabConst (lpwszFormat,
-                                 lptkRes->tkData.tkSym);
-            immType = lptkRes->tkData.tkSym->stFlags.ImmType;
-            aplChar = lptkRes->tkData.tkSym->stData.stChar;
+                                 lptkDisp->tkData.tkSym);
+            immType = lptkDisp->tkData.tkSym->stFlags.ImmType;
+            aplChar = lptkDisp->tkData.tkSym->stData.stChar;
 
             break;
 
         case TKT_VARIMMED:  // The tkData is an immediate constant
             // Check for NoDisplay flag
-            if (lptkRes->tkFlags.NoDisplay)
+            if (lptkDisp->tkFlags.NoDisplay)
                 goto NORMAL_EXIT;
 
             lpaplChar =
               FormatImmed (lpwszFormat,
-                           lptkRes->tkFlags.ImmType,
-                           GetPtrTknLongest (lptkRes));
-            immType = lptkRes->tkFlags.ImmType;
-            aplChar = lptkRes->tkData.tkChar;
+                           lptkDisp->tkFlags.ImmType,
+                           GetPtrTknLongest (lptkDisp));
+            immType = lptkDisp->tkFlags.ImmType;
+            aplChar = lptkDisp->tkData.tkChar;
 
             break;
 
@@ -179,26 +186,26 @@ UBOOL ArrayDisplay_EM
 
         case TKT_VARARRAY:  // The tkData is an HGLOBAL of an array of LPSYMENTRYs/HGLOBALs
             // Check for NoDisplay flag
-            if (lptkRes->tkFlags.NoDisplay)
+            if (lptkDisp->tkFlags.NoDisplay)
                 goto NORMAL_EXIT;
 
-            switch (GetPtrTypeDir (lptkRes->tkData.tkVoid))
+            switch (GetPtrTypeDir (lptkDisp->tkData.tkVoid))
             {
                 case PTRTYPE_STCONST:
                     lpaplChar =
                       FormatSymTabConst (lpwszFormat,
-                                         lptkRes->tkData.tkSym);
-                    immType = lptkRes->tkData.tkSym->stFlags.ImmType;
-                    aplChar = lptkRes->tkData.tkSym->stData.stChar;
+                                         lptkDisp->tkData.tkSym);
+                    immType = lptkDisp->tkData.tkSym->stFlags.ImmType;
+                    aplChar = lptkDisp->tkData.tkSym->stData.stChar;
 
                     break;
 
                 case PTRTYPE_HGLOBAL:
                     bRet =
-                      DisplayGlbArr_EM (lptkRes->tkData.tkGlbData,
+                      DisplayGlbArr_EM (lptkDisp->tkData.tkGlbData,
                                         bEndingCR,          // TRUE iff last line has CR
                                         lpbCtrlBreak,       // Ptr to Ctrl-Break flag
-                                        lptkRes);           // Ptr to function token
+                                        lptkDisp);          // Ptr to function token
                     goto NORMAL_EXIT;
 
                 defstop
@@ -269,11 +276,11 @@ SYNTAX_EXIT:
     goto NORMAL_EXIT;
 
 NORMAL_EXIT:
-    // If we're boxing, ...
-    if (bBoxing)
+    // If we're to free lptkDisp, ...
+    if (bFreeDisp)
     {
         // Free the boxed display result
-        FreeResultTkn (lptkRes); lptkRes = NULL;
+        FreeResultTkn (lptkDisp); lptkDisp = NULL;
     } // End IF
 
     return bRet;
@@ -2747,7 +2754,7 @@ LPAPLCHAR FormatAplVfpFC
             // If the # significant digits is smaller than the exponent, ...
             if (iLen < (bNeg + expptr))
             {
-                // Fill in trailing underscores up to but not including the decimal point
+                // Fill in trailing underbars up to but not including the decimal point
                 FillMemoryW (&lpaplChar[iLen], (APLU3264) (bNeg + expptr - iLen), DEF_UNDERFLOW);
                 iLen = bNeg + expptr;
             } else

@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2108 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In )BOX
+
+Directory branches/bsmith/NanTypes:
+
+DISPLAY.C:
+  In <ArrayDisplay_EM>, create and display the )BOX version, but leave the original value unchanged.
+
+
 Build #2106 -- Version 0.6.0.xx
 -------------------------------
 

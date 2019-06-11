@@ -1,0 +1,9 @@
+Build #2107 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bug In )BOX
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  In <ArrayDisplay_EM>, create and display the )BOX version, but leave the original value unchanged.

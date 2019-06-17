@@ -85,7 +85,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Infinity
   {TKROW_INIT      , NULL        , fnAsnDone   , NULL        , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , NULL        , fnLstDone   , NULL        , scLstDone   },     // Semicolon  ...
-  {TKROW_INIT      , NULL        , fnClnDone   , NULL        , scClnDone   },     // Colon  ...
+  {TKROW_COLON0    , NULL        , fnClnDone   , NULL        , scClnDone   },     // Colon  ...
   {TKROW_INIT      , NULL        , fnCtrlDone  , NULL        , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , NULL        , fnPrmDone   , NULL        , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , NULL        , fnPrmDone   , NULL        , scPrmDone   },     // ...       niladic           ...
@@ -121,7 +121,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Infinity
   {TKROW_INIT      , NULL        , fnAsnDone   , NULL        , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , NULL        , fnLstDone   , NULL        , scLstDone   },     // Semicolon  ...
-  {TKROW_INIT      , NULL        , fnClnDone   , NULL        , scClnDone   },     // Colon  ...
+  {TKROW_COLON0    , NULL        , fnClnDone   , NULL        , scClnDone   },     // Colon  ...
   {TKROW_INIT      , NULL        , fnCtrlDone  , NULL        , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , NULL        , fnPrmDone   , NULL        , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , NULL        , fnPrmDone   , NULL        , scPrmDone   },     // ...       niladic           ...
@@ -144,6 +144,77 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_EXIT      , NULL        , NULL        , NULL        , NULL        },     // EOL
   {TKROW_INIT      , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // Unknown symbols
  },
+    // TKROW_COLON0   Colon Initial State
+ {{TKROW_COLON1    , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '0123456789'
+  {TKROW_DOTAMBIG  , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '.'
+  {TKROW_ALPHA     , NULL        , fnAlpInit   , NULL        , scAlpInit   },     // 'a..zA..Z'
+  {TKROW_ALPHA     , NULL        , fnLclInit   , NULL        , scLclInit   },     // MFO local
+  {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Overbar
+  {TKROW_ALPHA     , NULL        , fnAlpInit   , NULL        , scAlpInit   },     // Underbar
+  {TKROW_INIT      , NULL        , fnDirIdent  , NULL        , scDirIdent  },     // Alpha or Omega
+  {TKROW_SYSNAME   , NULL        , fnSysInit   , NULL        , scSysInit   },     // Quad
+  {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // NaN
+  {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Infinity
+  {TKROW_INIT      , NULL        , fnAsnDone   , NULL        , scAsnDone   },     // Assignment symbol
+  {TKROW_INIT      , NULL        , fnLstDone   , NULL        , scLstDone   },     // Semicolon  ...
+  {TKROW_COLON0    , NULL        , fnClnDone   , NULL        , scClnDone   },     // Colon  ...
+  {TKROW_INIT      , NULL        , fnCtrlDone  , NULL        , scCtrlDone  },     // Control Structure
+  {TKROW_INIT      , NULL        , fnPrmDone   , NULL        , scPrmDone   },     // Primitive monadic or dyadic function
+  {TKROW_INIT      , NULL        , fnPrmDone   , NULL        , scPrmDone   },     // ...       niladic           ...
+  {TKROW_INIT      , NULL        , fnOp1Done   , NULL        , scOp1Done   },     // ...       monadic/ambiguous operator
+  {TKROW_INIT      , NULL        , fnOp2Done   , NULL        , scOp2Done   },     // ...       dyadic  ...
+  {TKROW_JOTAMBIG  , NULL        , NULL        , NULL        , scOp2DoneX  },     // Jot
+  {TKROW_INIT      , NULL        , fnParInit   , NULL        , scParInit   },     // Left paren
+  {TKROW_INIT      , NULL        , fnParDone   , NULL        , scParDone   },     // Right ...
+  {TKROW_INIT      , NULL        , fnBrkInit   , NULL        , scBrkInit   },     // Left bracket
+  {TKROW_INIT      , NULL        , fnBrkDone   , NULL        , scBrkDone   },     // Right ...
+  {TKROW_LBR_INIT  , NULL        , fnLbrInit   , NULL        , scLbrInit   },     // Left brace
+  {TKROW_INIT      , NULL        , fnBrcDone   , NULL        , scBrcDone   },     // Right ...
+  {TKROW_INIT      , NULL        , fnSyntWhite , NULL        , scSyntWhite },     // White space
+  {TKROW_QUOTE1A   , NULL        , fnQuo1Init  , NULL        , scQuo1Init  },     // Single quote
+  {TKROW_QUOTE2A   , NULL        , fnQuo2Init  , NULL        , scQuo2Init  },     // Double ...
+  {TKROW_SOS       , NULL        , fnDiaDone   , NULL        , scDiaDone   },     // Diamond symbol
+  {TKROW_INIT      , NULL        , fnComDone   , NULL        , scComDone   },     // Comment symbol
+  {TKROW_SYS_NS    , NULL        , fnSysNSInit , NULL        , scSysNSInit },     // System namespace
+  {TKROW_INIT      , NULL        , fnDelDone   , NULL        , scDelDone   },     // Del
+  {TKROW_EXIT      , NULL        , NULL        , NULL        , NULL        },     // EOL
+  {TKROW_INIT      , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // Unknown symbols
+ },
+    // TKROW_COLON1   Colon After Digit
+ {{TKROW_COLON1    , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '0123456789'
+  {TKROW_DOTAMBIG  , fnPointDone , fnPointAcc  , scPointDone , scPointAcc  },     // '.'
+  {TKROW_ALPHA     , fnPointDone , fnAlpInit   , scPointDone , scAlpInit   },     // 'a..zA..Z'
+  {TKROW_ALPHA     , fnPointDone , fnLclInit   , scPointDone , scLclInit   },     // MFO local
+  {TKROW_POINTNOT1 , fnPointDone , fnPointAcc  , scPointDone , scPointAcc  },     // Overbar
+  {TKROW_INIT      , fnPointDone , fnDirIdent  , scPointDone , scDirIdent  },     // Alpha or Omega
+  {TKROW_SYSNAME   , fnPointDone , fnSysInit   , scPointDone , scSysInit   },     // Quad
+  {TKROW_POINTNOT1 , fnPointDone , fnPointAcc  , scPointDone , scPointAcc  },     // NaN
+  {TKROW_POINTNOT1 , fnPointDone , fnPointAcc  , scPointDone , scPointAcc  },     // Infinity
+  {TKROW_INIT      , fnPointDone , fnAsnDone   , scPointDone , scAsnDone   },     // Assignment symbol
+  {TKROW_INIT      , fnPointDone , fnLstDone   , scPointDone , scLstDone   },     // Semicolon  ...
+  {TKROW_COLON0    , fnPointDone , fnClnDone   , scPointDone , scClnDone   },     // Colon  ...
+  {TKROW_INIT      , fnPointDone , fnCtrlDone  , scPointDone , scCtrlDone  },     // Control Structure
+  {TKROW_INIT      , fnPointDone , fnPrmDone   , scPointDone , scPrmDone   },     // Primitive monadic or dyadic function
+  {TKROW_INIT      , fnPointDone , fnPrmDone   , scPointDone , scPrmDone   },     // ...       niladic           ...
+  {TKROW_INIT      , fnPointDone , fnOp1Done   , scPointDone , scOp1Done   },     // ...       monadic/ambiguous operator
+  {TKROW_INIT      , fnPointDone , fnOp2Done   , scPointDone , scOp2Done   },     // ...       dyadic  ...
+  {TKROW_JOTAMBIG  , fnPointDone , NULL        , scPointDone , scOp2DoneX  },     // Jot
+  {TKROW_INIT      , fnPointDone , fnParInit   , scPointDone , scParInit   },     // Left paren
+  {TKROW_INIT      , fnPointDone , fnParDone   , scPointDone , scParDone   },     // Right ...
+  {TKROW_INIT      , fnPointDone , fnBrkInit   , scPointDone , scBrkInit   },     // Left bracket
+  {TKROW_INIT      , fnPointDone , fnBrkDone   , scPointDone , scBrkDone   },     // Right ...
+  {TKROW_LBR_INIT  , fnPointDone , fnLbrInit   , scPointDone , scLbrInit   },     // Left brace
+  {TKROW_INIT      , fnPointDone , fnBrcDone   , scPointDone , scBrcDone   },     // Right ...
+  {TKROW_INIT      , fnPointDone , fnSyntWhite , scPointDone , scSyntWhite },     // White space
+  {TKROW_QUOTE1A   , fnPointDone , fnQuo1Init  , scPointDone , scQuo1Init  },     // Single quote
+  {TKROW_QUOTE2A   , fnPointDone , fnQuo2Init  , scPointDone , scQuo2Init  },     // Double ...
+  {TKROW_SOS       , fnPointDone , fnDiaDone   , scPointDone , scDiaDone   },     // Diamond symbol
+  {TKROW_INIT      , fnPointDone , fnComDone   , scPointDone , scComDone   },     // Comment symbol
+  {TKROW_SYS_NS    , fnPointDone , fnSysNSInit , scPointDone , scSysNSInit },     // System namespace
+  {TKROW_INIT      , fnPointDone , fnDelDone   , scPointDone , scDelDone   },     // Del
+  {TKROW_EXIT      , fnPointDone , NULL        , scPointDone , NULL        },     // EOL
+  {TKROW_INIT      , fnPointDone , fnUnkDone   , scPointDone , scUnkDone   },     // Unknown symbols
+ },
     // TKROW_POINTNOT0 Point Notation, Initial state (After white space)
  {{TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '0123456789'
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '.'
@@ -157,7 +228,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnPointDone , fnAsnDone   , scPointDone , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnPointDone , fnLstDone   , scPointDone , scLstDone   },     // Semicolon  ...
-  {TKROW_INIT      , fnPointDone , fnClnDone   , scPointDone , scClnDone   },     // Colon  ...
+  {TKROW_COLON0    , fnPointDone , fnClnDone   , scPointDone , scClnDone   },     // Colon  ...
   {TKROW_INIT      , fnPointDone , fnCtrlDone  , scPointDone , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnPointDone , fnPrmDone   , scPointDone , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnPointDone , fnPrmDone   , scPointDone , scPrmDone   },     // ...       niladic           ...
@@ -193,7 +264,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnPointDone , fnAsnDone   , scPointDone , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnPointDone , fnLstDone   , scPointDone , scLstDone   },     // Semicolon  ...
-  {TKROW_INIT      , fnPointDone , fnClnDone   , scPointDone , scClnDone   },     // Colon  ...
+  {TKROW_COLON0    , fnPointDone , fnClnDone   , scPointDone , scClnDone   },     // Colon  ...
   {TKROW_INIT      , fnPointDone , fnCtrlDone  , scPointDone , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnPointDone , fnPrmDone   , scPointDone , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnPointDone , fnPrmDone   , scPointDone , scPrmDone   },     // ...       niladic           ...
@@ -229,7 +300,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnAlpDone   , fnPointAcc  , scAlpDone   , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnAlpDone   , fnAsnDone   , scAlpDone   , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnAlpDone   , fnLstDone   , scAlpDone   , scLstDone   },     // Semicolon  ...
-  {TKROW_INIT      , fnAlpDone   , fnClnDone   , scAlpDone   , scClnDone   },     // Colon  ...
+  {TKROW_COLON0    , fnAlpDone   , fnClnDone   , scAlpDone   , scClnDone   },     // Colon  ...
   {TKROW_INIT      , fnAlpDone   , fnCtrlDone  , scAlpDone   , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnAlpDone   , fnPrmDone   , scAlpDone   , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnAlpDone   , fnPrmDone   , scAlpDone   , scPrmDone   },     // ...       niladic           ...
@@ -265,7 +336,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnSysDone   , fnPointAcc  , scSysDone   , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnSysDone   , fnAsnDone   , scSysDone   , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnSysDone   , fnLstDone   , scSysDone   , scLstDone   },     // Semicolon  ...
-  {TKROW_INIT      , fnSysDone   , fnClnDone   , scSysDone   , scClnDone   },     // Colon  ...
+  {TKROW_COLON0    , fnSysDone   , fnClnDone   , scSysDone   , scClnDone   },     // Colon  ...
   {TKROW_INIT      , fnSysDone   , fnCtrlDone  , scSysDone   , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnSysDone   , fnPrmDone   , scSysDone   , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnSysDone   , fnPrmDone   , scSysDone   , scPrmDone   },     // ...       niladic           ...
@@ -337,7 +408,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnQuo1Done  , fnPointAcc  , scQuo1Done  , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnQuo1Done  , fnAsnDone   , scQuo1Done  , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnQuo1Done  , fnLstDone   , scQuo1Done  , scLstDone   },     // Semicolon  ...
-  {TKROW_INIT      , fnQuo1Done  , fnClnDone   , scQuo1Done  , scClnDone   },     // Colon  ...
+  {TKROW_COLON0    , fnQuo1Done  , fnClnDone   , scQuo1Done  , scClnDone   },     // Colon  ...
   {TKROW_INIT      , fnQuo1Done  , fnCtrlDone  , scQuo1Done  , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnQuo1Done  , fnPrmDone   , scQuo1Done  , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnQuo1Done  , fnPrmDone   , scQuo1Done  , scPrmDone   },     // ...       niladic           ...
@@ -409,7 +480,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnQuo2Done  , fnPointAcc  , scQuo2Done  , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnQuo2Done  , fnAsnDone   , scQuo2Done  , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnQuo2Done  , fnLstDone   , scQuo2Done  , scLstDone   },     // Semicolon  ...
-  {TKROW_INIT      , fnQuo2Done  , fnClnDone   , scQuo2Done  , scClnDone   },     // Colon  ...
+  {TKROW_COLON0    , fnQuo2Done  , fnClnDone   , scQuo2Done  , scClnDone   },     // Colon  ...
   {TKROW_INIT      , fnQuo2Done  , fnCtrlDone  , scQuo2Done  , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnQuo2Done  , fnPrmDone   , scQuo2Done  , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnQuo2Done  , fnPrmDone   , scQuo2Done  , scPrmDone   },     // ...       niladic           ...
@@ -445,7 +516,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnDotDone   , fnPointAcc  , scDotDone   , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnDotDone   , fnAsnDone   , scDotDone   , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnDotDone   , fnLstDone   , scDotDone   , scLstDone   },     // Semicolon  ...
-  {TKROW_INIT      , fnDotDone   , fnClnDone   , scDotDone   , scClnDone   },     // Colon  ...
+  {TKROW_COLON0    , fnDotDone   , fnClnDone   , scDotDone   , scClnDone   },     // Colon  ...
   {TKROW_INIT      , fnDotDone   , fnCtrlDone  , scDotDone   , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnDotDone   , fnPrmDone   , scDotDone   , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnDotDone   , fnPrmDone   , scDotDone   , scPrmDone   },     // ...       niladic           ...
@@ -481,7 +552,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnJotDone   , fnPointAcc  , scJotDone   , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnJotDone   , fnAsnDone   , scJotDone   , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnJotDone   , fnLstDone   , scJotDone   , scLstDone   },     // Semicolon  ...
-  {TKROW_INIT      , fnJotDone   , fnClnDone   , scJotDone   , scClnDone   },     // Colon  ...
+  {TKROW_COLON0    , fnJotDone   , fnClnDone   , scJotDone   , scClnDone   },     // Colon  ...
   {TKROW_INIT      , fnJotDone   , fnCtrlDone  , scJotDone   , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnJotDone   , fnPrmDone   , scJotDone   , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnJotDone   , fnPrmDone   , scJotDone   , scPrmDone   },     // ...       niladic           ...
@@ -517,7 +588,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnOutDone   , fnPointAcc  , scOutDone   , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnOutDone   , fnAsnDone   , scOutDone   , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnOutDone   , fnLstDone   , scOutDone   , scLstDone   },     // Semicolon  ...
-  {TKROW_INIT      , fnOutDone   , fnClnDone   , scOutDone   , scClnDone   },     // Colon  ...
+  {TKROW_COLON0    , fnOutDone   , fnClnDone   , scOutDone   , scClnDone   },     // Colon  ...
   {TKROW_INIT      , fnOutDone   , fnCtrlDone  , scOutDone   , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnOutDone   , fnPrmDone   , scOutDone   , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnOutDone   , fnPrmDone   , scOutDone   , scPrmDone   },     // ...       niladic           ...
@@ -553,7 +624,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Infinity
   {TKROW_INIT      , NULL        , fnAsnDone   , NULL        , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , NULL        , fnLstDone   , NULL        , scLstDone   },     // Semicolon  ...
-  {TKROW_INIT      , NULL        , fnClnDone   , NULL        , scClnDone   },     // Colon  ...
+  {TKROW_COLON0    , NULL        , fnClnDone   , NULL        , scClnDone   },     // Colon  ...
   {TKROW_INIT      , NULL        , fnCtrlDone  , NULL        , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , NULL        , fnPrmDone   , NULL        , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , NULL        , fnPrmDone   , NULL        , scPrmDone   },     // ...       niladic           ...
@@ -2795,30 +2866,8 @@ UBOOL CheckConstantCopyLoad
                 // Set the tkSynObj value from the UDFO header
                 lptkPrv->tkSynObj = TranslateDfnTypeToSOType (lpMemDfnHdr);
 
-                // Split cases based upon the Dfn type
-                switch (lpMemDfnHdr->DfnType)
-                {
-                    case DFNTYPE_OP1:
-                        // Fill in the result token
-                        lptkPrv->tkFlags.TknType = TKT_OP1DFN;
-
-                        break;
-
-                    case DFNTYPE_OP2:
-                        // Fill in the result token
-                        lptkPrv->tkFlags.TknType = TKT_OP2DFN;
-
-                        break;
-
-                    case DFNTYPE_FCN:
-                        // Fill in the result token
-                        lptkPrv->tkFlags.TknType = TKT_FCNDFN;
-
-                        break;
-
-                    defstop
-                        break;
-                } // End SWITCH
+                // Translate the DFNTYPE_xxx to a Dfn Token Type TKT_xxxDFN
+                lptkPrv->tkFlags.TknType = TranslateDfnTypeToDfnTknType (lpMemDfnHdr->DfnType);
 
                 // Fill in the result token
 ////////////////lptkPrv->tkFlags.ImmType   =        // Same as for TKT_COLON
@@ -5176,13 +5225,13 @@ __try
 
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"wchO = %c (%d), wchT = %s (%d), CS = %d, NS = %d, Act1 = %p, Act2 = %p",
+                   L"wchO = %c (%04X), wchT = %-12s (%04X), CS = %-12s, NS = %-12s, Act1 = %p, Act2 = %p",
                     wchOrig ? wchOrig : UTF16_HORIZELLIPSIS,
                     wchOrig,
                     GetColName (colIndex),
                     colIndex,
-                    tkLocalVars.State[0],
-                    fsaActTableTK[tkLocalVars.State[0]][colIndex].iNewState,
+                    GetRowName (tkLocalVars.State[0]),
+                    GetRowName (fsaActTableTK[tkLocalVars.State[0]][colIndex].iNewState),
                     fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction1,
                     fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction2);
         DbgMsgW (wszTemp);
@@ -5471,8 +5520,8 @@ void Untokenize
             break;
 
         case TKT_FCNDFN:            // Anonymous UDFO
-        case TKT_OP1DFN:            // Anonymous monadic UDFO
-        case TKT_OP2DFN:            // Anonymous dyadic UDFO
+        case TKT_OP1DFN:            // Anonymous monadic operator
+        case TKT_OP2DFN:            // Anonymous dyadic  ...
             // Free the function and all elements of it
             if (FreeResultGlobalDfn (lpToken->tkData.tkGlbData))
             {
@@ -5860,8 +5909,8 @@ UBOOL AppendNewTokenSynObj_EM
         case TKT_SYS_NS        :
         case TKT_FILLJOT       :
         case TKT_DEL           :    // Del      -- always a function
-        case TKT_DELDEL        :    // Del Del  -- either a monadic or dyadic operator
-        case TKT_DELAFO        :    // Del Anon -- either a monadic or dyadic operator, bound to its operands
+        case TKT_DELDEL        :    // Del Del  -- either a monadic/dyadic operator
+        case TKT_DELAFO        :    // Del Anon -- either a monadic/dyadic operator, bound to its operands
         case TKT_GLBDFN        :
             // Append the NEC token to the CS stack
             //   to allow for later parsing for SYNTAX ERRORs
@@ -6703,6 +6752,69 @@ static COLNAMES colNames[] =
         return wszTemp;
     } // End IF/ELSE
 } // End GetColName
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $GetRowName
+//
+//  Convert a row number to a name
+//***************************************************************************
+
+LPWCHAR GetRowName
+    (TKROWINDICES rowIndex)             // TKROW_xxx index (see TKROWINDICES)
+
+{
+typedef struct tagROWNAMES
+{
+    LPWCHAR lpwsz;
+    UINT    uRowNum;
+} ROWNAMES, *LPROWNAMES;
+
+static ROWNAMES rowNames[] =
+{{L"SOS"        , TKROW_SOS         }, // 00: Start of stmt
+ {L"INIT"       , TKROW_INIT        }, // 01: Initial state
+ {L"COLON0"     , TKROW_COLON0      }, // 02: Colon Initial State
+ {L"COLON1"     , TKROW_COLON1      }, // 03: Colon After Digit
+ {L"POINTNOT0"  , TKROW_POINTNOT0   }, // 04: Point Notation, Initial State after white space
+ {L"POINTNOT1"  , TKROW_POINTNOT1   }, // 05: Point Notation, Initial State after first char
+ {L"ALPHA"      , TKROW_ALPHA       }, // 06: Alphabetic char
+ {L"SYSNAME"    , TKROW_SYSNAME     }, // 07: System name
+ {L"QUOTE1A"    , TKROW_QUOTE1A     }, // 08: Start of or within single quoted char or char vector
+ {L"QUOTE1Z"    , TKROW_QUOTE1Z     }, // 09: End of   ...
+ {L"QUOTE2A"    , TKROW_QUOTE2A     }, // 0A: Start of or within double quoted char or char vector
+ {L"QUOTE2Z"    , TKROW_QUOTE2Z     }, // 0B: End of   ...
+ {L"DOTAMBIG"   , TKROW_DOTAMBIG    }, // 0C: Ambiguous dot:  either TKROW_POINTNOT or TKROW_INIT w/fnOp2Done
+ {L"JOTAMBIG"   , TKROW_JOTAMBIG    }, // 0D: Ambiguous jot:  either TKROW_INIT w/fnOp2Done or TKROW_OUTAMBIG
+ {L"OUTAMBIG"   , TKROW_OUTAMBIG    }, // 0E: Ambiguous outer product:  either TKROW_INIT w/fnOutDone or TKROW_POINTNOT w/fnOp2Done
+ {L"SYS_NS"     , TKROW_SYS_NS      }, // 0F: System namespace
+ {L"LBR_INIT"   , TKROW_LBR_INIT    }, // 10: Inside braces
+ {L"LBR_Q1"     , TKROW_LBR_Q1      }, // 11: Inside braces, single quotes
+ {L"LBR_Q2"     , TKROW_LBR_Q2      }, // 12: Inside braces, double quotes
+};
+
+    Assert (TKROW_LENGTH EQ countof (rowNames));
+
+    if (rowIndex EQ TKROW_EXIT)
+        return L"EXIT";
+    else
+    if (rowIndex EQ TKROW_NONCE)
+        return L"NONCE";
+    else
+    if (TKROW_LENGTH > rowIndex)
+        return rowNames[rowIndex].lpwsz;
+    else
+    {
+        static WCHAR wszTemp[64];
+
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
+                   L"GetRowName:  *** Unknown Row Number:  %d",
+                    rowIndex);
+        return wszTemp;
+    } // End IF/ELSE
+} // End GetRowName
 #endif
 
 

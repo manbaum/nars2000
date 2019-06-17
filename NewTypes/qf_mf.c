@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -708,7 +708,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
             while (TRUE)
             {
                 // Skip over white space
-                while (uRht < aplNELMRht && lpMemRht[uRht] EQ L' ')
+                while (uRht < aplNELMRht && IsWhiteW (lpMemRht[uRht]))
                     uRht++;
                 if (uRht < aplNELMRht)
                 {
@@ -716,7 +716,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
                     lpMemDataStart = &lpMemRht[uRht];
 
                     // Skip over black space
-                    while (uRht < aplNELMRht && lpMemRht[uRht] NE L' ')
+                    while (uRht < aplNELMRht && IsBlackW (lpMemRht[uRht]))
                         uRht++;
                     // Lookup the name in the symbol table
                     // SymTabLookupName sets the .ObjName enum,
@@ -754,7 +754,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
 
                 // Skip over leading white space
                 uCol = 0;
-                while (uCol < aplNELMCol && lpMemDataStart[uCol] EQ L' ')
+                while (uCol < aplNELMCol && IsWhiteW (lpMemDataStart[uCol]))
                     uCol++;
 
                 // Lookup the name in the symbol table

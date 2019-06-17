@@ -1,0 +1,42 @@
+Build #2109 -- Version 0.5.10.xx
+--------------------------------
+
+* Make More Commands Sensitive To Line Continuations
+
+Directory branches/bsmith/NewTypes:
+
+AFOFNS.C:
+  Use <IsBlack> instead of <!IsWhite>.
+
+COMMON.C:
+  Redefine <IsWhite> and <IsWhiteW> to include CR and LF.
+  Use <IsBlack> instead of <!IsWhite>.
+
+IMMEXEC.C:
+  Use <IsWhiteW> instead of <EQ L' '>.
+
+MACROS.H:
+  Define <IsBlack> and <IsBlackW>.
+
+MF_QUADVR.H:
+  Append <CRF/LF> to the end of []VR lines.
+
+QF_AT.C:
+QF_EX.C:
+QF_FX.C:
+QF_MF.C:
+QF_NC.C:
+SC_ERASE.C:
+SYMTAB.C:
+SYSCMDS.C:
+SYSVARS.C:
+  Use <IsWhiteW> instead of <EQ L' '>.
+  Use <IsBlackW> instead of <NE L' '>.
+
+QF_TF.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Use <IsWhiteW> instead of <EQ L' '>.
+
+TOKENIZE.C:
+  Use <IsWhiteW> instead of <EQ L' '>.
+  Use <IsBlack> instead of <!IsWhite>.

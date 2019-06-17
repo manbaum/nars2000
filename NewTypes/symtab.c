@@ -2012,7 +2012,7 @@ LPSYMENTRY SymTabHTSLookupNameLength
     } // End IF
 
     // Skip over trailing white space
-    while (iLen && lpwString[iLen - 1] EQ L' ')
+    while (iLen NE 0 && IsWhiteW (lpwString[iLen - 1]))
         iLen--;
 
     if (iLen EQ 0)

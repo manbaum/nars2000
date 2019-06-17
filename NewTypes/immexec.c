@@ -345,7 +345,7 @@ void ImmExecLine
 
     // Strip off leading blanks
     for (lpwszLine = lpwszCompLine;
-         lpwszLine[0] && lpwszLine[0] EQ L' ';
+         lpwszLine[0] NE WC_EOS && IsWhiteW (lpwszLine[0]);
          lpwszLine++)
     {}
 

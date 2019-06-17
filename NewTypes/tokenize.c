@@ -934,7 +934,7 @@ UBOOL IsLocalName
 
         // If no semicolon, backup over trailing blanks
         if (*wp NE L';')
-            while (wp > lpwBlk && wp[-1] EQ L' ')
+            while (wp > lpwBlk && IsWhiteW (wp[-1]))
                 wp--;
 
         // Mark as NOT FOUND
@@ -5088,7 +5088,7 @@ __try
     // Skip over leading blanks (more to reduce clutter
     //   in the debugging window)
     for (uChar = 0; uChar < aplNELM; uChar++)
-    if (!IsWhiteW (lpwszLine[uChar]))
+    if (IsBlackW (lpwszLine[uChar]))
         break;
 
     // Save pointer to current wch

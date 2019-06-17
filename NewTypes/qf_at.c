@@ -296,7 +296,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
             while (TRUE)
             {
                 // Skip over white space
-                while (uRht < aplNELMRht && lpMemDataRht[uRht] EQ L' ')
+                while (uRht < aplNELMRht && IsWhiteW (lpMemDataRht[uRht]))
                     uRht++;
                 if (uRht < aplColsRht)
                 {
@@ -304,7 +304,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
                     lpMemDataStart = &lpMemDataRht[uRht];
 
                     // Skip over black space
-                    while (uRht < aplNELMRht && lpMemDataRht[uRht] NE L' ')
+                    while (uRht < aplNELMRht && IsBlackW (lpMemDataRht[uRht]))
                         uRht++;
                     // Lookup the name in the symbol table
                     // SymTabLookupName sets the .ObjName enum,
@@ -337,7 +337,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
 
                 // Skip over leading white space
                 uCol = 0;
-                while (uCol < aplColsRht && lpMemDataStart[uCol] EQ L' ')
+                while (uCol < aplColsRht && IsWhiteW (lpMemDataStart[uCol]))
                     uCol++;
 
                 // Lookup the name in the symbol table

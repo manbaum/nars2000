@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -906,7 +906,7 @@ UBOOL AfoDetect
     // Skip over leading blanks (more to reduce clutter
     //   in the debugging window)
     for (uChar = 0; uChar < aplNELM; uChar++)
-    if (!IsWhiteW (lpwszLine[uChar]))
+    if (IsBlackW (lpwszLine[uChar]))
         break;
 
     while (uChar <= aplNELM)

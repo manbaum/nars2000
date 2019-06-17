@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -186,7 +186,7 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // If the right arg is a global, ...
-    if (hGlbRht)
+    if (hGlbRht NE NULL)
         // Skip over the header to the data
         lpMemRht = VarArrayDataFmBase (lpMemRht);
     else
@@ -207,21 +207,21 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
     CopyMemoryW (lpwszTemp, lpMemRht, (APLU3264) aplNELMRht);
     lpwszTemp[aplNELMRht] = WC_EOS;
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
     // Skip over leading blanks
-    while (aplNELMRht && *lpwszTemp EQ L' ')
+    while (aplNELMRht NE 0 && IsWhiteW (*lpwszTemp))
     {
         lpwszTemp++;
         aplNELMRht--;
     } // End WHILE
 
     // Skip over trailing blanks
-    while (aplNELMRht && lpwszTemp[aplNELMRht - 1] EQ L' ')
+    while (aplNELMRht NE 0 && IsWhiteW (lpwszTemp[aplNELMRht - 1]))
         aplNELMRht--;
 
     // Split cases based upon the left arg
@@ -298,7 +298,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
     // The two operations are distinguished by the presence or absence
     //   of a blank in the right arg after the name
     for (uCnt = 0; uCnt < aplNELMRht; uCnt++)
-    if (lpwszTemp[uCnt] EQ L' ')
+    if (IsWhiteW (lpwszTemp[uCnt]))
         break;
 
     // If there's a blank, ...
@@ -479,7 +479,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                         lpwszTemp = &lpwName[lstrlenW (lpwName)];
 
                         // Delete trailing blanks
-                        while (lpwszTemp[-1] EQ L' ')
+                        while (IsWhiteW (lpwszTemp[-1]))
                             lpwszTemp--;
 
                         // Catenate a blank separator
@@ -557,7 +557,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                         lpwszTemp = &lpwName[lstrlenW (lpwName)];
 
                         // Delete trailing blanks
-                        while (lpwszTemp[-1] EQ L' ')
+                        while (IsWhiteW (lpwszTemp[-1]))
                             lpwszTemp--;
 
                         // Catenate a blank separator
@@ -602,14 +602,14 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                 } // End SWITCH
 
                 // If the item was locked, ...
-                if (hGlbItm && lpMemItm)
+                if (hGlbItm NE NULL && lpMemItm NE NULL)
                 {
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbItm); lpMemItm = NULL;
                 } // End IF
 
                 // Back up to the last blank
-                if (lpwszTemp[-1] EQ L' ')
+                if (IsWhiteW (lpwszTemp[-1]))
                     lpwszTemp--;
                 break;
 
@@ -630,7 +630,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                 lpwszTemp = &lpwName[lstrlenW (lpwName)];
 
                 // Delete trailing blanks
-                while (lpwszTemp[-1] EQ L' ')
+                while (IsWhiteW (lpwszTemp[-1]))
                     lpwszTemp--;
 
                 // Catenate a blank separator
@@ -663,7 +663,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                     // Get the line text global memory handle
                     hGlbTxtLine = lpFcnLines->hGlbTxtLine;
 
-                    if (hGlbTxtLine)
+                    if (hGlbTxtLine NE NULL)
                     {
                         // Lock the memory to get a ptr to it
                         lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
@@ -707,7 +707,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                     // Get the line text global memory handle
                     hGlbTxtLine = lpFcnLines->hGlbTxtLine;
 
-                    if (hGlbTxtLine)
+                    if (hGlbTxtLine NE NULL)
                     {
                         // Copy the header to the result as either a row or as an allocated HGLOBAL
                         lpwszTemp = SysFnCR_Copy_EM (2, lpwszTemp, hGlbTxtLine, uMaxLineLen, lptkFunc);
@@ -797,9 +797,9 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -809,19 +809,19 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (hGlbDfnHdr && lpMemDfnHdr)
+    if (hGlbDfnHdr NE NULL && lpMemDfnHdr NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
     } // End IF
 
-    if (hGlbItm && lpMemItm)
+    if (hGlbItm NE NULL && lpMemItm NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbItm); lpMemItm = NULL;
@@ -1109,9 +1109,9 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -1121,7 +1121,7 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -1313,7 +1313,7 @@ STFULL_EXIT:
 ERROR_EXIT:
 NORMAL_EXIT:
     // Restore the char at the name end
-    if (lpwNameEnd)
+    if (lpwNameEnd NE NULL)
         *lpwNameEnd = wch;
 
     return bRet;

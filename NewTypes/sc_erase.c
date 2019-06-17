@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ UBOOL CmdErase_EM
     while (TRUE)
     {
         // Skip over white space
-        while (lpwszTail[uRht] EQ L' ')
+        while (IsWhiteW (lpwszTail[uRht]))
             uRht++;
         if (lpwszTail[uRht])
         {
@@ -59,7 +59,7 @@ UBOOL CmdErase_EM
             lpMemDataStart = &lpwszTail[uRht];
 
             // Skip over black space
-            while (lpwszTail[uRht] && lpwszTail[uRht] NE L' ')
+            while (lpwszTail[uRht] && IsBlackW (lpwszTail[uRht]))
                 uRht++;
             // Lookup the name in the symbol table
             // SymTabLookupName sets the .ObjName enum,

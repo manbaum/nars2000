@@ -144,6 +144,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , NULL        , fnDelDone   , NULL        , scDelDone   },     // Del
   {TKROW_EXIT      , NULL        , NULL        , NULL        , NULL        },     // EOL
   {TKROW_INIT      , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // Unknown symbols
+  {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // PoM symbol
  },
     // TKROW_POINTNOT0 Point Notation, Initial state (After white space)
  {{TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // '0123456789'
@@ -950,7 +951,7 @@ UBOOL IsLocalName
 
         // If no semicolon, backup over trailing blanks
         if (*wp NE L';')
-            while (wp > lpwBlk && wp[-1] EQ L' ')
+            while (wp > lpwBlk && IsWhiteW (wp[-1]))
                 wp--;
 
         // Mark as NOT FOUND
@@ -4319,6 +4320,12 @@ UBOOL fnGroupDoneSub
                                   0);
         // Save index of previous grouping symbol
         lptkLocalVars->lpHeader->PrevGroup = lptkLocalVars->lptkStart[uPrevGroup].tkData.tkIndex;
+
+        // Save index of this grouping symbol in the previous grouping symbol's token
+        lptkLocalVars->lptkStart[uPrevGroup].tkData.tkMatch = (UINT) (lptkNext - lptkLocalVars->lptkStart);
+
+        // and vice versa
+        lptkNext->tkData.tkMatch = uPrevGroup;
     } // End IF/ELSE
 
     return bRet;
@@ -5087,7 +5094,7 @@ __try
     // Skip over leading blanks (more to reduce clutter
     //   in the debugging window)
     for (uChar = 0; uChar < aplNELM; uChar++)
-    if (!IsWhiteW (lpwszLine[uChar]))
+    if (IsBlackW (lpwszLine[uChar]))
         break;
 
     // Save pointer to current wch
@@ -5175,13 +5182,13 @@ __try
 
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"wchO = %c (%d), wchT = %s (%d), CS = %d, NS = %d, Act1 = %p, Act2 = %p",
+                   L"wchO = %c (%04X), wchT = %-12s (%04X), CS = %-12s, NS = %-12s, Act1 = %p, Act2 = %p",
                     wchOrig ? wchOrig : UTF16_HORIZELLIPSIS,
                     wchOrig,
                     GetColName (colIndex),
                     colIndex,
-                    tkLocalVars.State[0],
-                    fsaActTableTK[tkLocalVars.State[0]][colIndex].iNewState,
+                    GetRowName (tkLocalVars.State[0]),
+                    GetRowName (fsaActTableTK[tkLocalVars.State[0]][colIndex].iNewState),
                     fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction1,
                     fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction2);
         DbgMsgW (wszTemp);
@@ -6707,6 +6714,66 @@ static COLNAMES colNames[] =
         return wszTemp;
     } // End IF/ELSE
 } // End GetColName
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $GetRowName
+//
+//  Convert a row number to a name
+//***************************************************************************
+
+LPWCHAR GetRowName
+    (TKROWINDICES rowIndex)             // TKROW_xxx index (see TKROWINDICES)
+
+{
+typedef struct tagROWNAMES
+{
+    LPWCHAR lpwsz;
+    UINT    uRowNum;
+} ROWNAMES, *LPROWNAMES;
+
+static ROWNAMES rowNames[] =
+{{L"SOS"        , TKROW_SOS         }, // 00: Start of stmt
+ {L"INIT"       , TKROW_INIT        }, // 01: Initial state
+ {L"COLON0"     , TKROW_COLON0      }, // 02: Colon Initial State
+ {L"COLON1"     , TKROW_COLON1      }, // 03: Colon After Digit
+ {L"POINTNOT0"  , TKROW_POINTNOT0   }, // 04: Point Notation, Initial State after white space
+ {L"POINTNOT1"  , TKROW_POINTNOT1   }, // 05: Point Notation, Initial State after first char
+ {L"ALPHA"      , TKROW_ALPHA       }, // 06: Alphabetic char
+ {L"SYSNAME"    , TKROW_SYSNAME     }, // 07: System name
+ {L"QUOTE1A"    , TKROW_QUOTE1A     }, // 08: Start of or within single quoted char or char vector
+ {L"QUOTE1Z"    , TKROW_QUOTE1Z     }, // 09: End of   ...
+ {L"QUOTE2A"    , TKROW_QUOTE2A     }, // 0A: Start of or within double quoted char or char vector
+ {L"QUOTE2Z"    , TKROW_QUOTE2Z     }, // 0B: End of   ...
+ {L"DOTAMBIG"   , TKROW_DOTAMBIG    }, // 0C: Ambiguous dot:  either TKROW_POINTNOT or TKROW_INIT w/fnOp2Done
+ {L"JOTAMBIG"   , TKROW_JOTAMBIG    }, // 0D: Ambiguous jot:  either TKROW_INIT w/fnOp2Done or TKROW_OUTAMBIG
+ {L"OUTAMBIG"   , TKROW_OUTAMBIG    }, // 0E: Ambiguous outer product:  either TKROW_INIT w/fnOutDone or TKROW_POINTNOT w/fnOp2Done
+ {L"SYS_NS"     , TKROW_SYS_NS      }, // 0F: System namespace
+ {L"LBR_INIT"   , TKROW_LBR_INIT    }, // 10: Inside braces
+ {L"LBR_Q1"     , TKROW_LBR_Q1      }, // 11: Inside braces, single quotes
+ {L"LBR_Q2"     , TKROW_LBR_Q2      }, // 12: Inside braces, double quotes
+};
+    if (rowIndex EQ TKROW_EXIT)
+        return L"EXIT";
+    else
+    if (rowIndex EQ TKROW_NONCE)
+        return L"NONCE";
+    else
+    if (TKROW_LENGTH > rowIndex)
+        return rowNames[rowIndex].lpwsz;
+    else
+    {
+        static WCHAR wszTemp[64];
+
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
+                   L"GetRowName:  *** Unknown Row Number:  %d",
+                    rowIndex);
+        return wszTemp;
+    } // End IF/ELSE
+} // End GetRowName
 #endif
 
 

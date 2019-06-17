@@ -1832,14 +1832,14 @@ UBOOL ValidateCharVector_EM
 
         // Delete leading blanks
         aplNELMRes = aplNELMRht;
-        while (aplNELMRes && *lpMemChar EQ L' ')
+        while (aplNELMRes NE 0 && IsWhiteW (*lpMemChar))
         {
             aplNELMRes--;
             lpMemChar++;
         } // End WHILE
 
         // Delete trailing blanks
-        while (aplNELMRes && lpMemChar[aplNELMRes - 1] EQ L' ')
+        while (aplNELMRes NE 0 && IsWhiteW (lpMemChar[aplNELMRes - 1]))
             aplNELMRes--;
 
 #undef  lpMemChar

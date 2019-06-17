@@ -133,8 +133,8 @@ SYSCMDS_ENUM ExecSysCmd
     //   to avoid it looking like we're frozen
     UpdateWindow (hWndEC);
 
-    // Skip over the leading ')' and any following spaces
-    while (*++lpwszLine EQ L' ');
+    // Skip over the leading ')' and any following white space
+    while (IsWhiteW (*++lpwszLine));
 
     // Look for the next space as a separator
     wp = strchrW (lpwszLine, L' ');
@@ -148,7 +148,7 @@ SYSCMDS_ENUM ExecSysCmd
         *wp++ = WC_EOS;
 
         // Otherwise, skip over all leading spaces
-        while (*wp EQ L' ')
+        while (IsWhiteW (*wp))
             wp++;
     } // End IF/ELSE
 
@@ -156,7 +156,7 @@ SYSCMDS_ENUM ExecSysCmd
     wpEnd = &wp[lstrlenW (wp)];
 
     // Delete trailing blanks
-    while (wpEnd > lpwszLine && wpEnd[-1] EQ L' ')
+    while (wpEnd > lpwszLine && IsWhiteW (wpEnd[-1]))
         *--wpEnd = WC_EOS;
 
     // Search for this command in the table

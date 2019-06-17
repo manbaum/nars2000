@@ -268,6 +268,10 @@
 #define IsAPLCharDownCaretTilde(a)  ((a) EQ UTF16_DOWNCARETTILDE     || (a) EQ UTF16_NOR                                           )
 #define IsAPLCharUpCaret(a)         ((a) EQ UTF16_UPCARET            || (a) EQ UTF16_CIRCUMFLEX                                    )
 
+// Define macros to detect !IsWhite
+#define IsBlack(a)                  (!IsWhite (a))
+#define IsBlackW(a)                 (!IsWhiteW (a))
+
 // Define macro for detecting Nonce array type
 #define IsNonceType(ArrType)            (ArrType EQ ARRAY_NONCE)
 

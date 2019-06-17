@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -345,7 +345,7 @@ void ImmExecLine
 
     // Strip off leading blanks
     for (lpwszLine = lpwszCompLine;
-         lpwszLine[0] && lpwszLine[0] EQ L' ';
+         lpwszLine[0] NE WC_EOS && IsWhiteW (lpwszLine[0]);
          lpwszLine++)
     {}
 

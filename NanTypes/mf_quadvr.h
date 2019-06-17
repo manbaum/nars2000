@@ -41,7 +41,7 @@ static LPAPLCHAR MonBodyVR[] =
  L"→(0≠⍴"S L"Z)/"S L"L1 ⋄ "S L"Z←'' ⋄ →0",
  L""S L"L1:→(1=≡"S L"Z)/0",
  L""S L"L←'∇'∊0⊃"S L"Z",
- L""S L"Z←(∊((⊂[1]'LO<    ∇>P<[>Q<]>I6' ⎕FMT⍳⍴"S L"Z),¨"S L"Z),¨⎕TCNL),'    ∇'",
+ L""S L"Z←(∊((⊂[1]'LO<    ∇>P<[>Q<]>I6' ⎕FMT⍳⍴"S L"Z),¨"S L"Z),¨⊂⎕TCNL ⎕TCLF),'    ∇'",
  L"→"S L"L/0 ⋄ "S L"Z←"S L"Z,(' ',⍕2 ##.⎕AT "S L"R),' (UTC)'",
 };
 

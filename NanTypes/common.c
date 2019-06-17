@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -185,7 +185,7 @@ UBOOL IsWhite
     (char c)
 
 {
-    return (c EQ ' ' || c EQ '\t');
+    return (c EQ ' ' || c EQ '\t' || c EQ AC_CR || c EQ AC_LF);
 } // End IsWhite
 
 
@@ -199,7 +199,7 @@ UBOOL IsWhiteW
     (WCHAR wc)
 
 {
-    return (wc EQ L' ' || wc EQ WC_HT);
+    return (wc EQ L' ' || wc EQ WC_HT || wc EQ WC_CR || wc EQ WC_LF);
 } // End IsWhiteW
 
 
@@ -250,7 +250,7 @@ LPWCHAR SkipBlackW
 
 {
     // Skip over non-white space
-    while (*lpw && !IsWhiteW (*lpw))
+    while (*lpw && IsBlackW (*lpw))
         lpw++;
 
     return lpw;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -196,7 +196,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
 #undef  lpHeader
                             // Check for all blanks
                             for (; aplNELMItmRht; aplNELMItmRht--)
-                            if (lpMemItmRht[aplNELMItmRht - 1] NE L' ')
+                            if (IsBlackW (lpMemItmRht[aplNELMItmRht - 1]))
                                 break;
 
                             // We no longer need this ptr

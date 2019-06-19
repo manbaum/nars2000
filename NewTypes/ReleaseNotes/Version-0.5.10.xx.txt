@@ -1,6 +1,18 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2113 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bug In The Magic Operator That Implements The Rank Operator
+
+Directory branches/bsmith/NewTypes:
+
+MF_DIJOT.H:
+  Fix bug in Rank Operator when an error occurs.
+  Clean up code, removing duplicate lines.
+
+
 Build #2111 -- Version 0.5.10.xx
 --------------------------------
 

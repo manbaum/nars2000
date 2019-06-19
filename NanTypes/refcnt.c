@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,8 +29,69 @@
 extern HGLOBAL hGlbRC1,
                hGlbRC2,
                hGlbRC3;
-#define HGLBRC(hGlb,N)  if (hGlb && hGlbRC##N && ClrPtrTypeDir (hGlb) EQ ClrPtrTypeDir (hGlbRC##N)) \
+#define HGLBRC(hGlb,N)  if (hGlb NE NULL                                        \
+                         && hGlbRC##N NE NULL                                   \
+                         && ClrPtrTypeDir (hGlb) EQ ClrPtrTypeDir (hGlbRC##N))  \
                             DbgBrk ();      // #ifdef DEBUG
+// Define the next statement to DEBUG calls to a named operator
+//efine DEBUG_OPR
+#endif
+
+
+#if (defined DEBUG) && (defined DEBUG_OPR)
+//***************************************************************************
+//  $CHECK_OPR
+//
+//  Test the argument for a match to the named operator
+//***************************************************************************
+
+void CHECK_OPR
+    (HGLOBAL hGlb,              // Global memory handle
+     LPWCHAR lpwOprName,        // Ptr to operator name
+     int     iIncr,             // Increment/decrement amount
+     int     RefCnt)            // Current RefCnt
+
+{
+    STFLAGS     stFlags = {0};  // SymTab flags
+    LPSYMENTRY  lpSymEntry;     // Ptr to local SYMENTRY
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory handle
+
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
+        lpMemPTD = GetPerTabPtr (TabCtrl_GetCurSel (hWndTC));
+    if (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
+    {
+        stFlags.Inuse   = TRUE;
+        stFlags.ObjName = OBJNAME_USR;
+
+        // Get the global memory handle of the operator
+        lpSymEntry =
+          SymTabLookupName (lpwOprName,
+                           &stFlags);
+        // If it's valid, ...
+        if (lpSymEntry NE NULL
+         && !lpSymEntry->stFlags.Imm)
+        {
+            HGLOBAL hGlbFcn;
+
+            // Get the global memory handle
+            hGlbFcn = lpSymEntry->stData.stGlbData;
+
+            // Compare this handle with the incoming handle
+            if (hGlb    NE NULL
+             && hGlbFcn NE NULL
+             && ClrPtrTypeDir (hGlb) EQ ClrPtrTypeDir (hGlbFcn))
+            {
+                // Tell the user about it
+                dprintfWL0 (L"<%s> (%p) RefCnt changed by %d to %d\r\n",
+                             lpwOprName,
+                             ClrPtrTypeDir (hGlb),
+                             iIncr,
+                             RefCnt);
+            } // End IF
+        } // End IF
+    } // End IF
+} // End CHECK_OPR
 #endif
 
 
@@ -192,7 +253,10 @@ int ChangeRefCntDir_PTB
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlb); lpSig = NULL;
-
+            
+#if (defined DEBUG) && (defined DEBUG_OPR)
+            CHECK_OPR (hGlb, L"dop", iIncr, RefCnt);
+#endif
             return RefCnt;
 
         defstop
@@ -302,7 +366,7 @@ int IncrRefCntTkn
     hGlbVar = GetGlbHandle (lptkVar);
 
     // If it's a global, ...
-    if (hGlbVar)
+    if (hGlbVar NE NULL)
     {
         // If the global memory handle is that of a function array, ...
         if (IsGlbFcnArray (hGlbVar))
@@ -335,7 +399,7 @@ int DecrRefCntTkn
     hGlbVar = GetGlbHandle (lptkVar);
 
     // If it's a global, ...
-    if (hGlbVar)
+    if (hGlbVar NE NULL)
     {
         // If the global memory handle is that of a function array, ...
         if (IsGlbFcnArray (hGlbVar))
@@ -369,7 +433,7 @@ int ChangeRefCntTkn
     hGlbVar = GetGlbHandle (lptkVar);
 
     // If it's a global, ...
-    if (hGlbVar)
+    if (hGlbVar NE NULL)
     {
         // If the global memory handle is that of a function array, ...
         if (IsGlbFcnArray (hGlbVar))

@@ -951,6 +951,9 @@ void DisplayGlobals
                                     lpMemPTD->iTempMaxSize,
                                    L"***BAD PTR***:  steFcnName (%p)\r\n",
                                     lpHeader->steFcnName);
+                        // Set the "function name"
+                        uNameLen = lstrlenW (lpMemPTD->lpwszTemp);
+
                         DbgNop ();      // We should never get here
                     } // End IF/ELSE
 

@@ -161,12 +161,12 @@ void FreeResult
 
 
 //***************************************************************************
-//  $FreeAFOResult
+//  $FreeErrResult
 //
-//  Free the HGLOBALs and LPSYMENTRYs in an AFO result
+//  Free the HGLOBALs and LPSYMENTRYs in an error
 //***************************************************************************
 
-void FreeAFOResult
+void FreeErrResult
     (LPPL_YYSTYPE lpYYRes)              // Ptr to YYSTYPE to free
 
 {
@@ -184,7 +184,7 @@ void FreeAFOResult
         else
             Assert (YYCheckInuse (lpYYRes));
     } // End IF
-} // End FreeAFOResult
+} // End FreeErrResult
 
 
 //***************************************************************************
@@ -1170,12 +1170,12 @@ void FreeTempResult
 
 
 //***************************************************************************
-//  $FreeTempAFOResult
+//  $FreeTempErrResult
 //
-//  Free temporary (unnamed) result
+//  Free temporary (unnamed) result due to an error condition
 //***************************************************************************
 
-void FreeTempAFOResult
+void FreeTempErrResult
     (LPPL_YYSTYPE lpYYRes)
 
 {
@@ -1183,12 +1183,12 @@ void FreeTempAFOResult
 
     // If it's not named, ...
     if (!IsTknNamed (&lpYYRes->tkToken))
-        FreeAFOResult (lpYYRes);
+        FreeErrResult (lpYYRes);
 #ifdef DEBUG
     else
         nop ();
 #endif
-} // End FreeTempAFOResult
+} // End FreeTempErrResult
 
 
 //***************************************************************************

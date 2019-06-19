@@ -1,6 +1,33 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2118 -- Version 0.6.0.xx
+-------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NanTypes:
+
+DISPDBG.C:
+  In <DisplayGlobals>, set the name length for display purposes.
+  In <DisplayFcnSub>, use a generic <MyGlobalLock> as the HGLOBAL may be either DFN or FCNARRAY.
+
+FREE.C:
+  Rename <FreeAFOResult> to <FreeErrResult> as it no longer is AFO-specific.
+  In <FreeResultGlobalVarSub>, optimize code by gathering together common types.
+  Rename <FreeTempAFOResult> to <FreeTempErrResult> as it is no longer AFO-specific.
+
+PARSELINE.C:
+  Rename <FreeTempAFOResult> to <FreeTempErrResult> as it is no longer AFO-specific.
+
+PN_PARSE.Y:
+  In <pn_yylex>, append CR/LF to the end of the DEBUG message.
+
+REFCNT.C:
+  Define a common DEBUG function to look for a specific function name when changing RefCnts.
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+
+
 Build #2116 -- Version 0.6.0.xx
 -------------------------------
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,8 @@ typedef struct tagSF_FCNS
                 bLclRL:1,           //      00000400:  TRUE iff []RL is localized in this function
                 bMakeAFE:1,         //      000008000  TRUE iff we're called from <SaveFunction> as an AFO
                 bMakeAFX:1,         //      000010000  TRUE iff we're called from <SysFnMonFX_EM> as an AFO
-                :19;                //      FFFFE000:  Available bits
+                bNoFree:1,          //      000020000  TRUE iff we're *NOT* to free the old function (if present)
+                :18;                //      FFFFC000:  Available bits
     UINT        uErrLine;           // 04:  If (!bRet), the line in error (origin-0) (NEG1U = Error Message valid)
     LPSYMENTRY  lpSymName;          // 08:  If (bRet), ptr to SYMENTRY of the function name
     LPTOKEN     lptkFunc;           // 0C:  Ptr to function token

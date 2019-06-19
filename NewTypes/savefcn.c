@@ -141,7 +141,8 @@ UBOOL SaveFunction
 
 HGLOBAL CopyUDFO
     (HGLOBAL    hGlbDfnHdr,         // User-defined function/operator header global memory handle
-     LPSYMENTRY lpSymEntry)         // Ptr to target SYMENTRY
+     LPSYMENTRY lpSymEntry,         // Ptr to target SYMENTRY
+     UBOOL      bNoFree)            // TRUE iff we're *NOT* to free thye old function (if present)
 
 {
     SF_FCNS      SF_Fcns = {0};     // SaveFunction local vars
@@ -182,6 +183,7 @@ HGLOBAL CopyUDFO
     SF_Fcns.SF_UndoBuffer   = SF_UndoBufferUDFO;    // Ptr to get function Undo Buffer global memory handle
     SF_Fcns.LclParams       = &UDFO_Params;         // Ptr to local parameters in case it's an AFO
     SF_Fcns.sfTypes         = SFTYPES_UDFO;         // Caller type
+    SF_Fcns.bNoFree         = bNoFree;              // TRUE iff we're *NOT* to free the old function (if present)
 
     // If the common routine succeeded, ...
     if (SaveFunctionCom (NULL,                   // Function Edit window handle (not-[]FX only)
@@ -512,7 +514,7 @@ UINT SF_LineLenM
     // As this is a matrix and the header/function line might have
     //   been padded out beyond its normal length, delete trailing blanks
     for (; uLineLen; uLineLen--)
-    if (lpMemRht[uRowOff + uLineLen - 1] NE L' ')
+    if (IsBlackW (lpMemRht[uRowOff + uLineLen - 1]))
         break;
 
     // If it's valid, ...
@@ -1043,7 +1045,7 @@ void SF_ReadLineM
     // As this is a matrix and the header/function line might have
     //   been padded out beyond its normal length, delete trailing blanks
     for (; uLineLen; uLineLen--)
-    if (lpMemRht[uRowOff + uLineLen - 1] NE L' ')
+    if (IsBlackW (lpMemRht[uRowOff + uLineLen - 1]))
         break;
 
     // Copy the line to the result
@@ -2703,12 +2705,9 @@ UBOOL SaveFunctionCom
             goto ERROR_EXIT;
         } // End IF
 #ifdef DEBUG
-////    // If it's named <times>, ...
-////    if (lstrcmpW ((*lpSymName->stHshEntry->lplpaplChar6)->aplChar, L"times") EQ 0)
-////        hGlbRC1 = hGlbDfnHdr;
-////    // If it's named <from>, ...
-////    if (lstrcmpW ((*lpSymName->stHshEntry->lplpaplChar6)->aplChar, L"rle4" ) EQ 0)
-////        hGlbRC2 = hGlbDfnHdr;
+////////// If it's named <dop>, ...
+////////if (lstrcmpW (lpSymName->stHshEntry->lpaplChar16->aplChar, L"dop") EQ 0)
+////////    hGlbRC1 = hGlbDfnHdr;
 #endif
         // Lock the memory to get a ptr to it
         lpMemDfnHdr = MyGlobalLock000 (hGlbDfnHdr);
@@ -2959,8 +2958,16 @@ UBOOL SaveFunctionCom
             // Zap the previous global memory handle
             SetWindowLongPtrW (hWndFE, GWLSF_HGLBDFNHDR, (HANDLE_PTR) NULL);
 
-            // Free it
-            FreeResultGlobalDFLV (hGlbOldDfn); hGlbOldDfn = NULL;
+            // If we're to free the old function, ...
+            if (!lpSF_Fcns->bNoFree)
+                // Free it
+                FreeResultGlobalDFLV (hGlbOldDfn);
+#ifdef DEBUG
+            else
+                nop ();         // For debugging
+#endif
+            // Zap it even if we didn't free it
+            hGlbOldDfn = NULL;
         } // End IF
 
         // If we're parsing an AFO, ...

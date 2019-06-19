@@ -1,6 +1,18 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2112 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In Parsing With Spurious Colons
+
+Directory branches/bsmith/NanTypes:
+
+TOKENIZE.C:
+TOKENIZE.H:
+  Define a new row for handling colons as they are also used internally as :nn in saved workspaces to reference global memory data.
+
+
 Build #2110 -- Version 0.6.0.xx
 -------------------------------
 

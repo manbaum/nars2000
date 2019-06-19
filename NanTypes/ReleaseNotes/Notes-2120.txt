@@ -1,0 +1,9 @@
+Build #2120 -- Version 0.6.0.xx
+-------------------------------
+
+* Include Missing Row In The Tokenize FSA From Build #2111
+
+Directory branches/bsmith/NanTypes:
+
+TOKENIZE.C:
+  Include missing row in the FSA.

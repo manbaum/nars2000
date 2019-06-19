@@ -189,6 +189,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_ALPHA     , fnPointDone , fnAlpInit   , scPointDone , scAlpInit   },     // 'a..zA..Z'
   {TKROW_ALPHA     , fnPointDone , fnLclInit   , scPointDone , scLclInit   },     // MFO local
   {TKROW_POINTNOT1 , fnPointDone , fnPointAcc  , scPointDone , scPointAcc  },     // Overbar
+  {TKROW_ALPHA     , fnPointDone , fnAlpInit   , scPointDone , scAlpInit   },     // Underbar
   {TKROW_INIT      , fnPointDone , fnDirIdent  , scPointDone , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnPointDone , fnSysInit   , scPointDone , scSysInit   },     // Quad
   {TKROW_POINTNOT1 , fnPointDone , fnPointAcc  , scPointDone , scPointAcc  },     // NaN

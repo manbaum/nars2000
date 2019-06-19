@@ -5249,7 +5249,7 @@ PARSELINE_ERROR:
                      || IsTknTypeVar    (lpplYYCurObj->tkToken.tkFlags.TknType))
                         // Free the object and its curries only if not named
                         // N.B.: when A[...][...]{is}B fails on an INDEX ERROR, we must not free 'A'
-                        FreeTempAFOResult (lpplYYCurObj);
+                        FreeTempErrResult (lpplYYCurObj);
                     else
                         // YYFree the current object's currys
                         FreeResultCurry (lpplYYCurObj, FALSE);
@@ -7259,7 +7259,7 @@ void FillInDelDel
 //***************************************************************************
 //  $PadMemoryW
 //
-//  Padd out memory to a specified multiple
+//  Pad out memory to a specified multiple
 //***************************************************************************
 
 void PadMemoryW

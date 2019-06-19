@@ -1147,7 +1147,7 @@ int pn_yylex
             lp = &ch[0];
         } // End IF/ELSE
 
-        dprintfWL0 (L"==pn_yylex(%u):  '%S'",
+        dprintfWL0 (L"==pn_yylex(%u):  '%S'\r\n",
                      ++uCnt,
                      lp);
     }

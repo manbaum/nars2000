@@ -903,6 +903,9 @@ void DisplayGlobals
                                     lpMemPTD->iTempMaxSize,
                                    L"***BAD PTR***:  steFcnName (%p)\r\n",
                                     lpHeader->steFcnName);
+                        // Set the "function name"
+                        uNameLen = lstrlenW (lpMemPTD->lpwszTemp);
+
                         DbgNop ();      // We should never get here
                     } // End IF/ELSE
 
@@ -2221,7 +2224,7 @@ LPWCHAR DisplayFcnSub
                  || IsGlbTypeDfnDir_PTB (hGlbData));
 
             // Lock the memory to get a ptr to it
-            lpMemData = MyGlobalLockFcn (hGlbData);
+            lpMemData = MyGlobalLock (hGlbData);    // It's either Fcn or Dfn
 
             // Split cases based upon the array signature
             switch (GetSignatureMem (lpMemData))

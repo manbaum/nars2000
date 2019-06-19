@@ -161,12 +161,12 @@ void FreeResult
 
 
 //***************************************************************************
-//  $FreeAFOResult
+//  $FreeErrResult
 //
-//  Free the HGLOBALs and LPSYMENTRYs in an AFO result
+//  Free the HGLOBALs and LPSYMENTRYs in an error
 //***************************************************************************
 
-void FreeAFOResult
+void FreeErrResult
     (LPPL_YYSTYPE lpYYRes)              // Ptr to YYSTYPE to free
 
 {
@@ -184,7 +184,7 @@ void FreeAFOResult
         else
             Assert (YYCheckInuse (lpYYRes));
     } // End IF
-} // End FreeAFOResult
+} // End FreeErrResult
 
 
 //***************************************************************************
@@ -551,10 +551,12 @@ UBOOL FreeResultGlobalVarSub
     LPVOID            lpMem;                // ...                            data
     APLRANK           aplRank;              // The array rank
     APLSTYPE          aplType;              // The array storage type (see ARRAY_TYPES)
-    APLNELM           aplNELM;              // The array NELM
+    APLNELM           aplNELM,              // The array NELM
+                      aplNELMTotal;         // ...       NELM * iHCDimVar
     UINT              u,                    // Loop counter
                       RefCnt;               // The array reference count
     UBOOL             bRet;                 // TRUE iff the result is valid
+    int               iHCDimVar;            // HC Dimension (1, 2, 4 8)
 
     // Data is an valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir_PTB (MakePtrTypeGlb (hGlbData)));
@@ -587,6 +589,12 @@ UBOOL FreeResultGlobalVarSub
         // Decrement
         RefCnt =
           DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbData));
+
+        // Calculate the HC Dimension (1, 2, 4, 8)
+        iHCDimVar = TranslateArrayTypeToHCDim (aplType);
+
+        // Calculate the total # items
+        aplNELMTotal = aplNELM * iHCDimVar;
 
         // If the RefCnt is zero, free the globals
         if (RefCnt EQ 0)
@@ -650,88 +658,28 @@ UBOOL FreeResultGlobalVarSub
                 break;
 
             case ARRAY_RAT:
+            case ARRAY_HC2R:
+            case ARRAY_HC4R:
+            case ARRAY_HC8R:
                 // Point to the array data (APLRATs)
                 lpMem = VarArrayDataFmBase (lpMemHdrVar);
 
                 // Loop through the APLRATs
-                for (u = 0; u < aplNELM; u++, ((LPAPLRAT) lpMem)++)
-                    Myq_clear ((LPAPLRAT) lpMem);
+                for (u = 0; u < aplNELMTotal; u++)
+                    Myq_clear (((LPAPLRAT) lpMem)++);
 
                 break;
 
             case ARRAY_VFP:
+            case ARRAY_HC2V:
+            case ARRAY_HC4V:
+            case ARRAY_HC8V:
                 // Point to the array data (APLVFPs)
                 lpMem = VarArrayDataFmBase (lpMemHdrVar);
 
                 // Loop through the APLVFPs
-                for (u = 0; u < aplNELM; u++, ((LPAPLVFP) lpMem)++)
-                    Myf_clear ((LPAPLVFP) lpMem);
-
-                break;
-
-            case ARRAY_HC2R:
-                // Point to the array data (APLHC2Rs)
-                lpMem = VarArrayDataFmBase (lpMemHdrVar);
-
-                // Loop through the APLHC2Rs
-                for (u = 0; u < aplNELM; u++, ((LPAPLHC2R) lpMem)++)
-                    // Clear the HC2R
-                    Myhc2r_clear ((LPAPLHC2R) lpMem);
-
-                break;
-
-            case ARRAY_HC2V:
-                // Point to the array data (APLHC2Vs)
-                lpMem = VarArrayDataFmBase (lpMemHdrVar);
-
-                // Loop through the APLHC2Vs
-                for (u = 0; u < aplNELM; u++, ((LPAPLHC2V) lpMem)++)
-                    // Clear the HC2V
-                    Myhc2v_clear ((LPAPLHC2V) lpMem);
-
-                break;
-
-            case ARRAY_HC4R:
-                // Point to the array data (APLHC4Rs)
-                lpMem = VarArrayDataFmBase (lpMemHdrVar);
-
-                // Loop through the APLHC4Rs
-                for (u = 0; u < aplNELM; u++, ((LPAPLHC4R) lpMem)++)
-                    // Clear the HC4R
-                    Myhc4r_clear ((LPAPLHC4R) lpMem);
-
-                break;
-
-            case ARRAY_HC4V:
-                // Point to the array data (APLHC4Vs)
-                lpMem = VarArrayDataFmBase (lpMemHdrVar);
-
-                // Loop through the APLHC4Vs
-                for (u = 0; u < aplNELM; u++, ((LPAPLHC4V) lpMem)++)
-                    // Clear the HC4V
-                    Myhc4v_clear ((LPAPLHC4V) lpMem);
-
-                break;
-
-            case ARRAY_HC8R:
-                // Point to the array data (APLHC8Rs)
-                lpMem = VarArrayDataFmBase (lpMemHdrVar);
-
-                // Loop through the APLHC8Rs
-                for (u = 0; u < aplNELM; u++, ((LPAPLHC8R) lpMem)++)
-                    // Clear the HC8R
-                    Myhc8r_clear ((LPAPLHC8R) lpMem);
-
-                break;
-
-            case ARRAY_HC8V:
-                // Point to the array data (APLHC8Vs)
-                lpMem = VarArrayDataFmBase (lpMemHdrVar);
-
-                // Loop through the APLHC8Vs
-                for (u = 0; u < aplNELM; u++, ((LPAPLHC8V) lpMem)++)
-                    // Clear the HC8V
-                    Myhc8v_clear ((LPAPLHC8V) lpMem);
+                for (u = 0; u < aplNELMTotal; u++)
+                    Myf_clear (((LPAPLVFP) lpMem)++);
 
                 break;
 
@@ -1208,12 +1156,12 @@ void FreeTempResult
 
 
 //***************************************************************************
-//  $FreeTempAFOResult
+//  $FreeTempErrResult
 //
-//  Free temporary (unnamed) result
+//  Free temporary (unnamed) result due to an error condition
 //***************************************************************************
 
-void FreeTempAFOResult
+void FreeTempErrResult
     (LPPL_YYSTYPE lpYYRes)
 
 {
@@ -1221,12 +1169,12 @@ void FreeTempAFOResult
 
     // If it's not named, ...
     if (!IsTknNamed (&lpYYRes->tkToken))
-        FreeAFOResult (lpYYRes);
+        FreeErrResult (lpYYRes);
 #ifdef DEBUG
     else
         nop ();
 #endif
-} // End FreeTempAFOResult
+} // End FreeTempErrResult
 
 
 //***************************************************************************

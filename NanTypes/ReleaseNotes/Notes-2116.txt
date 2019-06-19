@@ -1,0 +1,19 @@
+Build #2116 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug When Calling <CopyUDFO> From <InitFcnSTEs> For A Multi-token Operand
+
+Directory branches/bsmith/NanTypes:
+
+ASSIGN.C:
+  When calling <CopyUDFO> not in exceptional case, pass flag to free the old UDFO.
+
+EXECDFN.C:
+  Fix bug when calling <CopyUDFO> from within <InitFcnSTEs> on the individual tokens in a multi-token operand, don't free the old UDFO as it is still needed by the caller.
+
+SAVEFCN.C:
+  In <CopyUDFO>, pass flag to <SaveFunctionCom> on whether or not to free the old UDFO.
+  In <SaveFunctionCom>, don't free the old UDFO if the incoming flag says not to.
+
+SAVEFCN.H:
+  In <SF_FCNS> struc, define a flag as to whether or not to free the old UDFO.

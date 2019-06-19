@@ -149,7 +149,7 @@ UBOOL AssignName_EM
                 //   UDFO (not an AFO) other than a niladic function
                 //   which instead is executed by the parser before
                 //   it gets to this point.
-                hGlbSrc = CopyUDFO (hGlbSrc, lptkNam->tkData.tkSym);
+                hGlbSrc = CopyUDFO (hGlbSrc, lptkNam->tkData.tkSym, FALSE);
 
             // Save the new source global memory handle as the new global memory handle
             lptkNam->tkData.tkSym->stData.stGlbData    = hGlbSrc;
@@ -240,7 +240,7 @@ UBOOL AssignName_EM
 
                     // Note that we can't free the target name before this call as we
                     //   need its characteristics in <CopyUDFO> as <lpSymName>
-                    hGlbNam = CopyUDFO (hGlbSrc, lptkNam->tkData.tkSym);
+                    hGlbNam = CopyUDFO (hGlbSrc, lptkNam->tkData.tkSym, FALSE);
 
                     // Make a copy of the target as we're about to free it
                     hGlbNam = CopySymGlbDir_PTB (hGlbNam);

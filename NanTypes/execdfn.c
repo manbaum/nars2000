@@ -563,21 +563,27 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
 
     __try
     {
-        // Execute the user-defined function/operator
-        lpYYRes =
-          ExecuteFunction_EM_YY (startLineNum, startTknNum, &lpYYFcnStrOpr->tkToken);
+        __try
+        {
+            // Execute the user-defined function/operator
+            lpYYRes =
+              ExecuteFunction_EM_YY (startLineNum, startTknNum, &lpYYFcnStrOpr->tkToken);
+        } __finally
+        {
+            // Unlocalize the STEs on the innermost level
+            //   and strip off one level
+            UnlocalizeSTEs (hGlbDfnHdr);
+        } // End __try/__finally
     } __except (CheckException (GetExceptionInformation (), WFCN))
     {
-        // Unlocalize the STEs on the innermost level
-        //   and strip off one level
-        UnlocalizeSTEs (hGlbDfnHdr);
-
         // Pass on the exception
         RaiseException (MyGetExceptionCode (), 0, 0, NULL);
     } // End __try/__except
 
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
+
+    goto NORMAL_EXIT;
 
 LEFT_UNLOCALIZE_EXIT:
 UNLOCALIZE_EXIT:
@@ -2511,7 +2517,7 @@ UBOOL InitFcnSTEs
                         (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir_PTB (hGlbDfnHdr);
                     else
                         // Copy the UDFO (e.g., "f {each}" where "f" is a UDFO, not an AFO which is handled differently)
-                        (*lplpSymEntry)->stData.stGlbData   = CopyUDFO (hGlbDfnHdr, *lplpSymEntry);
+                        (*lplpSymEntry)->stData.stGlbData   = CopyUDFO (hGlbDfnHdr, *lplpSymEntry, FALSE);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -2604,8 +2610,7 @@ UBOOL InitFcnSTEs
                 case TKT_FCNDFN:
                 case TKT_OP1DFN:
                 case TKT_OP2DFN:
-                    // Copy the UDFO (e.g., "+mop mop" where "mop" is a monadic UDFO operator, not an AFO which is handled differently)
-                    if (!SetGlbHandle (&lpYYArg->tkToken, CopyUDFO (GetGlbHandle (&lpYYArg->tkToken), *lplpSymEntry)))
+                    if (!SetGlbHandle (&lpYYArg->tkToken, CopyUDFO (GetGlbHandle (&lpYYArg->tkToken), *lplpSymEntry, TRUE)))
                         goto WSFULL_EXIT;
                     break;
 

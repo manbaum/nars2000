@@ -1,0 +1,9 @@
+Build #2121 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bug In Rank Operator Magic Function
+
+Directory branches/bsmith/NewTypes:
+
+MF_DIJOT.H:
+  Fix bug in Rank Operator magic function where Zilde is mistakenly used as default axis operator value for Disclose.

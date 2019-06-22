@@ -39,13 +39,12 @@
 
 static LPAPLCHAR MonBody[] =
 {
-  L":if 0=⎕NC '"S L"X' ⋄ "S L"X←⍬ ⋄ :end",
   L""S L"YR←(1↑⌽3⍴⌽"S L"Y)⌊⍴⍴"S L"R",
   L":if 0>"S L"YR ⋄ "S L"YR←0⌈"S L"YR+⍴⍴"S L"R ⋄ :end",
   L""S L"EC←⎕EC '"S L"LO¨⊂[(-"S L"YR)↑⍳⍴⍴"S L"R] "S L"R'",
   L"→"S L"L1",
   
-  L"⎕PRO::if 0=⎕NC '"S L"X' ⋄ "S L"X←⍬ ⋄ :end",
+  L"⎕PRO:",
   L""S L"YR←(1↑⌽3⍴⌽"S L"Y)⌊⍴⍴"S L"R",
   L":if 0>"S L"YR ⋄ "S L"YR←0⌈"S L"YR+⍴⍴"S L"R ⋄ :end",
   L""S L"EC←⎕EC '"S L"LO¨¨⊂[(-"S L"YR)↑⍳⍴⍴"S L"R]¨0⍴⊂"S L"R'",
@@ -58,7 +57,8 @@ static LPAPLCHAR MonBody[] =
   L"  ⎕ERROR (⌽∨\\⌽"S L"EM≠' ')/"S L"EM",
   L":case 3",
   L":else",
-  L""S L"Z←⊃["S L"X] "S L"EM",
+  L"  :if 0=⎕NC '"S L"X' ⋄ "S L"Z←⊃"S L"EM",
+  L"  :else ⋄ "S L"Z←⊃["S L"X] "S L"EM ⋄ :end",
   L":end",
 };
 
@@ -81,14 +81,13 @@ MAGIC_FCNOPR MFO_MonRank =
 
 static LPAPLCHAR DydBody[] =
 { 
-  L":if 0=⎕NC '"S L"X' ⋄ "S L"X←⍬ ⋄ :end",
   L"("S L"YL "S L"YR)←(1↓⌽3⍴⌽"S L"Y)⌊(⍴⍴"S L"L),⍴⍴"S L"R",
   L":if 0>"S L"YL ⋄ "S L"YL←0⌈"S L"YL+⍴⍴"S L"L ⋄ :end",
   L":if 0>"S L"YR ⋄ "S L"YR←0⌈"S L"YR+⍴⍴"S L"R ⋄ :end",
   L""S L"EC←⎕EC '(⊂[(-"S L"YL)↑⍳⍴⍴"S L"L] "S L"L) "S L"LO¨⊂[(-"S L"YR)↑⍳⍴⍴"S L"R] "S L"R'",
   L"→"S L"L1",
 
-  L"⎕PRO::if 0=⎕NC '"S L"X' ⋄ "S L"X←⍬ ⋄ :end",
+  L"⎕PRO:",
   L"("S L"YL "S L"YR)←(1↓⌽3⍴⌽"S L"Y)⌊(⍴⍴"S L"L),⍴⍴"S L"R",
   L":if 0>"S L"YL ⋄ "S L"YL←0⌈"S L"YL+⍴⍴"S L"L ⋄ :end",
   L":if 0>"S L"YR ⋄ "S L"YR←0⌈"S L"YR+⍴⍴"S L"R ⋄ :end",
@@ -102,7 +101,8 @@ static LPAPLCHAR DydBody[] =
   L"  ⎕ERROR (⌽∨\\⌽"S L"EM≠' ')/"S L"EM",
   L":case 3",
   L":else",
-  L"  "S L"Z←⊃["S L"X] "S L"EM",
+  L"  :if 0=⎕NC '"S L"X' ⋄ "S L"Z←⊃"S L"EM",
+  L"  :else ⋄ "S L"Z←⊃["S L"X] "S L"EM ⋄ :end",
   L":end",
 };  
 

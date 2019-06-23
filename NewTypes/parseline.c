@@ -5953,6 +5953,15 @@ NORMAL_EXIT:
         {
             case ERRORCODE_ALX:
             case ERRORCODE_ELX:
+            {
+                UBOOL oldgbBoxState;    // Save area for old BoxState
+
+                // Save the old value
+                oldgbBoxState = gbBoxState;
+
+                // Turn it OFF for error messages
+                gbBoxState = FALSE;
+
                 // Execute the statement
                 exitType =
                   PrimFnMonUpTackJotCSPLParse (hWndEC,          // Edit Ctrl window handle
@@ -5963,7 +5972,11 @@ NORMAL_EXIT:
                                                bNoDepthCheck,   // TRUE iff we're to skip the depth check
                                                lpMemPTD->lpSISCur->DfnType, // DfnType for FillSISNxt
                                                NULL);           // Ptr to function token
+                // Restore the previous state
+                gbBoxState = oldgbBoxState;
+
                 break;
+            } // End ERRORCODExLX
 
             case ERRORCODE_DM:
                 // Display []DM

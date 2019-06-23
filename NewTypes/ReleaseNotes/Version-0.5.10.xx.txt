@@ -1,6 +1,17 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2123 -- Version 0.5.10.xx
+--------------------------------
+
+* Turn Off )BOX When Displaying An Error Message
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  Turn off )BOX when displaying an error message.
+
+
 Build #2121 -- Version 0.5.10.xx
 --------------------------------
 

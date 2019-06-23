@@ -3664,6 +3664,34 @@ static BOOL MyCreateCaret (HWND hWnd, HBITMAP hBitMap, int nWidth, int nHeight)
 
 /*********************************************************************
  *
+ * MyShowCaret
+ *
+ */
+
+void MyShowCaret
+    (HWND hWndCaret)
+
+{
+    hWndCaret = NULL;
+
+#ifdef DEBUG
+    // Clear the error code
+    SetLastError (0);
+
+    if (!ShowCaret (hWndCaret))
+    {
+        DWORD dwErr = GetLastError ();
+        DbgBrk ();
+        nop ();
+    } // End IF
+#else
+    ShowCaret (hWndCaret);
+#endif
+} // End MyShowCaret
+
+
+/*********************************************************************
+ *
  *  WM_KEYDOWN
  *
  *  Handling of special keys that don't produce a WM_CHAR
@@ -3765,7 +3793,7 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
         else
         {
             MyCreateCaret (es->hwndSelf, 0, CARETWIDTH, es->line_height);
-            ExecAssert (ShowCaret(es->hwndSelf));
+            MyShowCaret (es->hwndSelf);
         }
         break;
     case VK_RETURN:
@@ -4455,7 +4483,7 @@ static void EDIT_WM_SetFocus(EDITSTATE *es)
     MyCreateCaret(es->hwndSelf, 0, CARETWIDTH, es->line_height);
     EDIT_SetCaretPos(es, es->selection_end,
              es->flags & EF_AFTER_WRAP);
-    ExecAssert (ShowCaret (es->hwndSelf));
+    MyShowCaret (es->hwndSelf);
     EDIT_NOTIFY_PARENT(es, EN_SETFOCUS);
 } // End EDIT_WM_SetFocus
 
@@ -4505,7 +4533,7 @@ static void EDIT_WM_SetFont(EDITSTATE *es, HFONT font, BOOL redraw)
         MyCreateCaret(es->hwndSelf, 0, CARETWIDTH, es->line_height);
         EDIT_SetCaretPos(es, es->selection_end,
                  es->flags & EF_AFTER_WRAP);
-        ExecAssert (ShowCaret(es->hwndSelf));
+        MyShowCaret (es->hwndSelf);
     }
 } // End EDIT_WM_SetFont
 

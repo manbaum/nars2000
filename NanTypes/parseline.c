@@ -5953,6 +5953,15 @@ NORMAL_EXIT:
         {
             case ERRORCODE_ALX:
             case ERRORCODE_ELX:
+            {
+                UBOOL oldgbBoxState;    // Save area for old BoxState
+
+                // Save the old value
+                oldgbBoxState = gbBoxState;
+
+                // Turn it OFF for error messages
+                gbBoxState = FALSE;
+
                 // Execute the statement
                 exitType =
                   PrimFnMonUpTackJotCSPLParse (hWndEC,          // Edit Ctrl window handle
@@ -5963,7 +5972,11 @@ NORMAL_EXIT:
                                                bNoDepthCheck,   // TRUE iff we're to skip the depth check
                                                lpMemPTD->lpSISCur->DfnType, // DfnType for FillSISNxt
                                                NULL);           // Ptr to function token
+                // Restore the previous state
+                gbBoxState = oldgbBoxState;
+
                 break;
+            } // End ERRORCODExLX
 
             case ERRORCODE_DM:
                 // Display []DM
@@ -8143,84 +8156,6 @@ void SetupFcnDels
             break;
     } // End SWITCH
 } // End SetupFcnDels
-
-
-//***************************************************************************
-//  $NextToken
-//
-//  Return a ptr to the next (lefthand) token in a strand
-//***************************************************************************
-
-LPTOKEN NextToken
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
-     LPTOKEN       lptkCur)             // Ptr to current token in a strand
-
-{
-    // If the next token is valid, ...
-    if (lptkCur NE NULL
-     && lpplLocalVars->lptkStart <= &lptkCur[-1])
-    {
-        // If the current token is a right paren, ...
-        if (lptkCur->tkFlags.TknType EQ TKT_RIGHTPAREN)
-        {
-            UINT tkMatch;
-
-            // Get the index of the matching token
-            //   "- 1" to skip past the matching left paren
-            tkMatch = lptkCur->tkData.tkMatch - 1;
-
-            // If the matching token is valid, ...
-            if (lpplLocalVars->lptkStart <= &lpplLocalVars->lptkStart[tkMatch])
-            {
-                Assert (lpplLocalVars->lptkStart[tkMatch + 1].tkFlags.TknType EQ TKT_LEFTPAREN);
-
-                return &lpplLocalVars->lptkStart[tkMatch];
-            } else
-                return NULL;
-        } else
-            return &lptkCur[-1];
-    } else
-        return NULL;
-} // End NextToken
-
-
-//***************************************************************************
-//  $PrevToken
-//
-//  Return a ptr to the previous (righthand) token in a strand
-//***************************************************************************
-
-LPTOKEN PrevToken
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
-     LPTOKEN       lptkCur)             // Ptr to current token in a strand
-
-{
-    // If the previous token is valid, ...
-    if (lptkCur NE NULL
-     && lpplLocalVars->lptkEnd > &lptkCur[1])
-    {
-        // If the current token is a left paren, ...
-        if (lptkCur->tkFlags.TknType EQ TKT_LEFTPAREN)
-        {
-            UINT tkMatch;
-
-            // Get the index of the matching token
-            //   "+ 1" to skip past the matching right paren
-            tkMatch = lptkCur->tkData.tkMatch + 1;
-
-            // If the matching token is valid, ...
-            if (lpplLocalVars->lptkEnd > &lpplLocalVars->lptkStart[tkMatch])
-            {
-                Assert (lpplLocalVars->lptkStart[tkMatch - 1].tkFlags.TknType EQ TKT_RIGHTPAREN);
-
-                return &lpplLocalVars->lptkStart[tkMatch];
-            } else
-                return NULL;
-        } else
-            return &lptkCur[1];
-    } else
-        return NULL;
-} // End PrevToken
 
 
 //***************************************************************************

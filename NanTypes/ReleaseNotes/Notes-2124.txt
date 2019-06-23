@@ -1,0 +1,9 @@
+Build #2124 -- Version 0.6.0.xx
+-------------------------------
+
+* Turn Off )BOX When Displaying An Error Message
+
+Directory branches/bsmith/NanTypes:
+
+PARSELINE.C:
+  Turn off )BOX when displaying an error message.

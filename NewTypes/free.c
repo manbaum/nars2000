@@ -352,10 +352,11 @@ void FreeResultSub
         case TKT_FCNAFO:    // ...                           UDFO header
         case TKT_OP1AFO:    // ...                           ...
         case TKT_OP2AFO:    // ...                           ...
+        case TKT_DELAFO:    // ...                           ...
+
         case TKT_FCNDFN:    // ...                           ...
         case TKT_OP1DFN:    // ...                           ...
         case TKT_OP2DFN:    // ...                           ...
-        case TKT_DELAFO:    // ...                           ...
             // Get the global memory handle
             lphGlbData = GetPtrGlbDataToken (lptkRes);
 
@@ -386,6 +387,7 @@ void FreeResultSub
         case TKT_OP1IMMED:      // ...                    monadic operator
         case TKT_OP2IMMED:      // ...                    dyadic  ...
         case TKT_OP3IMMED:      // ...                    ambiguous ...
+
         case TKT_OPJOTDOT:      // ...                    {jot}{dot}
         case TKT_FILLJOT:       // ...                    fill {jot}
         case TKT_RIGHTBRACE:    // ...                    right brace in {}
@@ -745,6 +747,9 @@ UBOOL FreeResultGlobalFcn
         RefCnt =
           ChangeRefCntDir_PTB (MakePtrTypeGlb (hGlbData), -1);
 
+        // Ensure zero
+        Assert (RefCnt EQ 0);
+
         // Free the line text
         if (hGlbTxtLine NE NULL)
         {
@@ -772,6 +777,7 @@ UBOOL FreeResultGlobalFcn
                 case TKT_OP1IMMED:      // ...
                 case TKT_OP2IMMED:      // ...
                 case TKT_OP3IMMED:      // ...
+
                 case TKT_AXISIMMED:     // ...
                 case TKT_OPJOTDOT:      // ...
                 case TKT_FILLJOT:       // ...
@@ -816,10 +822,11 @@ UBOOL FreeResultGlobalFcn
                 case TKT_FCNAFO:
                 case TKT_OP1AFO:
                 case TKT_OP2AFO:
+                case TKT_DELAFO:
+
                 case TKT_FCNDFN:
                 case TKT_OP1DFN:
                 case TKT_OP2DFN:
-                case TKT_DELAFO:
                     // Get the global memory handle
                     lphGlbLcl = GetPtrGlbDataToken (&lpYYToken->tkToken);
 

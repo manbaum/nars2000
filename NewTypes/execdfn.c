@@ -2530,6 +2530,7 @@ UBOOL InitFcnSTEs
                 case TKT_FCNDFN:
                 case TKT_OP1DFN:
                 case TKT_OP2DFN:
+                    // Copy the UDFO (e.g., "+mop mop" where "mop" is a monadic UDFO operator, not an AFO which is handled differently)
                     if (!SetGlbHandle (&lpYYArg->tkToken, CopyUDFO (GetGlbHandle (&lpYYArg->tkToken), *lplpSymEntry, TRUE)))
                         goto WSFULL_EXIT;
                     break;
@@ -2541,6 +2542,7 @@ UBOOL InitFcnSTEs
                 case TKT_OP1IMMED:
                 case TKT_OP2IMMED:
                 case TKT_OP3IMMED:
+
                 case TKT_OPJOTDOT:
                 case TKT_FILLJOT:
                     break;

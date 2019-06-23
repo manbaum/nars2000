@@ -1,6 +1,25 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2127 -- Version 0.5.10.xx
+--------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NewTypes/WineHQ:
+
+EXECDFN.C:
+  Include additional comment and spacing.
+
+FREE.C:
+  In <FreeResultGlobalFcn>, include DEBUG Assert statement.
+  Change spacing and order.
+
+REFCNT.C:
+  In <ChangeRefCntFcnArray>, change comments with "increment" to "change".
+  In <_DbgChangeRefCntTkn>, fix bug in call to DEBUG function.
+
+
 Build #2125 -- Version 0.5.10.xx
 --------------------------------
 

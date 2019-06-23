@@ -253,7 +253,7 @@ int ChangeRefCntDir_PTB
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlb); lpSig = NULL;
-            
+
 #if (defined DEBUG) && (defined DEBUG_OPR)
             CHECK_OPR (hGlb, L"dop", iIncr, RefCnt);
 #endif
@@ -524,7 +524,7 @@ int ChangeRefCntFcnArray
         case TKT_FILLJOT:       // ...
             break;              // Ignore immediates
 
-        case TKT_FCNNAMED:      // Increment the RefCnt in the named function array
+        case TKT_FCNNAMED:      // Change the RefCnt in the named function array
         case TKT_OP1NAMED:      // ...
         case TKT_OP2NAMED:      // ...
         case TKT_OP3NAMED:      // ...
@@ -535,15 +535,15 @@ int ChangeRefCntFcnArray
             if (lpYYToken->tkToken.tkData.tkSym->stFlags.FcnDir)
                 break;          // Ignore internal functions
 
-            // Increment the RefCnt
+            // Change the RefCnt
             DbgChangeRefCntTkn (&lpYYToken->tkToken, iChangeRefCnt);
 
             break;
 
-        case TKT_FCNARRAY:      // Increment the RefCnt in the the function array
+        case TKT_FCNARRAY:      // Change the RefCnt in the the function array
                                 // This case is triggered by referencing a Train inside another Train
                                 //   such as f{is}( - , +)  and  g{is}(| f *)
-            // Increment the RefCnt
+            // Change the RefCnt
             DbgChangeRefCntTkn (&lpYYToken->tkToken, iChangeRefCnt); // EXAMPLE:  ***Probably never executed***
 
             break;
@@ -551,21 +551,22 @@ int ChangeRefCntFcnArray
         case TKT_FCNAFO:
         case TKT_OP1AFO:
         case TKT_OP2AFO:
+        case TKT_DELAFO:
+
         case TKT_FCNDFN:
         case TKT_OP1DFN:
         case TKT_OP2DFN:
-        case TKT_DELAFO:
-            // Increment the RefCnt
+            // Change the RefCnt
             DbgChangeRefCntTkn (&lpYYToken->tkToken, iChangeRefCnt); // EXAMPLE:  f{is}{-omega}{jot}{divide} {diamond} f 3
 
             break;
 
-        case TKT_VARARRAY:      // Increment the var array (strand arg to dyadic op)
-        case TKT_AXISARRAY:     // ...           axis array
-        case TKT_CHRSTRAND:     // ...           character strand
-        case TKT_NUMSTRAND:     // ...           numeric strand
-        case TKT_NUMSCALAR:     // ...           numeric scalar
-            // Increment the RefCnt
+        case TKT_VARARRAY:      // Change the var array (strand arg to dyadic op)
+        case TKT_AXISARRAY:     // ...        axis array
+        case TKT_CHRSTRAND:     // ...        character strand
+        case TKT_NUMSTRAND:     // ...        numeric strand
+        case TKT_NUMSCALAR:     // ...        numeric scalar
+            // Change the RefCnt
             DbgChangeRefCntTkn (&lpYYToken->tkToken, iChangeRefCnt); // EXAMPLE:  A f {each} [1 2] B
 
             break;
@@ -581,7 +582,7 @@ int ChangeRefCntFcnArray
 
             // If it's not an immediate, ...
             if (!lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
-                // Increment the RefCnt
+                // Change the RefCnt
                 DbgChangeRefCntTkn (&lpYYToken->tkToken, iChangeRefCnt);
 
             break;
@@ -768,7 +769,7 @@ int _DbgChangeRefCntTkn
      UINT    uLineNum)
 
 {
-    dprintfWL0 (lpwFmtStr, ClrPtrTypeDir (GetGlbHandle (lptkVar)), iChangeRefCnt, lpFileName, uLineNum);
+    dprintfWL0 (lpwFmtStr, iChangeRefCnt, ClrPtrTypeDir (GetGlbHandle (lptkVar)), iChangeRefCnt, lpFileName, uLineNum);
     return ChangeRefCntTkn (lptkVar, iChangeRefCnt);
 } // End _DbgChangeRefCntTkn
 #endif

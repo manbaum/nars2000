@@ -1,6 +1,25 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2128 -- Version 0.6.0.xx
+-------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NanTypes:
+
+EXECDFN.C:
+  Include additional comment and spacing.
+
+FREE.C:
+  In <FreeResultGlobalFcn>, include DEBUG Assert statement.
+  Change spacing and order.
+
+REFCNT.C:
+  In <ChangeRefCntFcnArray>, change comments with "increment" to "change".
+  In <_DbgChangeRefCntTkn>, fix bug in call to DEBUG function.
+
+
 Build #2126 -- Version 0.6.0.xx
 -------------------------------
 

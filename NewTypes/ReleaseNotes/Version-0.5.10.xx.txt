@@ -1,6 +1,17 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2125 -- Version 0.5.10.xx
+--------------------------------
+
+* DEBUG Caret Problems
+
+Directory branches/bsmith/NewTypes/WineHQ:
+
+EDITCTRL.C:
+  Define function <MyShowCaret> As Wrapper to help DEBUG caret problems.
+
+
 Build #2123 -- Version 0.5.10.xx
 --------------------------------
 

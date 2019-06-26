@@ -39,7 +39,7 @@ UBOOL CmdDebug_EM
             q;
     WCHAR   wszTemp[1024];
     int     i;
-    UBOOL   bRet = FALSE;       // TRUE iff the result is valid
+    UBOOL   bRet = TRUE;        // TRUE iff the result is valid
 
     // Skip over leading white space
     p = SkipWhiteW (p);
@@ -91,10 +91,10 @@ UBOOL CmdDebug_EM
         } // End IF/ELSE
 
         // Restore focus
-        SetFocus (hWndMF);
+        MySetFocus (hWndMF);
 
-        // Mark as successful
-        return TRUE;
+        // Skip over this option
+        p = SkipWhiteW (p + strcountof (OPT));
     } // End IF
 #undef  OPT
     // Check for "OFF"
@@ -112,10 +112,10 @@ UBOOL CmdDebug_EM
         } // End IF/ELSE
 
         // Restore focus
-        SetFocus (hWndMF);
+        MySetFocus (hWndMF);
 
-        // Mark as successful
-        return TRUE;
+        // Skip over this option
+        p = SkipWhiteW (p + strcountof (OPT));
     } // End IF
 #undef  OPT
 
@@ -160,6 +160,7 @@ UBOOL CmdDebug_EM
                 // Tell the user about it
                 IncorrectCommand ();
 
+                // Mark as in error
                 return FALSE;
             } // End IF/ELSE
         } else
@@ -167,8 +168,12 @@ UBOOL CmdDebug_EM
             // Tell the user about it
             IncorrectCommand ();
 
+            // Mark as in error
             return FALSE;
         } // End IF/ELSE
+
+        // Skip over this option
+        p = SkipWhiteW (p + strcountof (OPT));
     } // End IF
 #undef  OPT
 
@@ -212,11 +217,25 @@ UBOOL CmdDebug_EM
                                                         \
                 /* Save the new value                 */\
                 NAM = i;                                \
+            } else                                      \
+            {                                           \
+                /* Tell the user about it             */\
+                IncorrectCommand ();                    \
                                                         \
-                /* Mark as successful                 */\
-                bRet = TRUE;                            \
+                /* Mark as in error                   */\
+                return FALSE;                           \
             } /* End IF                               */\
+        } else                                          \
+        {                                               \
+            /* Tell the user about it                 */\
+            IncorrectCommand ();                        \
+                                                        \
+            /* Mark as in error                       */\
+            return FALSE;                               \
         } /* End IF                                   */\
+                                                        \
+        /* Skip over this option                      */\
+        p = SkipWhiteW (p + strcountof (OPT));          \
     } /* End IF                                       */
 
 #define IsUCHAR(a)      (0 <= (a) && (a) < 256)

@@ -1,0 +1,9 @@
+Build #2129 -- Version 0.5.10.xx
+--------------------------------
+
+* Allow Multiple Targets With )DEBUG
+
+Directory branches/bsmith/NewTypes:
+
+SC_DEBUG.C:
+  Allow multiple targets with )DEBUG.

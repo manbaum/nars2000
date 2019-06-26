@@ -1,12 +1,23 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2129 -- Version 0.5.10.xx
+--------------------------------
+
+* Allow Multiple Targets With )DEBUG
+
+Directory branches/bsmith/NewTypes:
+
+SC_DEBUG.C:
+  Allow multiple targets with )DEBUG.
+
+
 Build #2127 -- Version 0.5.10.xx
 --------------------------------
 
 * Miscellaneous DEBUG Changes
 
-Directory branches/bsmith/NewTypes/WineHQ:
+Directory branches/bsmith/NewTypes:
 
 EXECDFN.C:
   Include additional comment and spacing.

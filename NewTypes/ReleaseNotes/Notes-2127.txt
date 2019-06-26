@@ -3,7 +3,7 @@ Build #2127 -- Version 0.5.10.xx
 
 * Miscellaneous DEBUG Changes
 
-Directory branches/bsmith/NewTypes/WineHQ:
+Directory branches/bsmith/NewTypes:
 
 EXECDFN.C:
   Include additional comment and spacing.

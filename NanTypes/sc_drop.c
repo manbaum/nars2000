@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,10 +40,15 @@ UBOOL CmdDrop_EM
             wszExt[_MAX_EXT];           // ...           file extension
     UBOOL   bRet = FALSE;               // TRUE iff result is valid
     WCHAR   wszTemp[DATETIME_LEN + 1];  // Output save area ("+ 1" for terminating zero)
-    LPWCHAR lpw;                        // Temporary ptr
+    LPWCHAR lpwCmd,                     // Ptr to command line
+            lpw;                        // Temporary ptr
 
-    // Skip to the next blank
-    lpw = SkipToCharDQW (lpwszTail, L' ');
+    // Skip over white space
+    lpwCmd = SkipWhiteW (lpwszTail);
+
+    // Skip to the next white space
+    //   past what might be a DoubleQuoted string
+    lpw = SkipToStrDQW (lpwCmd, WS_WHITE);
 
     // Zap it in case there are trailing blanks
     *lpw = WC_EOS;
@@ -52,7 +57,7 @@ UBOOL CmdDrop_EM
     if (*lpwszTail)
     {
         // Convert the given workspace name into a canonical form (without WS_WKSEXT)
-        MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
+        MakeWorkspaceNameCanonical (wszTailDPFE, lpwCmd, lpwszWorkDir);
 
         // Split out the file extension (if any)
         _wsplitpath (wszTailDPFE, NULL, NULL, NULL, wszExt);

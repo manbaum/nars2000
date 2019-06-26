@@ -1,6 +1,45 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2132 -- Version 0.6.0.xx
+-------------------------------
+
+* Make More Commands Sensitive To Line Continuations, Part II
+
+Directory branches/bsmith/NanTypes:
+
+COMMON.C:
+  Define common function to skip over a possibly DoubleQuoted string to the first character in a given set
+    replacing unused function <SkipPastChar>.
+
+DEFINES.H:
+  Define a common value for White Space.
+
+SC_COMMON.C:
+  In <SplitSwitches>, handle Line Continuations.
+
+SC_COPY.C:
+  In <CmdCopy_EM>, handle Line Continuations.
+
+SC_DROP.C:
+  In <CmdDrop_EM>, handle Line Continuations.
+
+SC_ERASE.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+
+SC_LOAD.C:
+  In <CmdLoadCom_EM>, handle Line Continuations.
+
+SC_SAVE.C:
+  In <CmdSave_EM>, handle Line Continuations.
+
+SC_WSID.C:
+  In <CmdWsid_EM>, handle Line Continuations.
+
+SYSCMDS.C:
+  In <ExecSysCmd>, handle Line Continuations.
+
+
 Build #2130 -- Version 0.6.0.xx
 -------------------------------
 

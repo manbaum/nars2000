@@ -137,7 +137,8 @@ SYSCMDS_ENUM ExecSysCmd
     while (IsWhiteW (*++lpwszLine));
 
     // Look for the next space as a separator
-    wp = strchrW (lpwszLine, L' ');
+    //   in what might be a DoubleQuoted string
+    wp = SkipToStrDQW (lpwszLine, WS_WHITE);
 
     // If not found, goto the end of the line
     if (wp EQ NULL)
@@ -168,7 +169,7 @@ SYSCMDS_ENUM ExecSysCmd
 
         // Return the type of system command
         return SysCmdsTab[i].sysCmdEnum;
-    } // End IF/FOR
+    } // End FOR/IF
 
     IncorrectCommand ();
 

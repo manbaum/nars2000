@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -589,7 +589,8 @@ LPWCHAR SplitSwitches
     *lpuInt = 0;
 
     // Skip over the Drive:\Path\filename.ext
-    lpwszCmd = SkipToCharDQW (lpwszTail, L' ');
+    //   which might be in a DoubleQuoted string
+    lpwszCmd = SkipToStrDQW (lpwszTail, WS_WHITE);
     wcTmp = *lpwszCmd; *lpwszCmd++ = WC_EOS; lpwszNxt = lpwszCmd;
 
     if (wcTmp)
@@ -608,7 +609,7 @@ LPWCHAR SplitSwitches
             break;
 
         // Skip over the switch
-        lpwszNxt = SkipToCharDQW (lpwszNxt, L' ');
+        lpwszNxt = SkipToStrDQW (lpwszNxt, WS_WHITE);
 
         // Terminate the switch and skip over it
         wcTmp = *lpwszNxt; *lpwszNxt++ = WC_EOS;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -61,7 +61,8 @@ UBOOL CmdWsid_EM
 #undef  lpHeader
 
     // Skip to the next blank
-    lpw = SkipToCharDQW (lpwszTail, L' ');
+    //   past what might be a DoubleQuoted string
+    lpw = SkipToStrDQW (lpwszTail, WS_WHITE);
 
     // Zap it in case there are trailing blanks
     *lpw = WC_EOS;

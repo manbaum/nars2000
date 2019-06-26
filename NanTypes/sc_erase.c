@@ -71,7 +71,7 @@ UBOOL CmdErase_EM
             // If found, attempt to expunge the name
             // If not found, ignore it if it's a valid name
             // If not expunged, display the name after the NotErased header
-            if (lpSymEntry)
+            if (lpSymEntry NE NULL)
             {
                 // Attempt to expunge the global value
                 if (!ExpungeName (GetGlobalSTE (lpSymEntry), TRUE))

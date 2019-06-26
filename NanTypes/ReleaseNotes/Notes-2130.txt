@@ -1,0 +1,9 @@
+Build #2130 -- Version 0.6.0.xx
+-------------------------------
+
+* Allow Multiple Targets With )DEBUG
+
+Directory branches/bsmith/NanTypes:
+
+SC_DEBUG.C:
+  Allow multiple targets with )DEBUG.

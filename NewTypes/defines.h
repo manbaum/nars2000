@@ -585,6 +585,7 @@ default:        \
 
 #define WS_CRLF         L"\r\n"     // 0D0A:    CR/LF    (hard line-break)
 #define WS_CRCRLF       L"\r\r\n"   // 0D0D0A:  CR/CR/LF (soft line-break)
+#define WS_WHITE        L" \r\n"    // 200D0A:  White space
 
 #define AC_MFOLCL        '$'        // Initial character of MFO local var
 #define WC_MFOLCL       L'$'        // ...

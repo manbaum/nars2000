@@ -348,6 +348,48 @@ LPWCHAR SkipToCharDQW
 
 
 //************************************************************************
+//  $SkipToStrDQW
+//
+//  Skip to a given WSTR taking into account Double Quotes and EOL
+//************************************************************************
+
+LPWCHAR SkipToStrDQW
+    (LPWCHAR lpwChar,
+     LPWCHAR lpwSet)
+
+{
+    LPWCHAR lpw;            // Temporary ptr
+    UBOOL   uState = FALSE; // DQ state:  FALSE = outside DQs,
+                            //            TRUE  = inside DQs
+    Assert (lpwSet[0] NE WC_DQ);
+
+    // Loop through the string
+    for (lpw = lpwChar; *lpw; lpw++)
+    // Split cases based upon the char
+    switch (*lpw)
+    {
+        case WC_DQ:
+            // Toggle the DQ state
+            uState = !uState;
+
+            break;
+
+        default:
+            if (!uState                         // If we're outside DQs
+             && strchrW (lpwSet, *lpw) NE NULL) // and it's a match, ...
+                return lpw;                     // Return a ptr to the match
+            break;
+    } // End FOR/SWITCH
+
+    // If it's not found (EOL instead), ...
+    if (lpw EQ NULL)
+        lpw = &lpwChar[lstrlenW (lpwChar)];
+
+    return lpw;
+} // End SkipToStrDQW
+
+
+//************************************************************************
 //  $SkipPastCharW
 //
 //  Skip past a given WCHAR taking into account EOL
@@ -401,7 +443,7 @@ LPCHAR SkipPastStr
         lp = &lpChar[iSpn];
 
     return lp;
-} // End SkipPastChar
+} // End SkipPastStr
 
 
 //************************************************************************

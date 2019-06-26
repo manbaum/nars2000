@@ -81,22 +81,25 @@ UBOOL CmdCopy_EM
     if (lpwszTail EQ WC_EOS)
         goto INCORRECT_COMMAND_EXIT;
 
+    // Skip over white space
+    lpwCmd = SkipWhiteW (lpwszTail);
+
     // Save not found ptr
-    lpwNotFound = lpwszTail;
+    lpwNotFound = lpwCmd;
 
     // Split cases based upon the first char
     // If we're copying from another tab, ...
-    if (*lpwszTail EQ FMTCHR_LEAD)
+    if (*lpwCmd EQ FMTCHR_LEAD)
     {
         // Scan the command line for the source tab ID
-        iCnt = sscanfW (lpwszTail, FMTSTR_GLBCNT, &iSrcTabID);
+        iCnt = sscanfW (lpwCmd, FMTSTR_GLBCNT, &iSrcTabID);
 
         // Ensure we got a value
         if (iCnt NE 1)
             goto INCORRECT_COMMAND_EXIT;
 
         // Skip over the field
-        lpwCmd = SkipToCharDQW (lpwszTail, L' ');
+        lpwCmd = SkipToStrW (lpwCmd, WS_WHITE);
         wcTmp = *lpwCmd; *lpwCmd++ = WC_EOS;
         if (wcTmp NE 0)
             lpwCmd = SkipWhiteW (lpwCmd);
@@ -130,13 +133,14 @@ UBOOL CmdCopy_EM
         LPWCHAR lpwszProf;          // Ptr to profile string
 
         // Skip over the workspace name
-        lpwCmd = SkipToCharDQW (lpwszTail, L' ');
+        //   which might be in a DoubleQuoted string
+        lpwCmd = SkipToStrDQW (lpwCmd, WS_WHITE);
         wcTmp = *lpwCmd; *lpwCmd++ = WC_EOS;
         if (wcTmp NE 0)
             lpwCmd = SkipWhiteW (lpwCmd);
 
         // Convert the given workspace name into a canonical form (without WS_WKSEXT)
-        MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
+        MakeWorkspaceNameCanonical (wszTailDPFE, lpwNotFound, lpwszWorkDir);
 
         // Append the common workspace extension
         MyStrcatW (wszTailDPFE, sizeof (wszTailDPFE), WS_WKSEXT);
@@ -196,7 +200,6 @@ UBOOL CmdCopy_EM
             // Loop through the [Vars.0] section copying
             //   all the names
             if (CopyWsVars (NULL,                   // Ptr to name in command line (may be NULL if bAllNames)
-                            lpwCmd,                 // Ptr to command line
                             hWndEC,                 // Edit Ctrl for SM window handle
                            &lpwErrMsg,              // Ptr to ptr to (constant) error message text
                             TRUE,                   // TRUE iff we should process all names
@@ -238,8 +241,8 @@ UBOOL CmdCopy_EM
                 LPWCHAR lpwNameInCmd;           // Ptr to the name in the command line
 
                 // Find the next name
-                lpwNameInCmd = lpwCmd;
-                lpwCmd = SkipToCharDQW (lpwNameInCmd, L' ');
+                lpwNameInCmd = SkipWhiteW (lpwCmd);
+                lpwCmd = SkipToStrW (lpwNameInCmd, WS_WHITE);
                 if (*lpwCmd NE WC_EOS)
                 {
                     *lpwCmd++ = WC_EOS;
@@ -251,7 +254,6 @@ UBOOL CmdCopy_EM
                 //  xxx=Name=T 1 0 value        for an immediate scalar variable
                 //                              where T is the variable immediate type (BIFC)
                 switch (CopyWsVars (lpwNameInCmd,   // Ptr to name in command line (may be NULL if bAllNames)
-                                    lpwCmd,         // Ptr to command line
                                     hWndEC,         // Edit Ctrl for SM window handle
                                    &lpwErrMsg,      // Ptr to ptr to (constant) error message text
                                     FALSE,          // TRUE iff we should process all names
@@ -413,7 +415,6 @@ void DeleteGlobalLinks
 
 int CopyWsVars
     (LPWCHAR       lpwNameInCmd,            // Ptr to name in command line (may be NULL if bAllNames)
-     LPWCHAR       lpwCmd,                  // Ptr to command line
      HWND          hWndEC,                  // Edit Ctrl for SM window handle
      LPWCHAR      *lplpwErrMsg,             // Ptr to ptr to (constant) error message text
      UBOOL         bAllNames,               // TRUE if we should process all names

@@ -111,7 +111,8 @@ UBOOL CmdLoadCom_EM
     if (lstrcmpiW (lpwszTail, L"1 CLEANSPACE") NE 0)
     {
         // Skip to the next blank
-        lpw = SkipToCharDQW (lpwszTail, L' ');
+        //   past what might be a DoubleQuoted string
+        lpw = SkipToStrDQW (lpwszTail, WS_WHITE);
 
         // Zap it in case there are trailing blanks
         *lpw = WC_EOS;

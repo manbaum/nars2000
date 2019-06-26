@@ -89,7 +89,8 @@ UBOOL CmdSave_EM
     SetOptionFlagsDisplay (&bJ4i, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
 
     // Skip to the next blank
-    lpw = SkipToCharDQW (lpwszTail, L' ');
+    //   past what might be a DoubleQuoted string
+    lpw = SkipToStrDQW (lpwszTail, WS_WHITE);
 
     // Zap it in case there are trailing blanks
     if (*lpw NE WC_EOS)

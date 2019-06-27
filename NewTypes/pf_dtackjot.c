@@ -3366,8 +3366,8 @@ LPAPLCHAR FormatArrSimple
         {
             // If the array is multirank, ...
             if (IsMultiRank (aplRank))
-                // Append an empty line with trailing CRLF
-                AppendLine (L"", FALSE, TRUE);
+                // Mark as Line Continuing
+                bLineCont = TRUE;
 
             // If we're not finished with this col, ...
             if (bRptCol)

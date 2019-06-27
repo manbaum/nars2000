@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2134 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In Display Not Showing Line Continuations
+
+Directory branches/bsmith/NanTypes:
+
+PF_DTACKJOT.C:
+  In <FormatArrSimple>, when displaying multi-row multi-rank raw output, mark as using Line Continuations instead of just displaying an empty line between planes.
+
+
 Build #2132 -- Version 0.6.0.xx
 -------------------------------
 

@@ -788,7 +788,7 @@ UBOOL DisplayGlbArr_EM
             uColLim = 1 + (max (0, (int) aplLastDim - 7)) / (uQuadPW - 6);
 
             // Loop through the groups of cols
-            for (uColGrp = 0; uColGrp < uColLim; uColGrp++, bLineCont = TRUE)
+            for (uColGrp = 0; uColGrp < uColLim; uColGrp++)
             {
                 // Loop through the formatted rows
                 for (uFmtRow = 0;
@@ -811,7 +811,11 @@ UBOOL DisplayGlbArr_EM
                     if (lpwszNxt >= lpwszEnd)
                         break;
 
-                    if (uColGrp NE 0)
+                    // Line Continue second and subsequent column groups
+                    bLineCont = (uColGrp > 0);
+
+                    // If we're Line Continuing, ...
+                    if (bLineCont)
                     {
                         strcpyW (lpwszTemp, wszIndent);                 // Copy the indent
                         uOutLen = uQuadPW - DEF_INDENT;                 // Maximum output length
@@ -946,8 +950,8 @@ UBOOL DisplayGlbArr_EM
                 // ***FIXME*** -- Sometimes on matrices whose lines contain TCNLs at low []PW,
                 //                we may display extra blank line(s) at the end because we
                 //                use up uColGrps faster than does the FOR loop.
-                if (uColGrp NE (uColLim - 1)
-                 && IsMultiRank (aplRank))
+                if (uColGrp EQ (uColLim - 1)
+                 || IsMultiRank (aplRank))
                     // Display a blank separator line
                     AppendLine (L"", FALSE, TRUE);
             } // End FOR
@@ -955,15 +959,6 @@ UBOOL DisplayGlbArr_EM
             // Restore original ptr to formatting temp area
             lpMemPTD->lpwszTemp = lpwszOrigTemp;
         } // End IF
-
-        // If we're continuing OR this is an empty vector, ...
-        if ((bLineCont
-          || (IsEmpty (lpFmtHeader->uFmtIntWid))
-          && IsVector (aplRank))
-          && bEndingCR
-          && !bRawOut)
-            // Make sure it skips a line
-            AppendLine (L"", FALSE, TRUE);// Display the empty line
     } __except (CheckVirtAlloc (GetExceptionInformation (), WFCN))
     {
         // Split cases based upon the exception code

@@ -2916,7 +2916,6 @@ void AppendBlankRows
     (APLRANK  aplRank,          // Arg rank
      APLDIM   aplDimRow,        // Arg row count
      LPAPLDIM lpMemDim,         // Ptr to arg dimensions
-     LPUBOOL  lpbLineCont,      // Ptr to TRUE iff line continued
      LPUBOOL  lpbCtrlBreak)     // Ptr to Ctrl-Break flag
 
 {
@@ -2942,19 +2941,9 @@ void AppendBlankRows
     } // End FOR
 
     // If there are any blank lines to display, ...
-    if (uCnt NE 0)
-    {
-        // If we're already displaying Line Continuations,
-        //   count in another blank line
-        uCnt += *lpbLineCont;
-
-        while (--uCnt)
-            // Append an empty line with trailing CRLF
-            AppendLine (L"", FALSE, TRUE);
-
-        // Mark as subsequent lines continued
-        *lpbLineCont = TRUE;
-    } // End IF
+    while (uCnt-- NE 0)
+        // Append an empty line with trailing CRLF
+        AppendLine (L"", FALSE, TRUE);
 } // End AppendBlankRows
 
 
@@ -3290,21 +3279,13 @@ LPAPLCHAR FormatArrSimple
                     } // End IF/ELSE
                 } // End IF
 
-                // If not raw output, ...
-                if (!bRawOutput)
-                {
-                    // If blank row or not last row or last row and requested to do so, ...
-                    if (lpFmtRowStr->bBlank
-                     || (aplDimRow NE (aplDimNRows - 1))
-                     || (bNextRow && aplDimRow EQ (aplDimNRows - 1)))
-                        // Skip to the start of the next row
-                        lpwszOut = lpwszOutStart + aplLastDim;
-                } else
+                // If this is raw output, ...
+                if (bRawOutput)
                 {
                     // If it's a Real row and not first row, ...
                     if (bRealRow && aplRealRow NE 1)
                         // Handle blank lines between planes
-                        AppendBlankRows (aplRank, aplRealRow, lpMemDim, &bLineCont, lpbCtrlBreak);
+                        AppendBlankRows (aplRank, aplRealRow, lpMemDim, lpbCtrlBreak);
 
                     // Ensure properly terminated
                     *lpwszOut = WC_EOS;
@@ -3316,7 +3297,7 @@ LPAPLCHAR FormatArrSimple
                     // If we're not already done with output for this row, ...
                     if (!lpFmtRowStr->bDone)
                         // Output the line
-                        AppendLine (lpwszOutStart, bLineCont, !bLineCont);
+                        AppendLine (lpwszOutStart, bLineCont, (!bLineCont) && aplDimRow NE (aplDimNRows - 1));
 
                     // Reset the line start
                     lpwszOut = *lplpwszOut;
@@ -3329,16 +3310,17 @@ LPAPLCHAR FormatArrSimple
                     if (IsSimpleChar (aplItmType)
                      && lpaplChar >= lpFmtRowStr->lpEndChar)
                         lpFmtRowStr->bDone = TRUE;
-                } // End IF
+                } else
+                    // If blank row or not last row or last row and requested to do so, ...
+                    if (lpFmtRowStr->bBlank
+                     || (aplDimRow NE (aplDimNRows - 1))
+                     || (bNextRow && aplDimRow EQ (aplDimNRows - 1)))
+                        // Skip to the start of the next row
+                        lpwszOut = lpwszOutStart + aplLastDim;
 
                 // Point to the next FMTROWSTR
                 lpFmtRowStr = lpFmtRowStr->lpFmtRowNxt;
             } // End FOR
-
-            // If we're Line Continuing, ...
-            if (bLineCont)
-                // Append an empty line with trailing CRLF
-                AppendLine (L"", FALSE, TRUE);
         } __except (CheckException (GetExceptionInformation (), WFCN L" #2"))
         {
             EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
@@ -3364,6 +3346,9 @@ LPAPLCHAR FormatArrSimple
          && (bRptCol
           || bMoreCols))
         {
+            // Handle blank lines between planes
+            AppendBlankRows (aplRank, aplRealRow + 1, lpMemDim, lpbCtrlBreak);
+
             // If the array is multirank, ...
             if (IsMultiRank (aplRank))
                 // Mark as Line Continuing
@@ -3411,7 +3396,15 @@ LPAPLCHAR FormatArrSimple
             // Clear the more cols flag
             bMoreCols = FALSE;
         } else
+        {
+            // If this is raw output, ...
+            if (bRawOutput)
+                // Append an empty line with trailing CRLF
+                //   to end the current line
+                AppendLine (L"", FALSE, TRUE);
+
             break;
+        } // End IF/ELSE
     } // End WHILE
 
     // Return the output string ptr

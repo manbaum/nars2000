@@ -1,6 +1,18 @@
 Version 0.5.10.xx consists of the following Builds:
 
 
+Build #2135 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bugs In Interplanar Spacing When Displaying Line Continuations
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+PF_DTACKJOT.C:
+  Fix bugs in interplanar spacing when displaying Line Continuations
+
+
 Build #2133 -- Version 0.5.10.xx
 --------------------------------
 

@@ -1,0 +1,9 @@
+Build #2138 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In Response To )BOX
+
+Directory branches/bsmith/NanTypes:
+
+SC_BOX.C:
+  Fix bug in response to )BOX.

@@ -63,7 +63,7 @@ UBOOL CmdBox_EM
         if (gbBoxState)
             AppendLine (L"Already ON", FALSE, TRUE);
         else
-            AppendLine (L"Is ON", FALSE, TRUE);
+            AppendLine (L"Was OFF", FALSE, TRUE);
 
         // Set to ON
         gbBoxState = TRUE;
@@ -76,10 +76,10 @@ UBOOL CmdBox_EM
 #define OPT     L"OFF"
     if (strncmpiW (p, OPT, strcountof (OPT)) EQ 0)
     {
-        if (hWndDB EQ NULL)
-            AppendLine (L"Already OFF", FALSE, TRUE);
+        if (gbBoxState)
+            AppendLine (L"Was ON", FALSE, TRUE);
         else
-            AppendLine (L"Is OFF", FALSE, TRUE);
+            AppendLine (L"Already OFF", FALSE, TRUE);
 
         // Set to OFF
         gbBoxState = FALSE;

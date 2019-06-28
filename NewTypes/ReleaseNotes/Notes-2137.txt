@@ -1,0 +1,9 @@
+Build #2137 -- Version 0.5.10.xx
+--------------------------------
+
+* Fix Bug In Response To )BOX
+
+Directory branches/bsmith/NewTypes:
+
+SC_BOX.C:
+  Fix bug in response to )BOX.

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -181,7 +181,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht);
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for LEFT DOMAIN ERROR
@@ -208,7 +208,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
     if (IsSimpleGlbNum (aplTypeRht))
     {
         // Count the # cols & rows in the right arg
-        if (IsMultiRank (aplRankRht))
+        if (IsRank2P (aplRankRht))
         {
             aplNumCols = aplColsRht;
             aplNumRows = 1;             // Initial value for loop
@@ -242,7 +242,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
         APLNELM aplNELMNst;
 
         // Check for RIGHT RANK ERROR
-        if (IsMultiRank (aplRankRht))
+        if (IsRank2P (aplRankRht))
             goto RIGHT_RANK_EXIT;
 
         // Ensure we count in the prototype if empty
@@ -279,7 +279,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
                     goto RIGHT_DOMAIN_EXIT;
 
                 // Count the # cols & rows in the item
-                if (IsMultiRank (aplRankItm))
+                if (IsRank2P (aplRankItm))
                 {
                     aplNumCols += aplColsItm;
                     uLen = 1;               // Initial value for loop
@@ -564,7 +564,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
                     AttrsOfGlb (hGlbItm, &aplTypeItm, &aplNELMItm, &aplRankItm, &aplColsItm);
 
                     // Count the # cols & rows in the item
-                    if (IsMultiRank (aplRankItm))
+                    if (IsRank2P (aplRankItm))
                     {
                         aplNumCols = aplColsItm;
                         aplNumRows = 1;                     // Initial value for FOR loop

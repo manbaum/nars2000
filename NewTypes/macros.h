@@ -411,10 +411,10 @@
 #define IsMatrix(ArrRank)               ((ArrRank) EQ 2)
 
 // Define macro for detecting matrices or higher rank arrays
-#define IsMultiRank(ArrRank)            ((ArrRank) >  1)
+#define IsRank2P(ArrRank)               ((ArrRank) >= 2)
 
 // Define macro for detecting rank 3 or higher rank arrays
-#define IsRank3P(ArrRank)               ((ArrRank) >  2)
+#define IsRank3P(ArrRank)               ((ArrRank) >= 3)
 
 // Define macro for detecting empty arrays
 #define IsEmpty(ArrNELM)                ((ArrNELM) EQ 0)

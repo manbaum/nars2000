@@ -886,7 +886,7 @@ UBOOL ValidateCharScalar_EM
     lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
     // Check for scalar or vector
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RANK_EXIT;
     else
     // Check for singleton or empty
@@ -1148,7 +1148,7 @@ UBOOL ValidateInteger_EM
     lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
     // Check for scalar or vector
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RANK_EXIT;
     else
     // Check for singleton or empty
@@ -1495,7 +1495,7 @@ UBOOL ValidateFloat_EM
     lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
     // Check for scalar or vector
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RANK_EXIT;
     else
     // Check for singleton or empty
@@ -1776,7 +1776,7 @@ UBOOL ValidateCharVector_EM
     lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
     // Check for scalar or vector
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RANK_EXIT;
     else
     // Split cases based upon the array type
@@ -2141,7 +2141,7 @@ UBOOL ValidateIntegerVector_EM
     lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
     // Ensure scalar or vector
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RANK_EXIT;
     else
     // Split cases based upon the right arg storage type
@@ -3661,7 +3661,7 @@ UBOOL ValidSetPR_EM
 
 #define lpHeader    lpMemHdrRht
     // Check for scalar or vector
-    if (IsMultiRank (lpHeader->Rank))
+    if (IsRank2P (lpHeader->Rank))
         goto RANK_EXIT;
     else
     // Check for empty or singleton

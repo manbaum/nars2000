@@ -139,7 +139,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RANK ERROR
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for DOMAIN ERROR
@@ -981,7 +981,7 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for LEFT LENGTH ERROR

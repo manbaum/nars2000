@@ -111,7 +111,7 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RANK ERROR
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RANK_EXIT;
 
     // Pick off numeric singleton cases
@@ -565,7 +565,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for RIGHT RANK ERROR

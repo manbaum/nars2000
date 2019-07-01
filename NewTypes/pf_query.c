@@ -820,8 +820,8 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Check for LEFT/RIGHT RANK ERRORs
-    if (IsMultiRank (aplRankLft)
-     || IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankLft)
+     || IsRank2P (aplRankRht))
         goto RANK_EXIT;
 
     // Check for LEFT/RIGHT LENGTH ERRORs

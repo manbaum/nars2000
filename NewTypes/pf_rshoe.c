@@ -2637,7 +2637,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto RANK_EXIT;
 
     // If the left arg is simple, it must be empty (i.e., {zilde} or '')
@@ -3031,7 +3031,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
             lpMemHdrLft = MyGlobalLockVar (hGlbLft);
 
             // If it's not a scalar/vector singleton, ...
-            if (IsMultiRank (lpMemHdrLft->Rank)
+            if (IsRank2P (lpMemHdrLft->Rank)
              || !IsSingleton (lpMemHdrLft->NELM))
                 goto LENGTH_EXIT;
 
@@ -3167,7 +3167,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
     AttrsOfGlb (hGlbLft, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto RANK_EXIT;
 
     // Get the current value of []IO
@@ -3243,7 +3243,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
             AttrsOfGlb (hGlbSubLft, &aplTypeSubLft, &aplNELMSubLft, &aplRankSubLft, NULL);
 
             // Check for LEFT RANK ERROR
-            if (IsMultiRank (aplRankSubLft))
+            if (IsRank2P (aplRankSubLft))
                 goto RANK_EXIT;
 
             // Check for LEFT LENGTH ERROR

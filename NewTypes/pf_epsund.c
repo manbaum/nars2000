@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1004,7 +1004,7 @@ UBOOL EqualAny
             {                                                                                           \
                 /* If there are any uncompared elements in the left arg, ... */                         \
                 if (aplColsLft < aplNELMLft                                                             \
-                 || (IsMultiRank (aplRankLft) && aplColsLft EQ 1))                                      \
+                 || (IsRank2P (aplRankLft) && aplColsLft EQ 1))                                         \
                 {                                                                                       \
                     /* Use the same odometer as the current match */                                    \
                     CopyMemory (lpMemOdoTst, lpMemOdoRht, (APLU3264) (aplRankRht * sizeof (APLUINT)));  \

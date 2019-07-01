@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -123,10 +123,10 @@ LPPL_YYSTYPE PrimFnDydRightShoeUnderbar_EM_YY
     AttrsOfToken (lptkRhtArg, NULL, NULL, &aplRankRht, NULL);
 
     // Check for LEFT/RIGHT RANK ERRORs
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto LEFT_RANK_EXIT;
 
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Get ptr to PerTabData global memory

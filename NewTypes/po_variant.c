@@ -526,7 +526,7 @@ LPPL_YYSTYPE PrimOpVariantCom_EM_YY
 
     // Validate the right operand as
     //   a simple numeric/character scalar or one- or two-element vector
-    if (IsMultiRank (aplRankRhtOpr))
+    if (IsRank2P (aplRankRhtOpr))
         goto RIGHT_OPERAND_RANK_EXIT;
     if (1 > aplNELMRhtOpr
      ||     aplNELMRhtOpr > uMaxLen)
@@ -1975,7 +1975,7 @@ LPPL_YYSTYPE PrimOpVariantKeyword_EM_YY
     //   3.  ('XY' n) ('ZZ' n) ...    3
 
     // If the right operand is multirank, ...
-    if (IsMultiRank (aplRankRhtOpr))
+    if (IsRank2P (aplRankRhtOpr))
         goto RIGHT_OPERAND_RANK_EXIT;
 
     // If the right operand is empty, ...

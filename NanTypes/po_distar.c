@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -181,7 +181,7 @@ LPPL_YYSTYPE PrimOpDieresisStarCommon_EM_YY
         AttrsOfToken (&lpYYFcnStrRht->tkToken, &aplTypeOprRht, &aplNELMOprRht, &aplRankOprRht, NULL);
 
         // Check for RIGHT OPERAND RANK ERROR
-        if (IsMultiRank (aplRankOprRht))
+        if (IsRank2P (aplRankOprRht))
             goto RIGHT_OPERAND_RANK_EXIT;
 
         // Check for RIGHT OPERAND LENGTH ERROR
@@ -357,7 +357,7 @@ LPPL_YYSTYPE PrimOpDieresisStarCommon_EM_YY
                     AttrsOfToken (&lpYYRes2->tkToken, &aplTypeRes2, &aplNELMRes2, &aplRankRes2, NULL);
 
                     // Check for RIGHT OPERAND RANK ERROR
-                    if (IsMultiRank (aplRankRes2))
+                    if (IsRank2P (aplRankRes2))
                         goto RIGHT_OPERAND_RANK_EXIT;
 
                     // Check for RIGHT OPERAND LENGTH ERROR

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -456,7 +456,7 @@ RESTART_EXCEPTION:
         lpMemDimRes += aplRankLft;
 
         // Calc the # rows in the left arg
-        if (IsMultiRank (aplRankLft))
+        if (IsRank2P (aplRankLft))
         {
             aplRowsLft = (VarArrayBaseToDim (lpMemHdrLft))[aplRankLft - 2];
             aplColsLft = aplColsLft2;

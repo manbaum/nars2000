@@ -726,7 +726,7 @@ UBOOL AssignNamedVars_EM
 #undef  lpHeader
 
     // Check for RANK ERROR
-    if (IsMultiRank (aplRankVal))
+    if (IsRank2P (aplRankVal))
         goto RANK_EXIT;
 
     // Check for LENGTH ERROR
@@ -1171,7 +1171,7 @@ UBOOL ModifyAssignNamedVars_EM
 #undef  lpHeader
 
     // Check for RANK ERROR
-    if (IsMultiRank (aplRankVal))
+    if (IsRank2P (aplRankVal))
         goto RANK_EXIT;
 
     // Check for LENGTH ERROR

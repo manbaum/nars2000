@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -108,15 +108,15 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
-    if (lptkLftArg)
+    if (lptkLftArg NE NULL)
         AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
     // Check for RIGHT RANK ERROR
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for LEFT RANK ERROR
-    if (lptkLftArg && IsMultiRank (aplRankLft))
+    if (lptkLftArg NE NULL && IsRank2P (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for RIGHT DOMAIN ERROR
@@ -125,7 +125,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
         goto RIGHT_DOMAIN_EXIT;
 
     // Check for LEFT DOMAIN ERROR
-    if (lptkLftArg && !IsSimpleChar (aplTypeLft))
+    if (lptkLftArg NE NULL && !IsSimpleChar (aplTypeLft))
         goto LEFT_DOMAIN_EXIT;
 
     // If the right arg is empty, return NoValue
@@ -143,7 +143,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
         if (IsSimpleChar (aplTypeRht))
         {
             // If the message is a global, ...
-            if (hGlbRht)
+            if (hGlbRht NE NULL)
             {
                 // Skip over the header and dimensions to the data
                 lpMemRht = VarArrayDataFmBase (lpMemRht);
@@ -241,7 +241,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
             SetEventTypeMessage (EventType, NULL, NULL);
 
             // If there's a left arg, ...
-            if (lptkLftArg)
+            if (lptkLftArg NE NULL)
             {
                 HGLOBAL    hGlbLft;             // Left arg global memory handle
                 LPAPLCHAR  lpMemLft;            // Ptr to left arg global memory
@@ -251,7 +251,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                 aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
 
                 // If the message is a global, ...
-                if (hGlbLft)
+                if (hGlbLft NE NULL)
                 {
                     // Skip over the header and dimensions to the data
                     lpMemLft = VarArrayDataFmBase (lpMemLft);
@@ -373,14 +373,14 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
             // Get ptr to current SIS header
             lpSISCur = lpMemPTD->lpSISCur;
 
-            while (lpSISCur
+            while (lpSISCur NE NULL
                 && lpSISCur->DfnType NE DFNTYPE_FCN
                 && lpSISCur->DfnType NE DFNTYPE_OP1
                 && lpSISCur->DfnType NE DFNTYPE_OP2
                 && lpSISCur->DfnType NE DFNTYPE_ERRCTRL)
                 lpSISCur = lpSISCur->lpSISPrv;
 
-            if (lpSISCur)
+            if (lpSISCur NE NULL)
                 lpSISCur->EventType = EVENTTYPE_NOERROR;
 
             // Get a ptr to either the global (in lpMemPTD)
@@ -433,7 +433,7 @@ RIGHT_LENGTH_EXIT:
 ERROR_EXIT:
 NORMAL_EXIT:
     // We no longer need this ptr
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemRht NE NULL)
     {
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF

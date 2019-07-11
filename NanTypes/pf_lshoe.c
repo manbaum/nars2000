@@ -1758,7 +1758,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
         aplAxis = max (0, (APLINT) aplRankRht - 1);
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for RIGHT RANK ERROR

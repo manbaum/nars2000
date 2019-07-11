@@ -1233,7 +1233,7 @@ LPAPLCHAR CompileArrNested
 
     // Set the Matrix result bit if the arg is
     //   a matrix or higher rank array
-    lpFmtHeader->uMatRes |= IsMultiRank (aplRank);
+    lpFmtHeader->uMatRes |= IsRank2P (aplRank);
 
     // If there are any cols, ...
     if (aplDimNCols)
@@ -1452,7 +1452,7 @@ LPAPLCHAR CompileArrNestedCon
 ////lpFmtHeader->uFmtChrs    = 0;                   // ...                           ...
 ////lpFmtHeader->uFmtFrcs    = 0;                   // ...                           ...
 ////lpFmtHeader->uFmtTrBl    = 0;                   // ...                           ...
-    lpFmtHeader->uMatRes     = IsMultiRank (aplRank);
+    lpFmtHeader->uMatRes     = IsRank2P (aplRank);
 
     // Skip over the FMTHEADER to the next available position
     lpFmtColStr = (LPFMTCOLSTR) (&lpFmtHeader[1]);
@@ -1672,7 +1672,7 @@ LPAPLCHAR CompileArrNestedGlb
 ////lpFmtHeader->uFmtChrs    = 0;                   // ...                           ...
 ////lpFmtHeader->uFmtFrcs    = 0;                   // ...                           ...
 ////lpFmtHeader->uFmtTrBl    = 0;                   // ...                           ...
-    lpFmtHeader->uMatRes     = IsMultiRank (aplRank);
+    lpFmtHeader->uMatRes     = IsRank2P (aplRank);
 
     // Create <aplChrNCols> FMTCOLSTRs in the output
     lpFmtColStr = (LPFMTCOLSTR) (&lpFmtHeader[1]);
@@ -3065,7 +3065,7 @@ LPAPLCHAR CompileBlankRows
     } // End FOR
 
     // If the maximum row rank is > 1, ...
-    if (IsMultiRank (aplRowRank))
+    if (IsRank2P (aplRowRank))
         // Insert <aplRowRank - 1> row(s) of blanks
         lpaplChar =
           InsertBlankRow (lpaplChar,        // Ptr to output buffer
@@ -3135,7 +3135,7 @@ LPAPLCHAR InsertBlankRow
 
 void AppendBlankRows
     (APLRANK  aplRank,          // Arg rank
-     APLDIM   aplDimRow,        // Arg row count
+     APLDIM   aplDimRow,        // Arg row index (origin-0)
      LPAPLDIM lpMemDim,         // Ptr to arg dimensions
      LPUBOOL  lpbCtrlBreak)     // Ptr to Ctrl-Break flag
 
@@ -3151,7 +3151,7 @@ void AppendBlankRows
     for (aplDimCol = 0; aplDimCol < (aplRank - 1); aplDimCol++)
     {
         aplDimAcc *= lpMemDim[(aplRank - 2) - aplDimCol];
-        if (0 NE (aplDimRow - 1) % aplDimAcc)
+        if (0 NE aplDimRow % aplDimAcc)
             break;
 
         // Check for Ctrl-Break
@@ -3510,7 +3510,7 @@ LPAPLCHAR FormatArrSimple
                     // If it's a Real row and not first row, ...
                     if (bRealRow && aplRealRow NE 1)
                         // Handle blank lines between planes
-                        AppendBlankRows (aplRank, aplRealRow, lpMemDim, lpbCtrlBreak);
+                        AppendBlankRows (aplRank, aplRealRow - 1, lpMemDim, lpbCtrlBreak);
 
                     // Ensure properly terminated
                     *lpwszOut = WC_EOS;
@@ -3572,10 +3572,10 @@ LPAPLCHAR FormatArrSimple
           || bMoreCols))
         {
             // Handle blank lines between planes
-            AppendBlankRows (aplRank, aplRealRow + 1, lpMemDim, lpbCtrlBreak);
+            AppendBlankRows (aplRank, aplRealRow, lpMemDim, lpbCtrlBreak);
 
             // If the array is multirank, ...
-            if (IsMultiRank (aplRank))
+            if (IsRank2P (aplRank))
                 // Mark as Line Continuing
                 bLineCont = TRUE;
 
@@ -4164,7 +4164,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht);
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto RANK_EXIT;
 
     // Check for "format by example"
@@ -4721,7 +4721,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
 
                             case ARRAY_CHAR:
                                 // Character scalars or vectors only
-                                if (IsMultiRank (aplRankSubRht))
+                                if (IsRank2P (aplRankSubRht))
                                     goto DOMAIN_EXIT;
                                 break;
 

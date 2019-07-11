@@ -110,7 +110,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RIGHT RANK ERROR
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RANK_EXIT;
 
     // Check for RIGHT DOMAIN ERROR

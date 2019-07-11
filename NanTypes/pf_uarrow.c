@@ -351,7 +351,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         aplNELMAxis = aplRankRes;
 
     // Check for LEFT RANK error
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for LEFT LENGTH error

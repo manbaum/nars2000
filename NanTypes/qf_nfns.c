@@ -167,7 +167,7 @@ LPPL_YYSTYPE SysFnDydNAPPEND_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RIGHT RANK ERROR
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for RIGHT LENGTH ERROR
@@ -480,11 +480,11 @@ LPPL_YYSTYPE SysFnCreateTie_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for RIGHT RANK ERROR
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for RIGHT LENGTH ERROR
@@ -787,7 +787,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for LEFT DOMAIN ERROR
@@ -795,7 +795,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
         goto LEFT_DOMAIN_EXIT;
 
     // Check for RIGHT RANK ERROR
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for RIGHT LENGTH ERROR
@@ -2158,11 +2158,11 @@ LPPL_YYSTYPE SysFnDydNLOCK_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for RIGHT RANK ERROR
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for LEFT LENGTH ERROR
@@ -2846,7 +2846,7 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RIGHT RANK ERROR
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for RIGHT DOMAIN ERROR
@@ -4109,7 +4109,7 @@ LPPL_YYSTYPE SysFnDydNREPLACE_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RIGHT RANK ERROR
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for RIGHT LENGTH ERROR
@@ -4462,7 +4462,7 @@ LPPL_YYSTYPE SysFnMonNSIZE_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RIGHT RANK ERROR
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for RIGHT LENGTH ERROR
@@ -4725,7 +4725,7 @@ LPPL_YYSTYPE SysFnMonNUNTIE_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RIGHT RANK ERROR
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for RIGHT DOMAIN ERROR
@@ -6048,11 +6048,11 @@ LPPL_YYSTYPE NfnsEraseRenameResize_EM
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for RIGHT RANK ERROR
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // If it's []NRESIZE, ...

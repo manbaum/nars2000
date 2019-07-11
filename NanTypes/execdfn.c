@@ -344,7 +344,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     //   is a scalar, or a vector of the proper length
     if (lptkLftArg NE NULL && lpMemDfnHdr->ListLft)
     {
-        if (IsMultiRank (aplRankLft))
+        if (IsRank2P (aplRankLft))
             goto LEFT_RANK_EXIT;
         if (IsVector (aplRankLft)
          && lpMemDfnHdr->numLftArgSTE NE aplNELMLft)
@@ -355,7 +355,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     //   is a scalar, or a vector of the proper length
     if (lptkRhtArg NE NULL && lpMemDfnHdr->ListRht)
     {
-        if (IsMultiRank (aplRankRht))
+        if (IsRank2P (aplRankRht))
             goto RIGHT_RANK_EXIT;
         if (IsVector (aplRankRht)
          && lpMemDfnHdr->numRhtArgSTE NE aplNELMRht)

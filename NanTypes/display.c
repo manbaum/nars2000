@@ -403,7 +403,7 @@ UBOOL DisplayGlbArr_EM
 
             // If there are no columns and the rank is > 1, ignore this
             if (IsZeroDim (aplDimNCols)
-             && IsMultiRank (aplRank))
+             && IsRank2P (aplRank))
                 goto NORMAL_EXIT;
 
             // Get the # rows (across all planes)
@@ -972,7 +972,7 @@ UBOOL DisplayGlbArr_EM
                 //                we may display extra blank line(s) at the end because we
                 //                use up uColGrps faster than does the FOR loop.
                 if (uColGrp EQ (uColLim - 1)
-                 || IsMultiRank (aplRank))
+                 || IsRank2P (aplRank))
                     // Display a blank separator line
                     AppendLine (L"", FALSE, TRUE);
             } // End FOR

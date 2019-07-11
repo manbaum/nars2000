@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -240,7 +240,7 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
     AttrsOfToken (&lpYYFcnStrLft->tkToken, &aplTypeOpr, &aplNELMOpr, &aplRankOpr, NULL);
 
     // Check for RANK ERROR
-    if (IsMultiRank (aplRankOpr))
+    if (IsRank2P (aplRankOpr))
         goto LEFT_OPERAND_RANK_EXIT;
 
     // Check for LENGTH ERROR
@@ -305,7 +305,7 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // The right arg must be a one- or two-element vector
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for LENGTH ERROR
@@ -7526,7 +7526,7 @@ LPPL_YYSTYPE ClearCombCache_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // The right arg must be a scalar or vector
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for LENGTH ERROR

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -312,7 +312,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                         AttrsOfGlb (hGlbItm, &aplTypeItm, &aplNELMItm, &aplRankItm, NULL);
 
                         // Check for RANK ERROR
-                        if (IsMultiRank (aplRankItm))
+                        if (IsRank2P (aplRankItm))
                             goto RANK_EXIT;
 
                         // If it's simple numeric and the name arg rank
@@ -549,7 +549,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                     AttrsOfGlb (hGlbItm, &aplTypeItm, &aplNELMItm, &aplRankItm, NULL);
 
                     // Check for RANK ERROR
-                    if (IsMultiRank (aplRankItm))
+                    if (IsRank2P (aplRankItm))
                         goto RANK_EXIT;
 
                      // If the item is simple,
@@ -1958,7 +1958,7 @@ UBOOL ArrayIndexValidZilde_EM
                 *lpaplNELMZilde = max (*lpaplNELMZilde, aplNELMSub);
 
             // Check for RANK ERROR
-            if (IsMultiRank (aplRankSub))
+            if (IsRank2P (aplRankSub))
                 goto RANK_EXIT;
 
             // If it's nested, ...

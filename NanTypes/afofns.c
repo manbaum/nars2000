@@ -241,7 +241,7 @@ UBOOL AfoGuard
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RIGHT RANK ERROR
-    if (IsMultiRank (aplRankRht))
+    if (IsRank2P (aplRankRht))
         goto RANK_EXIT;
     // Check for LENGTH ERROR
     if (!IsSingleton (aplNELMRht))

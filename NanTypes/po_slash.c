@@ -1859,7 +1859,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         lpPrimProtoLft = NULL;
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for LEFT LENGTH ERROR

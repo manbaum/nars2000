@@ -174,7 +174,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                         AttrsOfGlb (hGlbItmRht, &aplTypeItmRht, NULL, &aplRankItmRht, NULL);
 
                         // Ensure the item is a scalar/vector
-                        if (IsMultiRank (aplRankItmRht))
+                        if (IsRank2P (aplRankItmRht))
                             goto RIGHT_RANK_EXIT;
 
                         // If this is the function header, ensure that it's not all blank
@@ -506,7 +506,7 @@ LPPL_YYSTYPE SysFnDydFX_EM_YY
     AttrsOfToken (lptkFixArg, &aplTypeFix, NULL       , NULL       , NULL);
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for numeric result

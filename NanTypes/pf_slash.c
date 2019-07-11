@@ -313,7 +313,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     } // End IF/ELSE
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (IsRank2P (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Get left and right arg's global ptrs

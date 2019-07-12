@@ -1,7 +1,36 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
-Build #2148 -- Version 0.6.0.xx
+Build #2152 -- Version 0.6.0.xx
+-------------------------------
+
+* Implement User Preference To Show Network Update Errors
+
+Directory branches/bsmith/NanTypes:
+
+CUSTOMIZE.C:
+  Handle <ShowNetErrs> checkbox.
+
+DEFINES.H:
+  Define default value for <ShowNetErrs>.
+
+EXTERNS.H:
+  Define bit flag for <ShowNetErrs>.
+
+INIFILE.C:
+  Read in/write out <ShowNetErrs> setting.
+
+MAIN.RC:
+  Display <ShowNetErrs> checkbox.
+
+RESOURCE.H:
+  Define resource IDC for <ShowNetErrs>.
+
+UPDATES.C:
+  If <ShowNetErrs> not set, ignore the network update error.
+
+
+Build #2150 -- Version 0.6.0.xx
 -------------------------------
 
 * Miscellaneous DEBUG Changes

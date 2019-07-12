@@ -1741,7 +1741,8 @@ typedef struct tagOPTIONFLAGS
          bDisp0Imag          :1,    // 04000000:  ...      Display all imaginary parts
          bDispInfix          :1,    // 08000000:  ...      Display CHO numbers using infix notation
          bDispOctoDig        :1,    // 10000000:  ...      Display Octonions using Digraphs
-                             :3;    // E0000000:  Available bits
+         bShowNetErrs:1,     :1,    // 20000000:  ...      Show Network Errors is enabled
+                             :2;    // C0000000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1774,6 +1775,7 @@ OPTIONFLAGS OptionFlags
     DEF_DISP0IMAG,
     DEF_DISPINFIX,
     DEF_DISPOCTODIG,
+    DEF_SHOWNETERRS,
    }
 #endif
 ;

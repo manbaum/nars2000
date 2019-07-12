@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1621,6 +1621,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS , OptionFlags.bDefDispFcnLineNums );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_DISPMPSUF          , OptionFlags.bDispMPSuf          );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_OUTPUTDEBUG        , OptionFlags.bOutputDebug        );
+                        CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_SHOWNETERRS        , OptionFlags.bShowNetErrs        );
 
                         // If any of the Fallback fonts are not available, ...
                         if (hFontFB_SM    EQ NULL
@@ -3362,6 +3363,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         OptionFlags.bDefDispFcnLineNums  = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS );
                         OptionFlags.bDispMPSuf           = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_DISPMPSUF          );
                         OptionFlags.bOutputDebug         = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_OUTPUTDEBUG        );
+                        OptionFlags.bShowNetErrs         = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_SHOWNETERRS        );
 
                         // Get the window handle for the Paste & Copy combo boxes
                         hWndProp1 = GetDlgItem (hWndProp, IDC_USER_PREFS_CB_DEFAULTPASTE);
@@ -5205,6 +5207,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                 case IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS:
                 case IDC_USER_PREFS_XB_DISPMPSUF:
                 case IDC_USER_PREFS_XB_OUTPUTDEBUG:
+                case IDC_USER_PREFS_XB_SHOWNETERRS:
                     // We care about BN_CLICKED only
                     if (BN_CLICKED EQ cmdCtl)
                         // Enable the Apply button

@@ -202,6 +202,7 @@
 #define DEF_DISPFCNLINENUMS         TRUE
 #define DEF_DISPMPSUF               FALSE
 #define DEF_OUTPUTDEBUG             FALSE
+#define DEF_SHOWNETERRS             FALSE
 
 
 // Global Options for HC Preferences

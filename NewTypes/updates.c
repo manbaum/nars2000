@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1112,6 +1112,12 @@ void FormatNetErrorMessage
           wszTemp2[512];
     DWORD dwErr, dwSize = countof (wszTemp1);
 
+    // If not set, ...
+    if (!OptionFlags.bShowNetErrs)
+        // Ignore the error
+        return;
+
+    // Get the error code
     uRet = GetLastError ();
 
     // Get the net error message

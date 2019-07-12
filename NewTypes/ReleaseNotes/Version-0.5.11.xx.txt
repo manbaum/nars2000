@@ -1,6 +1,20 @@
 Version 0.5.11.xx consists of the following Builds:
 
 
+Build #2149 -- Version 0.5.11.xx
+--------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NewTypes:
+
+DISPDBG.C:
+In <DisplayGlobals>, when displaying RAT/VFPs display up to MAXDISPLEN values.
+
+SAVEFCN.C:
+  In <SaveSymentry> in an Assert statement, include <IsTknDel> as we need it when saving an anonymous function.
+
+
 Build #2147 -- Version 0.5.11.xx
 --------------------------------
 

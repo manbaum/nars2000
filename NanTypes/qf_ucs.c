@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -126,7 +126,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                 // Check for out of range for UCS-2
                 if (APLCHAR_SIZE <= aplLongestRht)
-                    aplLongestRht = UTF16_REPLACEMENTCHAR;
+////////////////////aplLongestRht = UTF16_REPLACEMENTCHAR;
+                    goto NONCE_EXIT;
 
                 // Set the result immediate type
                 immTypeRes = IMMTYPE_CHAR;
@@ -150,7 +151,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                 // Check for out of range for UCS-2
                 if (APLCHAR_SIZE <= aplLongestRht)
-                    aplLongestRht = UTF16_REPLACEMENTCHAR;
+////////////////////aplLongestRht = UTF16_REPLACEMENTCHAR;
+                    goto NONCE_EXIT;
 
                 // Set the result immediate type
                 immTypeRes = IMMTYPE_CHAR;
@@ -168,7 +170,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                 // Check for out of range for UCS-2
                 if (APLCHAR_SIZE <= aplLongestRht)
-                    aplLongestRht = UTF16_REPLACEMENTCHAR;
+////////////////////aplLongestRht = UTF16_REPLACEMENTCHAR;
+                    goto NONCE_EXIT;
 
                 // Set the result immediate type
                 immTypeRes = IMMTYPE_CHAR;
@@ -311,7 +314,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                 // Check for out of range for UCS-2
                 if (APLCHAR_SIZE <= aplLongestRht)
-                    *((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+////////////////////*((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+                    goto NONCE_EXIT;
                 else
                     *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestRht;
             } // End IF
@@ -333,7 +337,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                 // Check for out of range for UCS-2
                 if (APLCHAR_SIZE <= aplLongestRht)
-                    *((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+////////////////////*((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+                    goto NONCE_EXIT;
                 else
                     *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestRht;
             } // End FOR
@@ -363,7 +368,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                 // Check for out of range for UCS-2
                 if (APLCHAR_SIZE <= aplLongestRht)
-                    *((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+////////////////////*((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+                    goto NONCE_EXIT;
                 else
                     *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestRht;
             } // End IF
@@ -408,7 +414,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                                 // Check for out of range for UCS-2
                                 if (APLCHAR_SIZE <= aplLongestRht)
-                                    aplLongestRht = UTF16_REPLACEMENTCHAR;
+////////////////////////////////////aplLongestRht = UTF16_REPLACEMENTCHAR;
+                                    goto NONCE_EXIT;
 
                                 *((LPAPLHETERO) lpMemRes)++ =
                                 lpSymTmp =
@@ -473,7 +480,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                         // Check for out of range for UCS-2
                         if (APLCHAR_SIZE <= aplLongestRht)
-                            aplLongestRht = UTF16_REPLACEMENTCHAR;
+////////////////////////////aplLongestRht = UTF16_REPLACEMENTCHAR;
+                            goto NONCE_EXIT;
 
                         *((LPAPLHETERO) lpMemRes)++ =
                         lpSymTmp =
@@ -508,7 +516,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                 // Check for out of range for UCS-2
                 if (APLCHAR_SIZE <= aplLongestRht)
-                    *((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+////////////////////*((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+                    goto NONCE_EXIT;
                 else
                     *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestRht;
             } // End FOR
@@ -530,7 +539,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                 // Check for out of range for UCS-2
                 if (APLCHAR_SIZE <= aplLongestRht)
-                    *((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+////////////////////*((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+                    goto NONCE_EXIT;
                 else
                     *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestRht;
             } // End FOR
@@ -552,7 +562,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                 // Check for out of range for UCS-2
                 if (APLCHAR_SIZE <= aplLongestRht)
-                    *((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+////////////////////*((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+                    goto NONCE_EXIT;
                 else
                     *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestRht;
             } // End FOR
@@ -583,6 +594,11 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 
@@ -623,7 +639,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $SysFnDydUCS_EM_YY
 //
-//  Dyadic []UCS -- ERROR
+//  Dyadic []UCS -- Convert between UCS-2 and UTF-8, -16, and -32.
 //***************************************************************************
 
 LPPL_YYSTYPE SysFnDydUCS_EM_YY
@@ -633,8 +649,490 @@ LPPL_YYSTYPE SysFnDydUCS_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
+    APLSTYPE          aplTypeLft,           // Left arg storage type
+                      aplTypeRht;           // Right ...
+    APLNELM           aplNELMLft,           // Left arg NELM
+                      aplNELMRht;           // Right ...
+    APLRANK           aplRankLft,           // Left arg rank
+                      aplRankRht;           // Right ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg global memory header
+                      lpMemHdrRht = NULL;   // ...    right ...
+    APLLONGEST        aplLongestRht;        // Right arg as an immediate
+    HGLOBAL           hGlbLft = NULL,       // Left arg global memory handle
+                      hGlbRht = NULL;       // Right ...
+    LPAPLCHAR         lpMemLft;             // Ptr to left arg global memory data
+    LPVOID            lpMemRht;             // ...    right ...
+    UCHAR             uUTF = 0;             // UTF width:  8, 16, or 32
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the left & right args
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
+    // Check for LEFT RANK ERROR
+    if (!IsVector (aplRankLft))
+        goto LEFT_RANK_EXIT;
+
+    // Check for LEFT DOMAIN ERROR
+    if (!IsSimpleChar (aplTypeLft))
+        goto LEFT_DOMAIN_EXIT;
+
+    // Get the left & right args global memory handles
+                    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+
+    // Skip over the header and dimensions to the data
+    lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
+
+    // Check the left arg
+    if (lstrcmpW (lpMemLft, L"UTF-8" ) EQ 0)
+        uUTF = 8;
+    else
+    if (lstrcmpW (lpMemLft, L"UTF-16") EQ 0)
+        uUTF = 16;
+    else
+    if (lstrcmpW (lpMemLft, L"UTF-32") EQ 0)
+        uUTF = 32;
+
+    // Check for LEFT DOMAIN ERROR
+    if (uUTF EQ 0)
+        goto LEFT_DOMAIN_EXIT;
+
+    // Check for RIGHT RANK ERROR
+    if (IsRank2P (aplRankRht))
+        goto RIGHT_RANK_EXIT;
+
+    // If the right arg is a global, ...
+    if (hGlbRht NE NULL)
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    else
+        // Point to the data
+        lpMemRht = &aplLongestRht;
+
+    // Split cases based upon Numeric v. Char
+    if (IsNumeric (aplTypeRht))
+        lpYYRes = UTFConvertNumToChr_EM (uUTF, aplTypeRht, aplNELMRht, lpMemRht, lptkFunc);
+    else
+    if (IsSimpleChar (aplTypeRht))
+        lpYYRes = UTFConvertChrToNum_EM (uUTF, aplTypeRht, aplNELMRht, lpMemRht, lptkFunc);
+    else
+        goto RIGHT_DOMAIN_EXIT;
+
+    if (lpYYRes NE NULL)
+        goto NORMAL_EXIT;
+    else
+        goto ERROR_EXIT;
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    if (hGlbLft NE NULL && lpMemHdrLft EQ NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+    } // End IF
+
+    if (hGlbRht NE NULL && lpMemHdrRht EQ NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+    } // End IF
+
+    return lpYYRes;
 } // End SysFnDydUCS_EM_YY
+
+
+//***************************************************************************
+//  $UTFConvertNumToChr_EM
+//
+//  Convert UTF Num to Chr
+//***************************************************************************
+
+LPPL_YYSTYPE UTFConvertNumToChr_EM
+    (UCHAR    uUTF,             // UTF width:  8, 16, or 32
+     APLSTYPE aplTypeRht,       // Right arg storage type
+     APLNELM  aplNELMRht,       // Right ...
+     LPVOID   lpMemRht,         // Ptr to right arg global memory data
+     LPTOKEN  lptkFunc)         // Ptr to function token
+
+{
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;       // Ptr to result global memory header
+    APLSTYPE          aplTypeRes = ARRAY_CHAR;  // Result storage type
+    APLNELM           aplNELMRes,               // Result NELM
+                      uRht;                     // Loop counter
+    HGLOBAL           hGlbRes = NULL;           // Result global memory handle
+    UBOOL             bRet = TRUE;              // True iff the result is valid
+    APLINT            aplInt;                   // Temp
+    LPPL_YYSTYPE      lpYYRes = NULL;           // Ptr to the result
+    APLINT            maxItem,                  // Maximum value for an item
+                      maxSize;                  // ...     size (NONCE check on UTF-32)
+                                                //   Dependent on uUTF
+    LPAPLCHAR         lpMemRes,                 // Ptr to result global memory data
+                      lpMemTmp = NULL;          // Ptr to temp
+
+    // Calculate the maximum item value:            8     16      32 (21/16)
+    maxItem = (BIT0 << min (uUTF, 21)) - 1;     // 0xFF, 0xFFFF, 0x001FFFFF
+    maxSize = (BIT0 << min (uUTF, 16)) - 1;     // 0xFF, 0xFFFF, 0x0000FFFF
+
+    // The result NELM for all UTF conversions is no larger than the right arg NELM
+    aplNELMRes = aplNELMRht;
+
+    // Allocate global memory for the result
+    hGlbRes =
+      AllocateGlobalArray (aplTypeRes, aplNELMRes, 1, &aplNELMRes);
+
+    // Check for error
+    if (hGlbRes EQ NULL)
+        goto WSFULL_EXIT;
+    // Lock the memory to get a ptr to it
+    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+
+    // Allocate a temp array for a copy of the right arg
+    //   accounting for a trailing zero of size 1-, 2-, or 4-bytes
+    lpMemTmp = MyGlobalAlloc (GPTR, (size_t) (aplNELMRht + 1) * (uUTF / 8));
+
+    // Check for error
+    if (lpMemTmp EQ NULL)
+        goto WSFULL_EXIT;
+
+    // Copy the right arg to the result
+    //   converting to an integer in the process
+    for (uRht = 0; uRht < aplNELMRht; uRht++)
+    {
+        // Attempt to convert to an integer
+        aplInt = ConvertToInteger_SCT (aplTypeRht, lpMemRht, uRht, &bRet);
+
+        // Check for error
+        if (!bRet
+         || (0 > aplInt || aplInt > maxItem))
+            goto DOMAIN_EXIT;
+
+        if (aplInt > maxSize)
+            goto NONCE_EXIT;            // ***FIXME*** -- UTF-32
+
+        // Split cases based upon the UTF width
+        switch (uUTF)
+        {
+            case  8:
+                // Save in the temp as BYTEs
+                ((LPBYTE ) lpMemTmp)[uRht] = (BYTE ) aplInt;
+
+                break;
+
+            case 16:
+                // Save in the temp as WORDs
+                ((LPWORD ) lpMemTmp)[uRht] = (WORD ) aplInt;
+
+                break;
+
+            case 32:
+                // Save in the temp as DWORDs
+                ((LPDWORD) lpMemTmp)[uRht] = (DWORD) aplInt;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End FOR
+
+    // Split cases based upon the UTF width
+    switch (uUTF)
+    {
+        case  8:
+            // If the right arg is NOT empty, ... (W doesn't handle empty args)
+            if (!IsEmpty (aplNELMRht))
+            {
+                // Convert from UTF-8 to WCHAR
+                aplNELMRes =
+                  MultiByteToWideChar (CP_UTF8,         // CodePage
+                                       0,               // dwFlags
+                               (LPSTR) lpMemTmp,        // lpMultiByteStr
+                                 (int) aplNELMRht,      // cbMultiByte
+                                       lpMemRes,        // lpWideCharStr
+                                 (int) aplNELMRes);     // cchWideChar
+#ifdef DEBUG
+                if (aplNELMRes EQ 0)
+                {
+                    DWORD dwErr = GetLastError ();
+                    DbgBrk ();          // #ifdef DEBUG
+                } // End IF
+#endif
+            } // End IF
+
+            // Save back the corrected result NELM
+            lpMemHdrRes->NELM                    =
+            (VarArrayBaseToDim (lpMemHdrRes))[0] = aplNELMRes;
+
+            break;
+
+        case 16:
+            // Copy the temp to the result
+            CopyMemoryW (lpMemRes, lpMemTmp, (size_t) aplNELMRht);
+
+            break;
+
+        case 32:
+            //Loop through the right arg and result
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
+                // Save in the result
+                lpMemRes[uRht] = (WCHAR) ((LPDWORD) lpMemTmp)[uRht];
+////////////////lpMemRes[uRht] =         ((LPDWORD) lpMemTmp)[uRht];    // ***FIXME*** -- UTF-32
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (hGlbRes NE NULL)
+    {
+        if (lpMemHdrRes NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
+    } // End IF
+NORMAL_EXIT:
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+    } // End IF
+
+    if (lpMemTmp NE NULL)
+    {
+        // We no longer need this storage
+        MyGlobalFree (lpMemTmp); lpMemTmp = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End UTFConvertNumToChr_EM
+
+
+//***************************************************************************
+//  $UTFConvertChrToNum_EM
+//
+//  Convert UTF Chr to Num
+//***************************************************************************
+
+LPPL_YYSTYPE UTFConvertChrToNum_EM
+    (UCHAR     uUTF,            // UTF width:  8, 16, or 32
+     APLSTYPE  aplTypeRht,      // Right arg storage type
+     APLNELM   aplNELMRht,      // Right ...
+     LPAPLCHAR lpMemRht,        // Ptr to right arg global memory data
+     LPTOKEN   lptkFunc)        // Ptr to function token
+
+{
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;       // Ptr to result global memory header
+    APLSTYPE          aplTypeRes = ARRAY_INT;   // Result storage type
+    APLNELM           aplNELMRes,               // Result NELM
+                      uRht;                     // Loop counter
+    APLRANK           aplRankRes = 1;           // Result rank
+    HGLOBAL           hGlbRes = NULL;           // Result global memory handle
+    LPAPLINT          lpMemRes,                 // Ptr to result global memory data
+                      lpMemDst;                 // Ptr to destination
+    LPUCHAR           lpMemSrc;                 // Ptr to source
+    LPPL_YYSTYPE      lpYYRes = NULL;           // Ptr to the result
+
+    // Split cases based upon the UTF conversion width
+    switch (uUTF)
+    {
+        case  8:
+            // The result NELM for UTF-8 conversion can't be more than 4 times the right arg NELM
+            aplNELMRes = 4 * aplNELMRht;
+
+            break;
+
+        case 16:
+            // The result NELM for UTF-16 conversion is the same as the right arg NELM
+            aplNELMRes = aplNELMRht;
+
+            break;
+
+        case 32:
+            // The result NELM for UTF-32 conversion is the same as the right arg NELM
+            aplNELMRes = aplNELMRht;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Allocate global memory for the result
+    hGlbRes =
+      AllocateGlobalArray (aplTypeRes, aplNELMRes, 1, &aplNELMRes);
+
+    // Check for error
+    if (hGlbRes EQ NULL)
+        goto WSFULL_EXIT;
+    // Lock the memory to get a ptr to it
+    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+
+    // Split cases based upon the UTF width
+    switch (uUTF)
+    {
+        case  8:
+            // If the right arg is NOT empty, ... (W doesn't handle empty args)
+            if (!IsEmpty (aplNELMRht))
+            {
+                // Convert from WCHAR to UTF-8
+                aplNELMRes =
+                  WideCharToMultiByte (CP_UTF8,         // CodePage
+                                       0,               // dwFlags
+                                       lpMemRht,        // lpWideCharStr
+                                 (int) aplNELMRht,      // cchWideChar
+                               (LPSTR) lpMemRes,        // lpMultiByteStr
+                                 (int) aplNELMRes,      // cbMultiByte
+                                       NULL,            // lpDefaultChar
+                                       NULL);           // lpUsedDefaultChar
+#ifdef DEBUG
+                if (aplNELMRes EQ 0)
+                {
+                    DWORD dwErr = GetLastError ();
+                    DbgBrk ();          // #ifdef DEBUG
+                } // End IF
+#endif
+            } // End IF
+
+            // Save back the corrected result NELM
+            lpMemHdrRes->NELM                    =
+            (VarArrayBaseToDim (lpMemHdrRes))[0] = aplNELMRes;
+
+            // Point to past the end of the destination
+            lpMemDst = &lpMemRes[aplNELMRes];
+
+            // Point to past the end of the source
+            lpMemSrc = &((LPSTR) lpMemRes)[aplNELMRes];
+
+            // Translate the bytes in MemStr to APLINTs
+            while (aplNELMRes-- NE 0)
+                // Save in the result
+                *--lpMemDst = *--lpMemSrc;
+
+            break;
+
+        case 16:
+        case 32:
+            //Loop through the right arg and result
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
+                // Save in the result
+                lpMemRes[uRht] = lpMemRht[uRht];
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (hGlbRes NE NULL)
+    {
+        if (lpMemHdrRes NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
+    } // End IF
+NORMAL_EXIT:
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End UTFConvertChrToNum_EM
 
 
 //***************************************************************************

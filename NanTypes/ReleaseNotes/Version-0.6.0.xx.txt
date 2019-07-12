@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2148 -- Version 0.6.0.xx
+-------------------------------
+
+* Implement UTF-8/-16/-32 In Dyadic []UCS
+
+Directory branches/bsmith/NanTypes:
+
+QF_UCS.C:
+  Implement UTF-8/-16/-32 in dyadic []UCS.
+
+
 Build #2146 -- Version 0.6.0.xx
 -------------------------------
 

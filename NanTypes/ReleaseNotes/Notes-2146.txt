@@ -1,0 +1,9 @@
+Build #2146 -- Version 0.6.0.xx
+-------------------------------
+
+* Workaround Bug In MPFR Maximum Precision
+
+Directory branches/bsmith/NanTypes:
+
+SYSVARS.H:
+  Workaround bug in MPFR which documents the maximum value for precision but fails on certain functions when you use it.

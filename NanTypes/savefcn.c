@@ -3560,7 +3560,7 @@ void SaveSymEntry
         // Skip over the token header
         lpMemTknLine = TokenBaseToStart (lpMemTknHdr);
 
-        Assert (IsTknNamed (&lpMemTknLine[offFcnName]));
+        Assert (IsTknDel (&lpMemTknLine[offFcnName]) || IsTknNamed (&lpMemTknLine[offFcnName]));
 
         // Change the LPSYMENTRY in the token in hGlbTknHdr
         lpMemTknLine[offFcnName].tkData.tkSym = lpSymEntry;

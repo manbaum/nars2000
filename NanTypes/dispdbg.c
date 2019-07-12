@@ -20,9 +20,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
-//#undef  inline
-//#define inline
-
 #define STRICT
 #include <windows.h>
 #include "headers.h"
@@ -639,9 +636,18 @@ void DisplayGlobals
                                 aplArrChar[2] = WC_EOS;
                             } else
                             {
-                                lpwsz =
-                                  FormatAplRat (aplArrChar,             // Ptr to output save area
-                                     (LPAPLRAT) lpData);                // Ptr to the value to format
+                                UINT uArr;
+
+                                for (lpwsz = aplArrChar, uArr = 0; uArr < min (MAXDISPLEN, lpHeader->NELM); uArr++)
+                                    lpwsz =
+                                      FormatAplRat (lpwsz,              // Ptr to output save area
+                                       &((LPAPLRAT) lpData)[uArr]);     // Ptr to the value to format
+                                if (lpHeader->NELM > MAXDISPLEN)
+                                {
+                                    lpwsz[-1] = UTF16_HORIZELLIPSIS;
+                                    *lpwsz++ = L' ';
+                                } // End IF
+
                                 // Zap the trailing blank
                                 lpwsz[-1] = WC_EOS;
                             } // End IF/ELSE
@@ -656,10 +662,19 @@ void DisplayGlobals
                                 aplArrChar[2] = WC_EOS;
                             } else
                             {
-                                lpwsz =
-                                  FormatAplVfp (aplArrChar,             // Ptr to output save area
-                                     (LPAPLVFP) lpData,                 // Ptr to the value to format
-                                                0);                     // # significant digits (0 = all)
+                                UINT uArr;
+
+                                for (lpwsz = aplArrChar, uArr = 0; uArr < min (MAXDISPLEN, lpHeader->NELM); uArr++)
+                                    lpwsz =
+                                      FormatAplVfp (lpwsz,              // Ptr to output save area
+                                       &((LPAPLVFP) lpData)[uArr],      // Ptr to the value to format
+                                                    0);                 // # significant digits (0 = all)
+                                if (lpHeader->NELM > MAXDISPLEN)
+                                {
+                                    lpwsz[-1] = UTF16_HORIZELLIPSIS;
+                                    *lpwsz++ = L' ';
+                                } // End IF
+
                                 // Zap the trailing blank
                                 lpwsz[-1] = WC_EOS;
                             } // End IF/ELSE

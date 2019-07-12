@@ -1,0 +1,12 @@
+Build #2148 -- Version 0.6.0.xx
+-------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NanTypes:
+
+DISPDBG.C:
+  In <DisplayGlobals>, when displaying RAT/VFPs display up to MAXDISPLEN values.
+
+SAVEFCN.C:
+  In <SaveSymentry> in an Assert statement, include <IsTknDel> as we need it when saving an anonymous function.

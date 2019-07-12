@@ -4,6 +4,20 @@ Version 0.6.0.xx consists of the following Builds:
 Build #2148 -- Version 0.6.0.xx
 -------------------------------
 
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NanTypes:
+
+DISPDBG.C:
+  In <DisplayGlobals>, when displaying RAT/VFPs display up to MAXDISPLEN values.
+
+SAVEFCN.C:
+  In <SaveSymentry> in an Assert statement, include <IsTknDel> as we need it when saving an anonymous function.
+
+
+Build #2148 -- Version 0.6.0.xx
+-------------------------------
+
 * Implement UTF-8/-16/-32 In Dyadic []UCS
 
 Directory branches/bsmith/NanTypes:

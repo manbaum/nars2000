@@ -1,6 +1,20 @@
 Version 0.5.11.xx consists of the following Builds:
 
 
+Build #2141 -- Version 0.5.11.xx
+--------------------------------
+
+* Fix Bug In SplitStrand
+
+Directory branches/bsmith/NewTypes:
+
+HC_PROC.C:
+  Define function <mphcXv_init_set> to match <mphcXr_init_set>.
+
+PARSELINE.C:
+  Fix bug in <SplitStrandLast> and <SplitStrandFirst> when splitting off the first or last element in a numeric strand of global numerics.
+
+
 Build #2139 -- Version 0.5.11.xx
 --------------------------------
 
@@ -21,7 +35,6 @@ PF_DARROW.C:
 PF_DOTDOT.C:
 PF_DSHOE.C:
 PF_DTACK.C:
-PF_DTACKJOT.C:
 PF_EPSUND.C:
 PF_INDEX.C:
 PF_IOTA.C:
@@ -52,7 +65,6 @@ QF_DR.C:
 QF_EA.C:
 QF_EC.C:
 QF_ERROR.C:
-QF_ES.C:
 QF_FMT.C:
 QF_FX.C:
 QF_MF.C:

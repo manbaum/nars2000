@@ -1,0 +1,9 @@
+Build #2147 -- Version 0.5.11.xx
+--------------------------------
+
+* Implement UTF-8/-16/-32 In Dyadic []UCS
+
+Directory branches/bsmith/NewTypes:
+
+QF_UCS.C:
+  Implement UTF-8/-16/-32 in dyadic []UCS.

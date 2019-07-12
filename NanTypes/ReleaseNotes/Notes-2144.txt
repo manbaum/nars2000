@@ -1,0 +1,9 @@
+Build #2144 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In ElementOf On Nested Arrays With Non-Scalar Items
+
+Directory branches/bsmith/NanTypes:
+
+PF_EPSILON.C:
+  Fix bug in <PrimFnDydEpsilonOther_EM> on nested arrays with non-scalar items.

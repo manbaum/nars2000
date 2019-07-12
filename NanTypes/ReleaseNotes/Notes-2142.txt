@@ -5,7 +5,6 @@ Build #2142 -- Version 0.6.0.xx
 
 Directory branches/bsmith/NanTypes:
 
-
 HC_PROC.C:
   Define function <mphcXv_init_set> to match <mphcXr_init_set>.
 

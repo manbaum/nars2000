@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2331,7 +2331,9 @@ UBOOL PrimFnDydEpsilonOther_EM
     LPVARARRAY_HEADER lpMemHdrTmp = NULL;   // Ptr to temp header
     LPVOID            lpMemTmp;             // ...         global memory
     LPPL_YYSTYPE      lpYYTmp;              // Ptr to the temporary result
-    UBOOL             bCmp;                 // TRUE iff the comparison is TRUE
+    UBOOL             bCmp,                 // TRUE iff the comparison is TRUE
+                      bScalarLft,           // TRUE iff the left item is a scalar
+                      bScalarRht;           // ...          right ...
     APLSTYPE          aplTypeSubCom;        // Common storage type
     ALLTYPES          atLft = {0},          // Temps
                       atRht = {0};          // ...
@@ -2356,6 +2358,9 @@ UBOOL PrimFnDydEpsilonOther_EM
                         &hGlbSubLft,            // Left arg item LPSYMENTRY or HGLOBAL (may be NULL)
                         &aplLongestSubLft,      // Ptr to left arg immediate value
                         &immTypeSubLft);        // Ptr to left arg immediate type
+        // Is the global item a scalar?
+        bScalarLft = IsGlbScalar (hGlbSubLft);
+
         // Loop through the right arg
         for (uRht = 0; uRht < aplNELMRht; uRht++)
         {
@@ -2374,8 +2379,12 @@ UBOOL PrimFnDydEpsilonOther_EM
                             &hGlbSubRht,            // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestSubRht,      // Ptr to right arg immediate value
                             &immTypeSubRht);        // Ptr to right arg immediate type
-            // If both items are simple or global numeric, ...
-            if ((IsImmNum (immTypeSubLft) || IsImmGlbNum (immTypeSubLft))
+            // Is the global item a scalar?
+            bScalarRht = IsGlbScalar (hGlbSubRht);
+
+            // If both items are scalar simple or global numeric, ...
+            if (bScalarLft && bScalarRht
+             && (IsImmNum (immTypeSubLft) || IsImmGlbNum (immTypeSubLft))
              && (IsImmNum (immTypeSubRht) || IsImmGlbNum (immTypeSubRht)))
             {
                 APLSTYPE          aplTypeSubLft = TranslateImmTypeToArrayType (immTypeSubLft),
@@ -2738,6 +2747,32 @@ WSFULL_EXIT:
 ERROR_EXIT:
     return FALSE;
 } // End PrimFnDydEpsilonOther_EM
+
+
+//***************************************************************************
+//  IsGlbScalar
+//
+//  Is the global memory item a scalar?
+//***************************************************************************
+
+UBOOL IsGlbScalar
+    (HGLOBAL hGlbSub)   // Handle of global memory item (may be NULL if immediate)
+
+{
+    // If the item is a global, ...
+    if (hGlbSub NE NULL)
+    {
+        APLRANK aplRankSub;
+
+        // Get the global's Rank
+        AttrsOfGlb (hGlbSub, NULL, NULL, &aplRankSub, NULL);
+
+        // Is the item a scalar?
+        return IsScalar (aplRankSub);
+    } else
+        // It's an immediate, so it's a scalar
+        return TRUE;
+} // End IsGlbScalar
 
 
 //***************************************************************************

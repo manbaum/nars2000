@@ -751,6 +751,45 @@ void mphc8v_init_set_si
 
 
 //***************************************************************************
+//  $mphcXv_init_set
+//***************************************************************************
+
+void mphcXv_init_set
+    (LPVOID mphcXvVal,          // Ptr to item to set
+     LPVOID mphcXvSrc,          // Ptr to source item
+     int    iHCDimVal)          // HC Dimension of item (1, 2, 4, 8)
+
+{
+    // Split cases based upon the HC Dimension
+    switch (iHCDimVal)
+    {
+        case 1:
+            mphc1v_init_set (mphcXvVal, mphcXvSrc);
+
+            break;
+
+        case 2:
+            mphc2v_init_set (mphcXvVal, mphcXvSrc);
+
+            break;
+
+        case 4:
+            mphc4v_init_set (mphcXvVal, mphcXvSrc);
+
+            break;
+
+        case 8:
+            mphc8v_init_set (mphcXvVal, mphcXvSrc);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+} // End mphcXv_init_set
+
+
+//***************************************************************************
 //  $mphcXr_init
 //***************************************************************************
 

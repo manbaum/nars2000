@@ -1,6 +1,21 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2142 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In SplitStrand
+
+Directory branches/bsmith/NanTypes:
+
+
+HC_PROC.C:
+  Define function <mphcXv_init_set> to match <mphcXr_init_set>.
+
+PARSELINE.C:
+  Fix bug in <SplitStrandLast> and <SplitStrandFirst> when splitting off the first or last element in a numeric strand of global numerics.
+
+
 Build #2140 -- Version 0.6.0.xx
 -------------------------------
 

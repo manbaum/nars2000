@@ -8178,8 +8178,10 @@ UBOOL SplitStrandLast
     TOKEN             tkLft = {0},
                       tkRht = {0};
     ARRAY_TYPES       arrType;
-    APLNELM           arrNELM;
-    int               iSizeofGlb;
+    APLNELM           arrNELM,
+                      iCnt;             // Loop counter
+    int               iSizeofGlb,
+                      iHCDimVar;        // HC Dimension (1, 2, 4 8)
     LPPL_YYSTYPE      lpYYLft;
     APLUINT           ByteSize;
     UBOOL             bRet;             // TRUE iff the result is valid
@@ -8199,6 +8201,9 @@ UBOOL SplitStrandLast
 
     // Note that the strand must have multiple items as the token type for a single item strand is TKT_VARIMMED
     Assert (arrNELM > 1);
+
+    // Calculate the HC Dimension (1, 2, 4, 8)
+    iHCDimVar = TranslateArrayTypeToHCDim (arrType);
 
     // Calculate the size of each item
     iSizeofGlb = TranslateArrayTypeToSizeof (arrType);
@@ -8256,6 +8261,11 @@ UBOOL SplitStrandLast
         case ARRAY_HC2V:
         case ARRAY_HC4V:
         case ARRAY_HC8V:
+
+        case ARRAY_ARB:
+        case ARRAY_BA2F:
+        case ARRAY_BA4F:
+        case ARRAY_BA8F:
             // Set the token type
             tkRht.tkFlags.TknType  = TKT_VARARRAY;
 
@@ -8272,14 +8282,11 @@ UBOOL SplitStrandLast
             // Lock the memory to get a ptr to it
             lpMemHdrGlb = MyGlobalLockVar (tkRht.tkData.tkGlbData);
 
-            // Mark it as temporary split numeric strand
-            lpMemHdrGlb->bSplitNum = TRUE;
-
             // Skip over the header and dimensions
             lpMemGlb = VarArrayDataFmBase (lpMemHdrGlb);
 
-            // Copy the single item to global memory
-            CopyMemory (lpMemGlb, ByteAddr (lpMemVar, iSizeofGlb * (arrNELM - 1)), iSizeofGlb);
+            // Copy the item to global memory
+            CopyGlbNumeric (arrType, lpMemGlb, ByteAddr (lpMemVar, iSizeofGlb * (arrNELM - 1)), iSizeofGlb);
 
             // We no longer need this ptr
             MyGlobalUnlock (tkRht.tkData.tkGlbData); lpMemHdrGlb = NULL;
@@ -8366,8 +8373,63 @@ UBOOL SplitStrandLast
         //   (Booleans NOT rounded up to DWORD boundary)
         ByteSize = CalcDataSize (arrType, arrNELM, NULL);
 
-        // Copy the remaining items to global memory
-        CopyMemory (lpMemGlb, lpMemVar, (size_t) ByteSize);
+        // Split cases based upon the array storage type
+        switch (arrType)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_HC2I:
+            case ARRAY_HC4I:
+            case ARRAY_HC8I:
+
+            case ARRAY_FLOAT:
+            case ARRAY_HC2F:
+            case ARRAY_HC4F:
+            case ARRAY_HC8F:
+                // Copy the remaining items to global memory
+                CopyMemory (lpMemGlb, lpMemVar, (size_t) ByteSize);
+
+                break;
+
+            case ARRAY_RAT:
+            case ARRAY_HC2R:
+            case ARRAY_HC4R:
+            case ARRAY_HC8R:
+                // Loop through the arrNELM items
+                //   copying them to global memory
+                for (iCnt = 0; iCnt < arrNELM; iCnt++)
+                    mphcXr_init_set (ByteAddr (lpMemGlb, iSizeofGlb * iCnt),
+                                     ByteAddr (lpMemVar, iSizeofGlb * iCnt),
+                                     iHCDimVar);
+                break;
+
+            case ARRAY_VFP:
+            case ARRAY_HC2V:
+            case ARRAY_HC4V:
+            case ARRAY_HC8V:
+                // Loop through the arrNELM items
+                //   copying them to global memory
+                for (iCnt = 0; iCnt < arrNELM; iCnt++)
+                    mphcXv_init_set (ByteAddr (lpMemGlb, iSizeofGlb * iCnt),
+                                     ByteAddr (lpMemVar, iSizeofGlb * iCnt),
+                                     iHCDimVar);
+                break;
+
+            case ARRAY_ARB:
+            case ARRAY_BA2F:
+            case ARRAY_BA4F:
+            case ARRAY_BA8F:
+                // Loop through the arrNELM items
+                //   copying them to global memory
+                for (iCnt = 0; iCnt < arrNELM; iCnt++)
+                    arbX_init_set (ByteAddr (lpMemGlb, iSizeofGlb * iCnt),
+                                   ByteAddr (lpMemVar, iSizeofGlb * iCnt),
+                                   iHCDimVar);
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 
         // We no longer need this ptr
         MyGlobalUnlock (tkLft.tkData.tkGlbData); lpMemHdrGlb = NULL;
@@ -8446,8 +8508,10 @@ UBOOL SplitStrandFirst
     TOKEN             tkLft = {0},
                       tkRht = {0};
     ARRAY_TYPES       arrType;
-    APLNELM           arrNELM;
-    int               iSizeofGlb;
+    APLNELM           arrNELM,
+                      iCnt;             // Loop counter
+    int               iSizeofGlb,
+                      iHCDimVar;        // HC Dimension (1, 2, 4 8)
     LPPL_YYSTYPE      lpYYLft;
     APLUINT           ByteSize;
     UBOOL             bRet;             // TRUE iff the result is valid
@@ -8467,6 +8531,9 @@ UBOOL SplitStrandFirst
 
     // Note that the strand must have multiple items as the token type for a single item strand is TKT_VARIMMED
     Assert (arrNELM > 1);
+
+    // Calculate the HC Dimension (1, 2, 4, 8)
+    iHCDimVar = TranslateArrayTypeToHCDim (arrType);
 
     // Calculate the size of each item
     iSizeofGlb = TranslateArrayTypeToSizeof (arrType);
@@ -8524,6 +8591,11 @@ UBOOL SplitStrandFirst
         case ARRAY_HC2V:
         case ARRAY_HC4V:
         case ARRAY_HC8V:
+
+        case ARRAY_ARB:
+        case ARRAY_BA2F:
+        case ARRAY_BA4F:
+        case ARRAY_BA8F:
             // Set the token type
             tkRht.tkFlags.TknType  = TKT_VARARRAY;
 
@@ -8540,14 +8612,11 @@ UBOOL SplitStrandFirst
             // Lock the memory to get a ptr to it
             lpMemHdrGlb = MyGlobalLockVar (tkRht.tkData.tkGlbData);
 
-            // Mark it as temporary split numeric strand
-            lpMemHdrGlb->bSplitNum = TRUE;
-
             // Skip over the header and dimensions
             lpMemGlb = VarArrayDataFmBase (lpMemHdrGlb);
 
-            // Copy the single item to global memory
-            CopyMemory (lpMemGlb, lpMemVar, iSizeofGlb);
+            // Copy the item to global memory
+            CopyGlbNumeric (arrType, lpMemGlb, lpMemVar, iSizeofGlb);
 
             // We no longer need this ptr
             MyGlobalUnlock (tkRht.tkData.tkGlbData); lpMemHdrGlb = NULL;
@@ -8634,49 +8703,105 @@ UBOOL SplitStrandFirst
         //   (Booleans NOT rounded up to DWORD boundary)
         ByteSize = CalcDataSize (arrType, arrNELM, NULL);
 
-        // If this var contains packed Booleans, ...
-        if (IsSimpleBool (arrType))
+        // Split cases based upon the array storage type
+        switch (arrType)
         {
-            UINT uBitMaskLft,          // Left arg bit mask for trundling through Booleans
-                 uBitMaskRht;          // Right ...
-
-            // Initialize the bit masks and index for Boolean arguments
-            uBitMaskLft = BIT0;
-            uBitMaskRht = BIT1;
-
-            // Packed Booleans can't handled by skipping over some number of leading bytes
-            //   so we need to shift them over by 1
-
-            while (arrNELM-- NE 0)
+            case ARRAY_BOOL:
             {
-                if ((((LPAPLBOOL) lpMemVar)[0] & uBitMaskRht) NE 0)
-                    ((LPAPLBOOL) lpMemGlb)[0] |= uBitMaskLft;
+                UINT uBitMaskLft,          // Left arg bit mask for trundling through Booleans
+                     uBitMaskRht;          // Right ...
 
-                // Shift the left bit mask by 1
-                uBitMaskLft *= 2;
+                // Initialize the bit masks and index for Boolean arguments
+                uBitMaskLft = BIT0;
+                uBitMaskRht = BIT1;
 
-                // Check for end-of-byte
-                if (uBitMaskLft EQ END_OF_BYTE)
+                // Packed Booleans can't be handled by skipping over some number of leading bytes
+                //   so we need to shift them over by 1
+
+                while (arrNELM-- NE 0)
                 {
-                    // Restart the bit mask
-                    uBitMaskLft = BIT0;
-                    ((LPAPLBOOL) lpMemGlb)++;
-                } // End IF
+                    if ((((LPAPLBOOL) lpMemVar)[0] & uBitMaskRht) NE 0)
+                        ((LPAPLBOOL) lpMemGlb)[0] |= uBitMaskLft;
 
-                // Shift the right bit mask by 1
-                uBitMaskRht *= 2;
+                    // Shift the left bit mask by 1
+                    uBitMaskLft *= 2;
 
-                // Check for end-of-byte
-                if (uBitMaskRht EQ END_OF_BYTE)
-                {
-                    // Restart the bit mask
-                    uBitMaskRht = BIT0;
-                    ((LPAPLBOOL) lpMemVar)++;
-                } // End IF
-            } // End WHILE
-        } else
-            // Copy the remaining items to global memory
-            CopyMemory (lpMemGlb, ByteAddr (lpMemVar, iSizeofGlb), (size_t) ByteSize);
+                    // Check for end-of-byte
+                    if (uBitMaskLft EQ END_OF_BYTE)
+                    {
+                        // Restart the bit mask
+                        uBitMaskLft = BIT0;
+                        ((LPAPLBOOL) lpMemGlb)++;
+                    } // End IF
+
+                    // Shift the right bit mask by 1
+                    uBitMaskRht *= 2;
+
+                    // Check for end-of-byte
+                    if (uBitMaskRht EQ END_OF_BYTE)
+                    {
+                        // Restart the bit mask
+                        uBitMaskRht = BIT0;
+                        ((LPAPLBOOL) lpMemVar)++;
+                    } // End IF
+                } // End WHILE
+
+                break;
+            } // End ARRAY_BOOL
+
+            case ARRAY_INT:
+            case ARRAY_HC2I:
+            case ARRAY_HC4I:
+            case ARRAY_HC8I:
+
+            case ARRAY_FLOAT:
+            case ARRAY_HC2F:
+            case ARRAY_HC4F:
+            case ARRAY_HC8F:
+                // Copy the remaining items to global memory
+                CopyMemory (lpMemGlb, ByteAddr (lpMemVar, iSizeofGlb), (size_t) ByteSize);
+
+                break;
+
+            case ARRAY_RAT:
+            case ARRAY_HC2R:
+            case ARRAY_HC4R:
+            case ARRAY_HC8R:
+                // Loop through the arrNELM items
+                //   copying them to global memory
+                for (iCnt = 0; iCnt < arrNELM; iCnt++)
+                    mphcXr_init_set (ByteAddr (lpMemGlb, iSizeofGlb *  iCnt     ),
+                                     ByteAddr (lpMemVar, iSizeofGlb * (iCnt + 1)),
+                                     iHCDimVar);
+                break;
+
+            case ARRAY_VFP:
+            case ARRAY_HC2V:
+            case ARRAY_HC4V:
+            case ARRAY_HC8V:
+                // Loop through the arrNELM items
+                //   copying them to global memory
+                for (iCnt = 0; iCnt < arrNELM; iCnt++)
+                    mphcXv_init_set (ByteAddr (lpMemGlb, iSizeofGlb *  iCnt     ),
+                                     ByteAddr (lpMemVar, iSizeofGlb * (iCnt + 1)),
+                                     iHCDimVar);
+                break;
+
+            case ARRAY_ARB:
+            case ARRAY_BA2F:
+            case ARRAY_BA4F:
+            case ARRAY_BA8F:
+                // Loop through the arrNELM items
+                //   copying them to global memory
+                for (iCnt = 0; iCnt < arrNELM; iCnt++)
+                    arbX_init_set (ByteAddr (lpMemGlb, iSizeofGlb *  iCnt     ),
+                                   ByteAddr (lpMemVar, iSizeofGlb * (iCnt + 1)),
+                                   iHCDimVar);
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 
         // We no longer need this ptr
         MyGlobalUnlock (tkLft.tkData.tkGlbData); lpMemHdrGlb = NULL;
@@ -8733,6 +8858,78 @@ NORMAL_EXIT:
 
     return bRet;
 } // End SplitStrandFirst
+
+
+//***************************************************************************
+//  $CopyGlbNumeric
+//
+//  Copy a single numeric item.  If it's a global numeric, initialize and make
+//     a new copy.
+//***************************************************************************
+
+void CopyGlbNumeric
+    (APLSTYPE arrType,      // Array storage type
+     LPVOID   lpMemDst,     // Ptr to destination
+     LPVOID   lpMemSrc,     // Ptr to source
+     int      iSizeofGlb)   // Size of a single (global)numeric
+
+{
+    int iHCDimVar;          // HC Dimension (1, 2, 4 8)
+
+    // Calculate the HC Dimension (1, 2, 4, 8)
+    iHCDimVar = TranslateArrayTypeToHCDim (arrType);
+
+    // Split cases based upon the array storage type
+    switch (arrType)
+    {
+        case ARRAY_BOOL:
+
+        case ARRAY_INT:
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+
+        case ARRAY_FLOAT:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+            // No ptrs in these types, so we can just copy it whole
+            // Copy the single item to global memory
+            CopyMemory (lpMemDst, lpMemSrc, iSizeofGlb);
+
+            break;
+
+        case ARRAY_RAT:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+            // Initialize and set the single item in global memory
+            mphcXr_init_set (lpMemDst, lpMemSrc, iHCDimVar);
+
+            break;
+
+        case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+            // Initialize and set the single item in global memory
+            mphcXv_init_set (lpMemDst, lpMemSrc, iHCDimVar);
+
+            break;
+
+        case ARRAY_ARB:
+        case ARRAY_BA2F:
+        case ARRAY_BA4F:
+        case ARRAY_BA8F:
+            // Initialize and set the single item in global memory
+            arbX_init_set (lpMemDst, lpMemSrc, iHCDimVar);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+} // End CopyGlbNumeric
 
 
 //***************************************************************************

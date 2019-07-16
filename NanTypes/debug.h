@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 #define VARS_TEMP_OPEN                              \
     WCHAR   wszTempName[256];                       \
-    LPWCHAR lpwszOldName;
+    LPWCHAR lpwszOldName = NULL;
 
 #define CHECK_TEMP_OPEN                             \
     if (lpMemPTD->bTempOpen)                        \
@@ -37,7 +37,7 @@
                    L"%S#%d",                        \
                     FNLN);                          \
         lpMemPTD->lpwszTempName = wszTempName;      \
-        lpMemPTD->bTempOpen = TRUE;                 \
+        lpMemPTD->bTempOpen     = TRUE;             \
         lpMemPTD->lpwszFILE     = WFILE;            \
         lpMemPTD->lpwszLINE     = WLINE;            \
     } /* End IF */

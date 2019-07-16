@@ -1,0 +1,9 @@
+Build #2156 -- Version 0.6.0.xx
+-------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NanTypes:
+
+DEBUG.H:
+  Initialize var in case it is not used so it looks unusable.

@@ -1,0 +1,12 @@
+Build #2155 -- Version 0.5.11.xx
+--------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NewTypes:
+
+DEBUG.H:
+  Initialize var in case it is not used so it looks unusable.
+
+INIFILE.C:
+  Use macro WFCN instead of explicit file name.

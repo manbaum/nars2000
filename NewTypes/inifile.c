@@ -3465,8 +3465,7 @@ LPDICTIONARY ProfileLoad_EM
 
         // Close the file
         fclose (fStream);
-    } __except (CheckVirtAlloc (GetExceptionInformation (),
-                                L"ProfileLoad"))
+    } __except (CheckVirtAlloc (GetExceptionInformation (), WFCN))
     {
         // Display message for unhandled exception
         DisplayException ();

@@ -1497,5 +1497,49 @@ void CopyErrorMessageLen
 
 
 //***************************************************************************
+//  $MyCopyMemory
+//
+//  Local version of CopyMemory checking buffer limit
+//***************************************************************************
+
+void MyCopyMemory
+    (LPCHAR lpDst,      // Ptr to destination buffer
+     LPCHAR lpSrc,      // Ptr to source buffer
+     size_t cbSrc,      // # bytes in the source buffer
+     size_t cbDst)      // # bytes in the destination buffer
+{
+#ifdef DEBUG
+    // Check the byte counts
+    if (cbSrc > cbDst)
+        DbgBrk ();      // #ifdef
+#endif
+    // Copy the memory
+    CopyMemory (lpDst, lpSrc, min (cbSrc, cbDst));
+} // End MyCopyMemory
+
+
+//***************************************************************************
+//  $MyCopyMemoryW
+//
+//  Local version of CopyMemoryW checking buffer limit
+//***************************************************************************
+
+void MyCopyMemoryW
+    (LPWCHAR lpDst,     // Ptr to destination buffer
+     LPWCHAR lpSrc,     // Ptr to source buffer
+     size_t  cwSrc,     // # WCHARs in the source buffer
+     size_t  cwDst)     // # WCHARs in the destination buffer
+{
+#ifdef DEBUG
+    // Check the WCHAR counts
+    if (cwSrc > cwDst)
+        DbgBrk ();      // #ifdef
+#endif
+    // Copy the memory
+    CopyMemoryW (lpDst, lpSrc, min (cwSrc, cwDst));
+} // End MyCopyMemoryW
+
+
+//***************************************************************************
 //  End of File: common.c
 //***************************************************************************

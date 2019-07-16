@@ -1,0 +1,14 @@
+Build #2153 -- Version 0.5.11.xx
+--------------------------------
+
+* Use Local Storage To Avoid VARS_TEMP_OPEN Conflict
+
+Directory branches/bsmith/NewTypes:
+
+COMMON.C:
+  Define local string-safe versions of <CopyMemory> and <CopyMemoryW>.
+
+SYSVARS.C:
+  Avoid VARS_TEMP_OPEN conflict by using local storage.
+  Use local string-safe version of <CopyMemoryW>.
+  Fix bug in <ValidPostWSID_EM> where not using SYMENTRY to get the global memory handle.

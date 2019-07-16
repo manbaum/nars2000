@@ -1,6 +1,22 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2154 -- Version 0.6.0.xx
+-------------------------------
+
+* Use Local Storage To Avoid VARS_TEMP_OPEN Conflict
+
+Directory branches/bsmith/NanTypes:
+
+COMMON.C:
+  Define local string-safe versions of <CopyMemory> and <CopyMemoryW>.
+
+SYSVARS.C:
+  Avoid VARS_TEMP_OPEN conflict by using local storage.
+  Use local string-safe version of <CopyMemoryW>.
+  Fix bug in <ValidPostWSID_EM> where not using SYMENTRY to get the global memory handle.
+
+
 Build #2152 -- Version 0.6.0.xx
 -------------------------------
 

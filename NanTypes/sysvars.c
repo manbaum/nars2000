@@ -1690,19 +1690,14 @@ UBOOL ValidateCharVector_EM
                       aplNELMRes;           // Result    ...
     APLRANK           aplRankRht;           // Right arg rank
     APLUINT           ByteRes;              // # bytes in the result
-    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+    WCHAR             wszTemp[_MAX_PATH];   // Temporary storage for canonical workspace ID
     LPWCHAR           lpwszTemp;            // Ptr to temporary storage
-    VARS_TEMP_OPEN
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
 
     // If the []var is []WSID, ...
     if (bWSID)
     {
         // Get ptr to temporary storage
-        lpwszTemp = lpMemPTD->lpwszTemp;
-        CHECK_TEMP_OPEN
+        lpwszTemp = &wszTemp[0];
     } else
         lpwszTemp = NULL;
 
@@ -1917,7 +1912,7 @@ ALLOC_VECTOR:
 
     // If the []var is []WSID, ...
     if (bWSID)
-        CopyMemoryW (lpMemRes, lpwszTemp, (APLU3264) aplNELMRes);
+        MyCopyMemoryW (lpMemRes, lpwszTemp, (APLU3264) aplNELMRes, countof (wszTemp));
     else
         *((LPAPLCHAR) lpMemRes) = aplChar;
 
@@ -1953,12 +1948,6 @@ DOMAIN_EXIT:
 
 ERROR_EXIT:
 UNLOCK_EXIT:
-    // If the []var is []WSID, ...
-    if (bWSID)
-    {
-        EXIT_TEMP_OPEN
-    } // End IF
-
     if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
@@ -3277,7 +3266,7 @@ UBOOL ValidNdxFPC
 //***************************************************************************
 //  $ValidPostFPC
 //
-//  Post-validation for []WSID
+//  Post-validation for []FPC
 //***************************************************************************
 
 void ValidPostFPC

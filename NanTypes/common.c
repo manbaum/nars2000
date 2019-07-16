@@ -418,6 +418,34 @@ LPWCHAR SkipPastCharW
 
 
 //************************************************************************
+//  $SkipPastChar
+//
+//  Skip past a given CHAR taking into account EOL
+//************************************************************************
+
+LPCHAR SkipPastChar
+    (LPCHAR lpuChar,
+     char   uChar)
+
+{
+    LPCHAR lp;          // Temporary ptr
+
+    // Find the char
+    lp = strchr (lpuChar, uChar);
+
+    // If it's not found (EOL instead), ...
+    if (lp EQ NULL)
+        // Point to the trailing zero
+        lp = &lpuChar[lstrlen (lpuChar)];
+    else
+        // Skip over the trailing char
+        lp++;
+
+    return lp;
+} // End SkipPastChar
+
+
+//************************************************************************
 //  $SkipPastStr
 //
 //  Skip past a given set of chars taking into account EOL
@@ -1505,6 +1533,50 @@ void CopyErrorMessageLen
         lpMemPTD->lpwszErrorMessage[uLen] = WC_EOS;
     } // End IF
 } // End CopyErrorMessageLen
+
+
+//***************************************************************************
+//  $MyCopyMemory
+//
+//  Local version of CopyMemory checking buffer limit
+//***************************************************************************
+
+void MyCopyMemory
+    (LPCHAR lpDst,      // Ptr to destination buffer
+     LPCHAR lpSrc,      // Ptr to source buffer
+     size_t cbSrc,      // # bytes in the source buffer
+     size_t cbDst)      // # bytes in the destination buffer
+{
+#ifdef DEBUG
+    // Check the byte counts
+    if (cbSrc > cbDst)
+        DbgBrk ();      // #ifdef
+#endif
+    // Copy the memory
+    CopyMemory (lpDst, lpSrc, min (cbSrc, cbDst));
+} // End MyCopyMemory
+
+
+//***************************************************************************
+//  $MyCopyMemoryW
+//
+//  Local version of CopyMemoryW checking buffer limit
+//***************************************************************************
+
+void MyCopyMemoryW
+    (LPWCHAR lpDst,     // Ptr to destination buffer
+     LPWCHAR lpSrc,     // Ptr to source buffer
+     size_t  cwSrc,     // # WCHARs in the source buffer
+     size_t  cwDst)     // # WCHARs in the destination buffer
+{
+#ifdef DEBUG
+    // Check the WCHAR counts
+    if (cwSrc > cwDst)
+        DbgBrk ();      // #ifdef
+#endif
+    // Copy the memory
+    CopyMemoryW (lpDst, lpSrc, min (cwSrc, cwDst));
+} // End MyCopyMemoryW
 
 
 //***************************************************************************

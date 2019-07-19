@@ -1,6 +1,17 @@
 Version 0.5.12.xx consists of the following Builds:
 
 
+Build #2159 -- Version 0.5.12.xx
+--------------------------------
+
+* Fix Bug When Assigning System Function To A Name
+
+Directory branches/bsmith/NewTypes:
+
+SC_LOAD.C:
+  Fix bug when assigning System Function (FcnDir) as in (say) f{is}{quad}NL.
+
+
 Build #2157 -- Version 0.5.12.xx
 --------------------------------
 

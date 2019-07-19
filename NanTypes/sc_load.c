@@ -1091,8 +1091,8 @@ UBOOL ParseSavedWsFcn_EM
         STFLAGS           stFlags = {0};        // SymTab flags
         LPDFN_HEADER      lpMemDfnHdr;          // Ptr to DFN_HEADER global memory
         LPFCNARRAY_HEADER lpMemHdrFcn = NULL;   // Ptr to FCNARRAY_HEADER global memory
-        UBOOL             bExists = FALSE;      // TRUE iff the object already exists,
-                                                //   that is, it was not loaded by LoadWsGlbVarConv
+////////UBOOL             bExists = FALSE;      // TRUE iff the object already exists,
+////////                                        //   that is, it was not loaded by LoadWsGlbVarConv
 
         // Tell 'em we're looking for )LOAD objects
         stFlags.Inuse   = TRUE;
@@ -1136,8 +1136,8 @@ UBOOL ParseSavedWsFcn_EM
             // Save the global memory handle
             hGlbObj = lpSymEntry->stData.stGlbData;
 
-            // Mark as loading an existing object
-            bExists = TRUE;
+////////////// Mark as loading an existing object
+////////////bExists = TRUE;
         } // End IF
 
         if (hGlbObj EQ NULL
@@ -1150,10 +1150,8 @@ UBOOL ParseSavedWsFcn_EM
         // Save in the result
         lpSymObj->stData.stGlbData = hGlbObj;
 
-        // If the object didn't already exist, and
-        //   it's not a Direct Function, ...
-        if (!bExists
-         && !lpSymObj->stFlags.FcnDir)
+        // If the object isn't a Direct Function, ...
+        if (!lpSymObj->stFlags.FcnDir)
             // Increment the reference count
             DbgIncrRefCntDir_PTB (hGlbObj); // MATCH:  DeleteGlobalLinks
 

@@ -1,0 +1,9 @@
+Build #2160 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug When Assigning System Function To A Name
+
+Directory branches/bsmith/NanTypes:
+
+SC_LOAD.C:
+  Fix bug when assigning System Function (FcnDir) as in (say) f{is}{quad}NL.

@@ -243,7 +243,8 @@ UBOOL CmdFNOV_EM
      && lpSymEntry->stFlags.Value
      && lpSymEntry->stFlags.ObjName NE OBJNAME_MFO
      && (lpSymEntry->stFlags.ObjName NE OBJNAME_SYS
-      || lpSymEntry->stFlags.DfnLabel)
+      || lpSymEntry->stFlags.DfnLabel
+      || lpSymEntry->stFlags.FcnDir  )
      && (*IzitFVO) (lpSymEntry->stFlags.stNameType))
     {
         LPSYMENTRY lpGlbEntry;

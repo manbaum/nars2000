@@ -1,0 +1,12 @@
+Build #2157 -- Version 0.5.12.xx
+--------------------------------
+
+* Fix Bug Which Fails To Display A Name Which Is A FcnDir
+
+Directory branches/bsmith/NewTypes:
+
+SC_FNOV.C:
+  Fix bug which fails to display a name from (say) f{is}{quad}NL.
+
+VER.RC:
+  Increment version # to 0.5.12.xx.

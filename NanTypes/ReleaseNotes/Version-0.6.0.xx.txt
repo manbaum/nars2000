@@ -1,6 +1,20 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2158 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug Which Fails To Display A Name Which Is A FcnDir
+
+Directory branches/bsmith/NanTypes:
+
+SC_FNOV.C:
+  Fix bug which fails to display a name from (say) f{is}{quad}NL.
+
+VER.RC:
+  Update copyright notice.
+
+
 Build #2156 -- Version 0.6.0.xx
 -------------------------------
 

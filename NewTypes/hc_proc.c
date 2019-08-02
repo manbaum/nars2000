@@ -1482,8 +1482,8 @@ APLRAT SqNrmHCxR
      int    iHCDim)
 
 {
-    APLRAT aplRes,
-           aplTmp;
+    APLRAT aplRes = {0},
+           aplTmp = {0};
     int    i;
 
     // Initialize to 0/1
@@ -1561,8 +1561,8 @@ APLVFP SqNrmHCxV
      int    iHCDim)
 
 {
-    APLVFP aplRes,
-           aplTmp;
+    APLVFP aplRes = {0},
+           aplTmp = {0};
     int    i;
 
     // Initialize to 0

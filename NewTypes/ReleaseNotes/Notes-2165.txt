@@ -27,7 +27,7 @@ TOKENIZE.C:
   Allow all input Point Notations as output forms.
 
 
-Directory branches/bsmith/mediawiki/ewxtensions:
+Directory branches/bsmith/NewTypes/mediawiki/extensions:
 
 RENDERAPL.PHP:
   Implement 'ah' Point Notation

@@ -1,0 +1,15 @@
+Build #2167 -- Version 0.5.12.xx
+--------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NewTypes:
+
+ASSIGN.C:
+  Move stmt into inner nesting.
+
+HC_PROC.C:
+  Initialize RAT and VFP local vars before initializing.
+
+SC_DEBUG.C:
+  Reorder macro calls as they are order dependent.

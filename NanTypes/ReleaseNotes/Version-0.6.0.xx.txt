@@ -1,6 +1,20 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2164 -- Version 0.6.0.xx
+-------------------------------
+
+* Implement Mask And Mesh
+
+Directory branches/bsmith/NanTypes:
+
+EXECMFN.C:
+EXECMFN.H:
+MF_JOT.H:
+PO_JOT.C:
+  Implement Mask and Mesh.
+
+
 Build #2162 -- Version 0.6.0.xx
 -------------------------------
 

@@ -1,0 +1,9 @@
+Build #2169 -- Version 0.5.12.xx
+--------------------------------
+
+* Fix Typo In Mesh Magic Function
+
+Directory branches/bsmith/NewTypes:
+
+MF_JOT.H:
+  Fix typo in Mesh Magic Function -- missing $ adornments.

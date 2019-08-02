@@ -1737,12 +1737,12 @@ typedef struct tagOPTIONFLAGS
          bDefDispFcnLineNums :1,    // 00400000:  ...      Display function line #s
          bDispMPSuf:1,       :1,    // 00800000:  ...      Display multi-precision numbers with suffix 'x' or 'v'
          bOutputDebug:1,     :1,    // 01000000:  ...      Output Debugging is enabled
-         bJ4i                :1,    // 02000000:  ...      Use 'J' instead of 'i' as Complex # separator on output
-         bDisp0Imag          :1,    // 04000000:  ...      Display all imaginary parts
-         bDispInfix          :1,    // 08000000:  ...      Display CHO numbers using infix notation
-         bDispOctoDig        :1,    // 10000000:  ...      Display Octonions using Digraphs
-         bShowNetErrs:1,     :1,    // 20000000:  ...      Show Network Errors is enabled
-                             :2;    // C0000000:  Available bits
+         uCNDSEP             :3,    // 0E000000:  ...      Use CNDSEP_xx as Complex Number Display Separator
+         bDisp0Imag          :1,    // 10000000:  ...      Display all imaginary parts
+         bDispInfix          :1,    // 20000000:  ...      Display CHO numbers using infix notation
+         bDispOctoDig        :1,    // 40000000:  ...      Display Octonions using Digraphs
+         bShowNetErrs:1,     :1,    // 80000000:  ...      Show Network Errors is enabled
+                             :0;    // 00000000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1771,7 +1771,7 @@ OPTIONFLAGS OptionFlags
     DEF_DISPFCNLINENUMS,
     DEF_DISPMPSUF,
     DEF_OUTPUTDEBUG,
-    DEF_J4i,
+    DEF_CNDSEP,
     DEF_DISP0IMAG,
     DEF_DISPINFIX,
     DEF_DISPOCTODIG,

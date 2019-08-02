@@ -338,10 +338,16 @@
 #define IDC_USER_PREFS_RB_DEC                   1122
 #define IDC_USER_PREFS_RB_HEX                   1123
 
-#define IDC_HC_PREFS_XB_J4i                     1200
-#define IDC_HC_PREFS_XB_DISP0IMAG               1201
-#define IDC_HC_PREFS_XB_DISPINFIX               1202
-#define IDC_HC_PREFS_XB_DISPOCTODIG             1203
+#define IDC_HC_PREFS_RB_CNDSEP1                 1200
+#define IDC_HC_PREFS_RB_CNDSEP2                 1201
+#define IDC_HC_PREFS_RB_CNDSEP3                 1202
+#define IDC_HC_PREFS_RB_CNDSEP4                 1203
+#define IDC_HC_PREFS_RB_CNDSEP5                 1204
+#define IDC_HC_PREFS_RB_CNDSEP6                 1205
+
+#define IDC_HC_PREFS_XB_DISP0IMAG               1210
+#define IDC_HC_PREFS_XB_DISPINFIX               1211
+#define IDC_HC_PREFS_XB_DISPOCTODIG             1212
 
 #define IDC_SYNTCLR_LT1                         1400    // 00:  Global Name
 #define IDC_SYNTCLR_LT2                         1401    // 01:  Local  ...

@@ -2252,12 +2252,12 @@ LPWCHAR GetHCImagSepWS
         case 2:
         case 4:
         case 8:
-            return L"ijJkl";
+            return HC_SEPS_WS;
 
         defstop
             return L"\0";
     } // End SWITCH
-} // GetHcImagSep
+} // GetHCImagSepWS
 
 
 //***************************************************************************
@@ -2294,6 +2294,41 @@ UBOOL HasFractionality
             return FALSE;
     } // End SWITCH
 } // End HasFractionality
+
+
+//***************************************************************************
+//  $GetHC2Sep       L"i" L"J" L"ad" L"ah" L"ar" L"au" [OptionFlags.uCNDSEP]
+//***************************************************************************
+
+LPWCHAR GetHC2Sep
+    (void)
+
+{
+    // Split case based upon the OptionFlag.uCNDSEP
+    switch (OptionFlags.uCNDSEP)
+    {
+        case CNDSEP_i :
+            return L"i";
+
+        case CNDSEP_J :
+            return L"J";
+
+        case CNDSEP_ad:
+            return L"ad";
+
+        case CNDSEP_ah:
+            return L"ah";
+
+        case CNDSEP_ar:
+            return L"ar";
+
+        case CNDSEP_au:
+            return L"au";
+
+        defstop
+            return L"";
+    } // End SWITCH
+} // End GetHC2Sep
 
 
 //***************************************************************************

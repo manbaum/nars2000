@@ -112,7 +112,7 @@
 #define KEYNAME_REVDBLCLK               L"RevDblClk"
 #define KEYNAME_VIEWSTATUSBAR           L"ViewStatusBar"
 #define KEYNAME_DEFDISPFCNLINENUMS      L"DefDispFcnLineNums"
-#define KEYNAME_J4i                     L"Use_J_AsHC2SepOnOutput"
+#define KEYNAME_CNDSEP                  L"CNDSEP"
 #define KEYNAME_DISP0IMAG               L"Display0ImaginaryParts"
 #define KEYNAME_DISPINFIX               L"DisplayHCAsInfix"
 #define KEYNAME_DISPOCTODIG             L"DisplayHCAsOctoDig"
@@ -716,11 +716,11 @@ UBOOL ReadIniFileGlb
                              KEYNAME_SHOWNETERRS,   // Ptr to the key name
                              DEF_SHOWNETERRS,       // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-    // Read in bJ4i
-    OptionFlags.bJ4i =
+    // Read in uCNDSEP
+    OptionFlags.uCNDSEP =
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
-                             KEYNAME_J4i,           // Ptr to the key name
-                             DEF_J4i,               // Default value if not found
+                             KEYNAME_CNDSEP,        // Ptr to the key name
+                             DEF_CNDSEP,            // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Read in bDisp0Imag
     OptionFlags.bDisp0Imag =
@@ -2488,14 +2488,14 @@ void SaveIniFile
                                 KEYNAME_SHOWNETERRS,        // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
-    //******************* bJ4i ********************************
-    // Format bJ4i
-    wszTemp[0] = L'0' + OptionFlags.bJ4i;
+    //******************* uCNDSEP *****************************
+    // Format uCNDSEP
+    wszTemp[0] = L'0' + OptionFlags.uCNDSEP;
     wszTemp[1] = WC_EOS;
 
-    // Write out bJ4i
+    // Write out uCNDSEP
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
-                                KEYNAME_J4i,                // Ptr to the key name
+                                KEYNAME_CNDSEP,             // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bDisp0Imag **************************

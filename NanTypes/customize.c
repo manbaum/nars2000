@@ -1697,7 +1697,12 @@ INT_PTR CALLBACK CustomizeDlgProc
                         break;
 
                     case IDD_PROPPAGE_HC_PREFS:                         // MYWM_INITDIALOG
-                        CheckDlgButton (hWndProp, IDC_HC_PREFS_XB_J4i                , OptionFlags.bJ4i                );
+                        CheckDlgButton (hWndProp, IDC_HC_PREFS_RB_CNDSEP1            , OptionFlags.uCNDSEP EQ CNDSEP_i );
+                        CheckDlgButton (hWndProp, IDC_HC_PREFS_RB_CNDSEP2            , OptionFlags.uCNDSEP EQ CNDSEP_J );
+                        CheckDlgButton (hWndProp, IDC_HC_PREFS_RB_CNDSEP3            , OptionFlags.uCNDSEP EQ CNDSEP_ad);
+                        CheckDlgButton (hWndProp, IDC_HC_PREFS_RB_CNDSEP4            , OptionFlags.uCNDSEP EQ CNDSEP_ah);
+                        CheckDlgButton (hWndProp, IDC_HC_PREFS_RB_CNDSEP5            , OptionFlags.uCNDSEP EQ CNDSEP_ar);
+                        CheckDlgButton (hWndProp, IDC_HC_PREFS_RB_CNDSEP6            , OptionFlags.uCNDSEP EQ CNDSEP_au);
                         CheckDlgButton (hWndProp, IDC_HC_PREFS_XB_DISP0IMAG          , OptionFlags.bDisp0Imag          );
                         CheckDlgButton (hWndProp, IDC_HC_PREFS_XB_DISPINFIX          , OptionFlags.bDispInfix          );
                         CheckDlgButton (hWndProp, IDC_HC_PREFS_XB_DISPOCTODIG        , OptionFlags.bDispOctoDig        );
@@ -3410,7 +3415,24 @@ INT_PTR CALLBACK CustomizeDlgProc
                         hWndProp = (HWND)
                           SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
-                        OptionFlags.bJ4i                 = IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_XB_J4i                );
+                        if (IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_RB_CNDSEP1))
+                            OptionFlags.uCNDSEP = CNDSEP_i;
+                        else
+                        if (IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_RB_CNDSEP2))
+                            OptionFlags.uCNDSEP = CNDSEP_J;
+                        else
+                        if (IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_RB_CNDSEP3))
+                            OptionFlags.uCNDSEP = CNDSEP_ad;
+                        else
+                        if (IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_RB_CNDSEP4))
+                            OptionFlags.uCNDSEP = CNDSEP_ah;
+                        else
+                        if (IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_RB_CNDSEP5))
+                            OptionFlags.uCNDSEP = CNDSEP_ar;
+                        else
+                        if (IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_RB_CNDSEP6))
+                            OptionFlags.uCNDSEP = CNDSEP_au;
+
                         OptionFlags.bDisp0Imag           = IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_XB_DISP0IMAG          );
                         OptionFlags.bDispInfix           = IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_XB_DISPINFIX          );
                         OptionFlags.bDispOctoDig         = IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_XB_DISPOCTODIG        );
@@ -5229,7 +5251,12 @@ INT_PTR CALLBACK CustomizeDlgProc
                 // HC PREFERENCES -- WM_COMMAND
                 //***************************************************************
 
-                case IDC_HC_PREFS_XB_J4i:
+                case IDC_HC_PREFS_RB_CNDSEP1:
+                case IDC_HC_PREFS_RB_CNDSEP2:
+                case IDC_HC_PREFS_RB_CNDSEP3:
+                case IDC_HC_PREFS_RB_CNDSEP4:
+                case IDC_HC_PREFS_RB_CNDSEP5:
+                case IDC_HC_PREFS_RB_CNDSEP6:
                 case IDC_HC_PREFS_XB_DISP0IMAG:
                 case IDC_HC_PREFS_XB_DISPINFIX:
                 case IDC_HC_PREFS_XB_DISPOCTODIG:

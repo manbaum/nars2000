@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1039,6 +1039,33 @@ void mpq_set_sx
             mpq_canonicalize (dest);
     } // End IF
 } // End mpq_set_sx
+
+
+//***************************************************************************
+//  $mpq_add_si
+//***************************************************************************
+
+void mpq_add_si
+    (mpq_ptr dest,
+     mpq_ptr src,
+     mpir_si num,
+     mpir_ui den)
+
+{
+    APLRAT mpqTmp = {0};
+
+    // Initialize the temp
+    mpq_init (&mpqTmp);
+
+    // Save the INT as a RAT
+    mpq_set_si (&mpqTmp, num, den);
+
+    // Add the INT
+    mpq_add (dest, src, &mpqTmp);
+
+    // We no longer need this storage
+    Myq_clear (&mpqTmp);
+} // End mpq_add_si
 
 
 //***************************************************************************

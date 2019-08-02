@@ -280,6 +280,22 @@ typedef enum tagNUMTHEORY       // Number theory values (left arg to dyadic Pi)
 #define NUMTHEORY_MAX       13      // Maximum ...
 
 
+typedef enum tagCND_SEP         // Complex Number Display Separator
+{
+    CNDSEP_i     = 0,           // Use 'i' as Complex Number Display Separator
+    CNDSEP_J        ,           // ... 'J' ...
+    CNDSEP_ad       ,           // ... 'ad' ...
+    CNDSEP_ah       ,           // ... 'ah' ...
+    CNDSEP_ar       ,           // ... 'ar' ...
+    CNDSEP_au       ,           // ... 'au' ...
+} CNDSEP, *LPCNDSEP;
+
+// N.B.:  whenever changing the above enum (CNDSEP),
+//   be sure to make a corresponding change to
+//   <OptionFlags.uCNDSEP> in <externs.h>,
+//   <HC_POLAR> in <pn_parse.h>,
+//   switch stmt in <pn_yylex> in <pn_parse.y>.
+
 typedef enum tagNFNS_NERR       // Common code for []NERASE, []NRENAME, and []NRESIZE
 {
     COM_NERASE = 0,             // 0:  []NERASE

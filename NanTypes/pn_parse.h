@@ -181,13 +181,19 @@ typedef struct tagPNLOCALVARS       // Point Notation Local Vars
 
 // Text strings
 #define INT_CHARS       "0123456789-_"
-#define INT_CHARS_WS    WIDEN (INT_CHARS)
-#define DEC_CHARS       INT_CHARS "eE."
-#define DEC_CHARS_WS    WIDEN (DEC_CHARS)
-#define ARB_CHARS       DEC_CHARS DEF_ARBSEP_S
-#define ARB_CHARS_WS    WIDEN (ARB_CHARS)
-#define HC_SEPS         "sijJklo"
-#define HC_CHARS        HC_SEPS "adu0123456789_rv.eE" OVERBAR1_STR
+#define INT_CHARS_WS    WIDEN  (INT_CHARS)
+#define DEC_CHARS               INT_CHARS  "eE."
+#define DEC_CHARS_WS    WIDEN2 (INT_CHARS, "eE.")
+#define ARB_CHARS               DEC_CHARS DEF_ARBSEP_S
+#define ARB_CHARS_WS    WIDEN2 (DEC_CHARS DEF_ARBSEP_S)
+#define HC_POLAR        "adhru"
+#define HC_POLAR_WS     WIDEN  (HC_POLAR)
+#define HC_OCTO         "sijk"
+#define HC_OCTO_WS      WIDEN  (HC_OCTO)
+#define HC_SEPS                 HC_POLAR  HC_OCTO  "Jlo"
+#define HC_SEPS_WS      WIDEN3 (HC_POLAR, HC_OCTO, "Jlo")
+#define HC_CHARS                HC_SEPS  "0123456789_rv.eE"  OVERBAR1_STR
+#define HC_CHARS_WS     WIDEN3 (HC_SEPS, "0123456789_rv.eE", OVERBAR1_STR)
 
 
 //***************************************************************************

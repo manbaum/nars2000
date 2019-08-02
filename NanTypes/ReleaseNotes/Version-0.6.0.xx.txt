@@ -1,6 +1,42 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2166 -- Version 0.6.0.xx
+-------------------------------
+
+* Implement 'ah' Point Notation
+* Allow All Input Point Notations As Output Forms
+
+Directory branches/bsmith/NanTypes:
+
+CUSTOMIZE.C:
+DEFINES.H:
+DISPLAY.C:
+ENUMS.H:
+EXTERNS.H:
+HC_PROC.C:
+INIFILE.C:
+MAIN.RC:
+MPFNS.C:
+PN_PARSE.H:
+PN_PARSE.Y:
+PN_PROC.C:
+RESOURCE.H:
+SC_COPY.C:
+SC_LOAD.C:
+SC_SAVE.C:
+TOKENIZE.C:
+  Implement 'ah' Point Notation.
+  Allow all input Point Notations as output forms.
+
+
+Directory branches/bsmith/NanTypes/mediawiki/extensions:
+
+RENDERAPL.PHP:
+  Implement 'ah' Point Notation
+  Allow all input Point Notations as output forms.
+
+
 Build #2164 -- Version 0.6.0.xx
 -------------------------------
 

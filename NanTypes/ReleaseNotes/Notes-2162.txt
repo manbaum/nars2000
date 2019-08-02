@@ -1,0 +1,9 @@
+Build #2162 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In Dyadic Squad With Scalar Left Argument And Explicit Axis
+
+Directory branches/bsmith/NanTypes:
+
+MF_SQUAD.H:
+  Fix bug in Dyadic Squad with scalar left argument and an explicit axis.

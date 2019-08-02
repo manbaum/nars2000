@@ -66,8 +66,8 @@ static LPAPLCHAR DydMeshBody[] =
 {
 L":if 0=⎕NC '"S L"X' ⋄ "S L"X←(⍴⍴"S L"R)-~⎕IO ⋄ :end",
 
-L":if 0=⍴⍴"S L"L ⋄ Y←⍴R ⋄ "S L"Y["S L"X]←+/"S L"LO<0 ⋄ "S L"L←"S L"Y⍴"S L"L ⋄ :end",
-L":if 0=⍴⍴"S L"R ⋄ Y←⍴L ⋄ "S L"Y["S L"X]←+/"S L"LO>0 ⋄ "S L"R←"S L"Y⍴"S L"R ⋄ :end",
+L":if 0=⍴⍴"S L"L ⋄ "S L"Y←⍴"S L"R ⋄ "S L"Y["S L"X]←+/"S L"LO<0 ⋄ "S L"L←"S L"Y⍴"S L"L ⋄ :end",
+L":if 0=⍴⍴"S L"R ⋄ "S L"Y←⍴"S L"L ⋄ "S L"Y["S L"X]←+/"S L"LO>0 ⋄ "S L"R←"S L"Y⍴"S L"R ⋄ :end",
 
 //L"⎕ERROR ((⍴⍴"S L"L)≢⍴⍴"S L"R)/'RANK ERROR'",
 L"⎕ERROR ((⍴"S L"L)["S L"X]≠+/"S L"LO<0)/'LENGTH ERROR'",

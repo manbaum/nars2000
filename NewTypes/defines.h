@@ -98,8 +98,6 @@
                           L"oi",    \
                           L"oj",    \
                           L"ok"         // ...     Octonion Digraphs
-#define GetHC2Sep       (OptionFlags.bJ4i ? DEF_HC2SEP    : L'i')
-#define GetHC2SepWS     (OptionFlags.bJ4i ? DEF_HC2SEP_WS : L"i")
 #define PFMN            &PrimFnMonNonceError_RE
 #define PFDN            &PrimFnDydNonceError_RE
 #define NONCE_RE        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
@@ -206,7 +204,7 @@
 
 
 // Global Options for HC Preferences
-#define DEF_J4i                     TRUE
+#define DEF_CNDSEP                  CNDSEP_J
 #define DEF_DISP0IMAG               TRUE
 #define DEF_DISPINFIX               TRUE
 #define DEF_DISPOCTODIG             FALSE
@@ -371,9 +369,11 @@
 //***************************************************************************
 
 // Wide char __FILE__, __LINE__, and __FUNCTION __ macros
-#define SMASH(x,y)  x##y
-#define WIDEN(x)    SMASH (L,x)
-#define WFILE       WIDEN (__FILE__)
+#define SMASH(x,y)      x##y
+#define WIDEN(x)        SMASH (L,x)
+#define WIDEN2(x,y)     SMASH (L,x) SMASH (L,y)
+#define WIDEN3(x,y,z)   SMASH (L,x) SMASH (L,y) SMASH (L,z)
+#define WFILE           WIDEN (__FILE__)
 
 #define TOWL2(p)    L#p
 #define TOWL1(p)    TOWL2 (p)

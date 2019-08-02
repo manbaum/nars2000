@@ -59,10 +59,10 @@ UBOOL CmdSave_EM
     UBOOL        aWsFeatureFlag[ENUM_FEATURE_LENGTH] = {FALSE}; // Ws feature flags
     UBOOL        bRet = FALSE,              // TRUE iff result is valid
                  bDispMPSuf,                // Save area for OptionFlags value
-                 bJ4i,                      // ...
                  bDisp0Imag,                // ...
                  bDispInfix,                // ...
                  bDispOctoDig;              // ...
+    UINT         uCNDSEP;                   // ...
     APLU3264     uNameLen;                  // Length of the object name in WCHARs
     int          iCmp;                      // Comparison result
     UINT         uGlbCnt = 0,               // # entries in [Globals] section
@@ -86,7 +86,7 @@ UBOOL CmdSave_EM
     // Save OptionFlags for display to fixed
     //   values so we convert values on )LOAD,
     //   )SAVE, )COPY, )OUT, and []TF consistently.
-    SetOptionFlagsDisplay (&bJ4i, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
+    SetOptionFlagsDisplay (&uCNDSEP, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
 
     // Skip to the next blank
     //   past what might be a DoubleQuoted string
@@ -704,7 +704,7 @@ NORMAL_EXIT:
     EXIT_TEMP_OPEN
 
     // Restore the OptionFlags values
-    RestoreOptionFlagsDisplay (bJ4i, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
+    RestoreOptionFlagsDisplay (uCNDSEP, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
 
     return bRet;
 } // End CmdSave_EM
@@ -1883,7 +1883,7 @@ LPAPLCHAR SavedWsFormGlbVar
                       FormatAplHC2IFC (lpaplChar,               // Ptr to output save area
                                        lpMemObj,                // ptr to the value to format
                                        UTF16_BAR,               // Char to use as overbar
-                                       GetHC2Sep);              // Char to use as separator
+                                       GetHC2Sep ());           // Char to use as separator
                     // Skip over the formatted value
                     ((LPBYTE) lpMemObj) += iSizeofVar;
 ////////////////////// If we're over our limit, ...
@@ -1942,7 +1942,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                        DEF_MAX_QUADPP_IEEE,     // Precision to use
                                        UTF16_DOT,               // Char to use as decimal separator
                                        UTF16_BAR,               // Char to use as overbar
-                                       GetHC2Sep,               // Char to use as separator
+                                       GetHC2Sep (),            // Char to use as separator
                                        FLTDISPFMT_RAWFLT,       // Float display format
                                        TRUE);                   // TRUE iff we're to substitute text for infinity
                     // Skip over the formatted value
@@ -2006,7 +2006,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                        lpMemObj,                // The value to format
                                        UTF16_BAR,               // Char to use as overbar
                                        L'/',                    // Char to use as rational separator
-                                       GetHC2Sep,               // Char to use as separator
+                                       GetHC2Sep (),            // Char to use as separator
                                        TRUE);                   // TRUE iff we're to substitute text for infinity
                     // Skip over the formatted value
                     ((LPBYTE) lpMemObj) += iSizeofVar;
@@ -2068,7 +2068,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                        0,                       // # significant digits (0 = all)
                                        L'.',                    // Char to use as decimal separator
                                        UTF16_BAR,               // Char to use as overbar
-                                       GetHC2Sep,               // Char to use as separator
+                                       GetHC2Sep (),            // Char to use as separator
                                        FLTDISPFMT_RAWFLT,       // Float display format
                                        FALSE,                   // TRUE iff nDigits is # fractional digits
                                        TRUE,                    // TRUE iff we're to substitute text for infinity
@@ -2464,36 +2464,36 @@ LPAPLCHAR SavedWsGlbFcnConv
 //***************************************************************************
 
 void SetOptionFlagsDisplay
-    (LPUBOOL lpbJ4i,            // Ptr to save area for bJ4i
+    (LPUINT  lpuCNDSEP,         // Ptr to save area for uCNDSEP
      LPUBOOL lpbDisp0Imag,      // ...                  bDisp0Imag
      LPUBOOL lpbDispInfix,      // ...                  bDispInfix
      LPUBOOL lpbDispOctoDig,    // ...                  bDispOctoDig
      LPUBOOL lpbDispMPSuf)      // ...                  bDispMPSuf
 
 {
-    // Save the current bJ4i and set to TRUE
+    // Save the current uCNDSEP and set to DEF_CNDSEP
     //  so we convert values the same way every time
-    *lpbJ4i       = OptionFlags.bJ4i;
-    OptionFlags.bJ4i       = TRUE;
+    *lpuCNDSEP             = OptionFlags.uCNDSEP;
+    OptionFlags.uCNDSEP    = DEF_CNDSEP;
 
     // Save the current bDisp0Imag flag and set to TRUE
     //  so we convert values the same way every time
-    *lpbDisp0Imag = OptionFlags.bDisp0Imag;
+    *lpbDisp0Imag          = OptionFlags.bDisp0Imag;
     OptionFlags.bDisp0Imag = TRUE;
 
     // Save the current bDispInfix flag and set to TRUE
     //  so we convert values the same way every time
-    *lpbDispInfix = OptionFlags.bDispInfix;
+    *lpbDispInfix          = OptionFlags.bDispInfix;
     OptionFlags.bDispInfix = TRUE;
 
     // Save the current bDispOctoDig flag and set to FALSE
     //  so we convert values the same way every time
-    *lpbDispOctoDig = OptionFlags.bDispOctoDig;
+    *lpbDispOctoDig          = OptionFlags.bDispOctoDig;
     OptionFlags.bDispOctoDig = FALSE;
 
     // Save the current bDispMPSuf flag and set to FALSE
     //  so we convert values the same way every time
-    *lpbDispMPSuf = OptionFlags.bDispMPSuf;
+    *lpbDispMPSuf          = OptionFlags.bDispMPSuf;
     OptionFlags.bDispMPSuf = FALSE;
 } // End SetOptionFlagsDisplay
 
@@ -2507,14 +2507,14 @@ void SetOptionFlagsDisplay
 //***************************************************************************
 
 void RestoreOptionFlagsDisplay
-    (UBOOL bJ4i,                // Original value for bJ4I
+    (UINT  uCNDSEP,             // Original value for uCNDSEP
      UBOOL bDisp0Imag,          // ...                bDisp0Imag
      UBOOL bDispInfix,          // ...                bDispInfix
      UBOOL bDispOctoDig,        // ...                bDispOctoDig
      UBOOL bDispMPSuf)          // ...                bDispMPSuf
 
 {
-    OptionFlags.bJ4i         = bJ4i      ;
+    OptionFlags.uCNDSEP      = uCNDSEP   ;
     OptionFlags.bDisp0Imag   = bDisp0Imag;
     OptionFlags.bDispInfix   = bDispInfix;
     OptionFlags.bDispOctoDig = bDispOctoDig;

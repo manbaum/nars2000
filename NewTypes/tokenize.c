@@ -2969,27 +2969,23 @@ UBOOL scPointDone
         } // End SWITCH
 
         // If the current char is Complex Angle ('a'),
-        //   and the next char is Degrees ('d') or Radians ('r'),
-        //   or Unit Normalized ('u'), ...
-        if ( lpszNum[uVar    ] EQ 'a'
-         && (lpszNum[uVar + 1] EQ 'd'
-          || lpszNum[uVar + 1] EQ 'r'
-          || lpszNum[uVar + 1] EQ 'u'))
-        {
-            // Save the color
-            lptkLocalVars->lpMemClrNxt++->syntClr =
-              gSyntaxColorName[scType].syntClr;
-            // Skip over it
-            uVar++;
-        } // End IF
-
+        //   and the next char is
+        //   Degrees ('d'),
+        //   Radians ('r'),
+        //   Signed Unit Normalized ('h'), or
+        //   Unit Normalized ('u'), ...
+        // OR
         // If the current char is Octonion Digraph ('o'),
-        //   and the next char is 's', 'i', 'j', or 'k', ...
-        if ( lpszNum[uVar    ] EQ 'o'
-         && (lpszNum[uVar + 1] EQ 's'
-          || lpszNum[uVar + 1] EQ 'i'
-          || lpszNum[uVar + 1] EQ 'j'
-          || lpszNum[uVar + 1] EQ 'k'))
+        //   and the next char is
+        //   Scalar ('s'),
+        //   Imag1  ('i'),
+        //   Imag2  ('j'), or
+        //   Imag3  ('k'), ...
+        if ((uVar + 1) < uLen)
+        if ((lpszNum[uVar    ] EQ 'a'
+         && strchr (HC_POLAR, lpszNum[uVar + 1]) NE NULL)
+         || (lpszNum[uVar    ] EQ 'o'
+         && strchr (HC_OCTO , lpszNum[uVar + 1]) NE NULL))
         {
             // Save the color
             lptkLocalVars->lpMemClrNxt++->syntClr =

@@ -4541,6 +4541,7 @@ PN_YYSTYPE PN_MakeHc2Point
      char          cConvType,       // Conversion Type:  'i' = none
                                     //                   'J' = none
                                     //                   'd' = degrees
+                                    //                   'h' = signed unit normalized radians
                                     //                   'r' = radians
                                     //                   'u' = unit normalized radians
      LPPNLOCALVARS lppnLocalVars)   // Ptr to PN local vars
@@ -4647,24 +4648,66 @@ PN_YYSTYPE PN_MakeHc2Point
             // Make a temp copy of lpC1->at.aplInteger as we overwrite it
             aplInteger1 = lpC1->at.aplInteger;
 
-            // If we're using Unit Normalized Radians, ...
-            if (cConvType EQ 'u')
+            // If we're using Signed Unit Normalized Radians [-0.5, 0.5], ...
+            if (cConvType EQ 'h')
             {
-                // By the fact that the unit normalized value is an integer
+                // Check for error
+                if (0 NE aplInteger1)
+                    goto DOMAIN_EXIT;
+
+                // By the fact that the Signed Unit Normalized value is an integer
                 //   it is a multiple of 360 degrees
 
-                // Convert from Unit Normalized Radians to Degrees
+                // Convert from Signed Unit Normalized Radians [-0.5, 0.5] to Signed Degrees [-180, 180]
+                aplInteger1 *= 360;
+
+                // Convert from Signed Degrees [-180, 180] to Degrees [0, 360]
+                aplInteger1 += 180;
+
+                // Change the conversion type to Degrees
+                cConvType ='d';
+            } else
+            // If we're using Unit Normalized Radians [0, 1], ...
+            if (cConvType EQ 'u')
+            {
+                // Check for error
+                if (0 > aplInteger1
+                 ||     aplInteger1 > 1)
+                    goto DOMAIN_EXIT;
+
+                // By the fact that the Unit Normalized value is an integer
+                //   it is a multiple of 360 degrees
+
+                // Convert from Unit Normalized Radians [0, 1] to Degrees [0, 360]
                 aplInteger1 *= 360;
 
                 // Change the conversion type to Degrees
                 cConvType ='d';
-            } // End IF
+            } else
+            // If we're using Degrees [-360, 360], ...
+            if (cConvType EQ 'd')
+                // Check for error
+                if (-360 > aplInteger1
+                 ||        aplInteger1 > 360)
+                    goto DOMAIN_EXIT;
+            else
+            // If we're using Radians [-2p1, 2p1], ...
+            if (cConvType EQ 'r')
+                // Check for error
+                if (abs64 (aplInteger1) > 6)
+                    goto DOMAIN_EXIT;
 
             // If we're converting from degrees or radians, ...
             if (cConvType EQ 'r'
              || cConvType EQ 'd')
+            {
+                // Check for error
+                if (lpC0->at.aplInteger < 0)
+                    goto DOMAIN_EXIT;
+
                 // Convert lpC1 from INT to FLT
                 lpC1->at.aplFloat = (APLFLOAT) aplInteger1;
+            } // End IF
 
             // Split cases based upon the Conversion Type
             switch (cConvType)
@@ -4766,14 +4809,57 @@ PN_YYSTYPE PN_MakeHc2Point
             Assert (IsPnNumTypeFlt (lpC0->chType));
             Assert (IsPnNumTypeFlt (lpC1->chType));
 
-            // If we're using Unit Normalized Radians, ...
+            // If we're using Signed Unit Normalized Radians [-0.5, 0.5], ...
+            if (cConvType EQ 'h')
+            {
+                // Check for error
+                if (-0.5 > lpC1->at.aplFloat
+                 ||        lpC1->at.aplFloat > 0.5)
+                    goto DOMAIN_EXIT;
+
+                // Convert from Signed Unit Normalized Radians [-0.5, 0.5] to Signed Degrees [-180, 180]
+                lpC1->at.aplFloat *= 360;
+
+                // Convert from Signed Degrees [-180, 180] to Degrees [0, 360]
+                lpC1->at.aplFloat += 180;
+
+                // Change the conversion type to Degrees
+                cConvType ='d';
+            } else
+            // If we're using Unit Normalized Radians [0, 1], ...
             if (cConvType EQ 'u')
             {
-                // Convert from Unit Normalized Radians to Degrees
+                // Check for error
+                if (0 > lpC1->at.aplFloat
+                 ||     lpC1->at.aplFloat > 1)
+                    goto DOMAIN_EXIT;
+
+                // Convert from Unit Normalized Radians [0, 1] to Degrees [0, 360]
                 lpC1->at.aplFloat *= 360;
 
                 // Change the conversion type to Degrees
                 cConvType ='d';
+            } else
+            // If we're using Degrees [-360, 360], ...
+            if (cConvType EQ 'd')
+                // Check for error
+                if (-360.0 > lpC1->at.aplFloat
+                 ||          lpC1->at.aplFloat > 360.0)
+                    goto DOMAIN_EXIT;
+            else
+            // If we're using Radians [-2p1, 2p1], ...
+            if (cConvType EQ 'r')
+                // Check for error
+                if (fabs (lpC1->at.aplFloat) > (2 * FloatPi))
+                    goto DOMAIN_EXIT;
+
+            // If we're converting from degrees or radians, ...
+            if (cConvType EQ 'r'
+             || cConvType EQ 'd')
+            {
+                // Check for error
+                if (lpC0->at.aplFloat < 0)
+                    goto DOMAIN_EXIT;
             } // End IF
 
             // Split cases based upon the Conversion Type
@@ -4797,25 +4883,28 @@ PN_YYSTYPE PN_MakeHc2Point
                         // Split cases based upon the 360 degrees residue
                         switch ((int) fmod (lpC1->at.aplFloat, 360))
                         {
-                            case 0:
+                            case    0:
                                 lpC0->at.aplHC2F.parts[0] =  aplFloat0;
                                 lpC0->at.aplHC2F.parts[1] =  0;
 
                                 break;
 
-                            case 90:
+                            case   90:
+                            case -270:
                                 lpC0->at.aplHC2F.parts[0] =  0;
                                 lpC0->at.aplHC2F.parts[1] =  aplFloat0;
 
                                 break;
 
-                            case 180:
+                            case  180:
+                            case -180:
                                 lpC0->at.aplHC2F.parts[0] = -aplFloat0;
                                 lpC0->at.aplHC2F.parts[1] =  0;
 
                                 break;
 
                             case 270:
+                            case -90:
                                 lpC0->at.aplHC2F.parts[0] =  0;
                                 lpC0->at.aplHC2F.parts[1] = -aplFloat0;
 
@@ -4862,17 +4951,80 @@ PN_YYSTYPE PN_MakeHc2Point
         case PN_NUMTYPE_HC2R:
 ////////case PN_NUMTYPE_HC4R:
 ////////case PN_NUMTYPE_HC8R:
-            // If we're using Unit Normalized Radians, ...
+            // If we're using Signed Unit Normalized Radians [-0.5, 0.5], ...
+            if (cConvType EQ 'h')
+            {
+                // Check for error
+                if (mpq_cmp_si (&lpC1->at.aplRat, -1, 2) < 0
+                 || mpq_cmp_si (&lpC1->at.aplRat,  1, 2) > 0)
+                    goto DOMAIN_EXIT;
+
+                // Convert from Signed Unit Normalized Radians [-0.5, 0.5] to Signed Degrees [-180, 180]
+                mpq_mul_si (&lpC1->at.aplRat, &lpC1->at.aplRat, 180, 1);
+
+                // Convert from Signed Degrees [-180, 180] to Degrees [0, 360]
+                mpq_add_si (&lpC1->at.aplRat, &lpC1->at.aplRat, 180, 1);
+
+                // Change the conversion type to Degrees
+                cConvType ='d';
+            } else
+            // If we're using Unit Normalized Radians [0, 1], ...
             if (cConvType EQ 'u')
             {
-                // Convert from Unit Normalized Radians to Degrees
+                // Check for error
+                if (mpq_cmp_si (&lpC1->at.aplRat,  0, 1) < 0
+                 || mpq_cmp_si (&lpC1->at.aplRat,  1, 1) > 0)
+                    goto DOMAIN_EXIT;
+
+                // Convert from Unit Normalized Radians [0, 1] to Degrees [0, 360]
                 mpq_mul_si (&lpC1->at.aplRat, &lpC1->at.aplRat, 360, 1);
 
                 // Change the conversion type to Degrees
                 cConvType ='d';
-            } // End IF
+            } else
+            // If we're using Degrees [-360, 360], ...
+            if (cConvType EQ 'd')
+                // Check for error
+                if (mpq_cmp_si (&lpC1->at.aplRat, -360, 1) < 0
+                 || mpq_cmp_si (&lpC1->at.aplRat,  360, 1) > 0)
+                    goto DOMAIN_EXIT;
+            else
+            // If we're using Radians [-2p1, 2p1], ...
+            if (cConvType EQ 'r')
+            {
+                APLVFP apl2p1 = {0},
+                       aplVfp = {0};
+                UBOOL  bRet;
+
+                // Create 2p1
+                mpfr_init0    (&apl2p1);
+                mpfr_set      (&apl2p1, &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
+                mpfr_mul_si   (&apl2p1, &apl2p1, 2, MPFR_RNDN);
+
+                // Convert the argument to VFP
+                mpfr_init_set_q (&aplVfp, &lpC1->at.aplRat, MPFR_RNDN);
+
+                // Check for error
+                bRet = mpfr_cmpabs (&aplVfp, &apl2p1) > 0;
+
+                // We no longer need this storage
+                mpfr_clear (&aplVfp);
+                mpfr_clear (&apl2p1);
+
+                if (bRet)
+                    goto DOMAIN_EXIT;
+            }  // End IF
 
             // If we're converting from degrees or radians, ...
+            if (cConvType EQ 'r'
+             || cConvType EQ 'd')
+            {
+                // Check for error
+                if (mpfr_sgn (&lpC0->at.aplVfp) < 0)
+                    goto DOMAIN_EXIT;
+            } // End IF
+
+            // Split cases based upon the Conversion Type
             switch (cConvType)
             {
                 case 'd':
@@ -5027,14 +5179,72 @@ PN_YYSTYPE PN_MakeHc2Point
             (*aNumTypeAction[lpC0->chType][chCom]) (lpC0, lppnLocalVars);
             (*aNumTypeAction[lpC1->chType][chCom]) (lpC1, lppnLocalVars);
 
-            // If we're using Unit Normalized Radians, ...
+            // If we're using Signed Unit Normalized Radians [-0.5, 0.5], ...
+            if (cConvType EQ 'h')
+            {
+                // Check for error
+                if (mpfr_cmp_d (&lpC1->at.aplVfp, -0.5) < 0
+                 || mpfr_cmp_d (&lpC1->at.aplVfp,  0.5) > 0)
+                    goto DOMAIN_EXIT;
+
+                // Convert from Signed Unit Normalized Radians [-0.5, 0.5] to Signed Degrees [-180, 180]
+                mpfr_mul_si (&lpC1->at.aplVfp, &lpC1->at.aplVfp, 180, MPFR_RNDN);
+
+                // Convert from Signed Degrees [-180, 180] to Degrees [0, 360]
+                mpfr_add_si (&lpC1->at.aplVfp, &lpC1->at.aplVfp, 180, MPFR_RNDN);
+
+                // Change the conversion type to Degrees
+                cConvType ='d';
+            } else
+            // If we're using Unit Normalized Radians [0, 1], ...
             if (cConvType EQ 'u')
             {
-                // Convert from Unit Normalized Radians to Degrees
+                // Check for error
+                if (mpfr_cmp_d (&lpC1->at.aplVfp, 0) < 0
+                 || mpfr_cmp_d (&lpC1->at.aplVfp, 1) > 0)
+                    goto DOMAIN_EXIT;
+
+                // Convert from Unit Normalized Radians [0, 1] to Degrees [0, 360]
                 mpfr_mul_si (&lpC1->at.aplVfp, &lpC1->at.aplVfp, 360, MPFR_RNDN);
 
                 // Change the conversion type to Degrees
                 cConvType ='d';
+            } else
+            // If we're using Degrees [-360, 360], ...
+            if (cConvType EQ 'd')
+                // Check for error
+                if (mpfr_cmp_d (&lpC1->at.aplVfp, -360.0) < 0
+                 || mpfr_cmp_d (&lpC1->at.aplVfp,  360.0) > 0)
+                    goto DOMAIN_EXIT;
+            else
+            // If we're using Radians [-2p1, 2p1], ...
+            if (cConvType EQ 'r')
+            {
+                APLVFP apl2p1 = {0};
+                UBOOL  bRet;
+
+                // Create 2p1
+                mpfr_init0    (&apl2p1);
+                mpfr_set      (&apl2p1, &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
+                mpfr_mul_si   (&apl2p1, &apl2p1, 2, MPFR_RNDN);
+
+                // Check for error
+                bRet = mpfr_cmpabs (&lpC1->at.aplVfp, &apl2p1) > 0;
+
+                // We no longer need this storage
+                mpfr_clear (&apl2p1);
+
+                if (bRet)
+                    goto DOMAIN_EXIT;
+            }  // End IF
+
+            // If we're converting from degrees or radians, ...
+            if (cConvType EQ 'r'
+             || cConvType EQ 'd')
+            {
+                // Check for error
+                if (mpfr_sgn (&lpC0->at.aplVfp) < 0)
+                    goto DOMAIN_EXIT;
             } // End IF
 
             // Split cases based upon the Conversion Type
@@ -5144,6 +5354,12 @@ PN_YYSTYPE PN_MakeHc2Point
     lpC0->chType = chType;
 
     return *lpC0;
+
+DOMAIN_EXIT:
+    // Signal the error
+    pn_yyerror (lppnLocalVars, PN_DOMAIN);
+
+    return *lpC0;       // Arbitrary value as the caller first checks ->bYYERROR
 } // End PN_MakeHc2Point
 
 
@@ -5345,6 +5561,12 @@ PN_YYSTYPE PN_MakeHcxPoint
     (LPPN_YYSTYPE  lpC0,            // HCx real coefficient (may be NULL)
      int           iCoeff,          // Coefficient #
      LPPN_YYSTYPE  lpC1,            // HCx imaginary <iCoeff> coefficient
+     char          cConvType,       // Conversion Type:  'i' = none
+                                    //                   'J' = none
+                                    //                   'd' = degrees
+                                    //                   'h' = signed unit normalized radians
+                                    //                   'r' = radians
+                                    //                   'u' = unit normalized radians
      LPPNLOCALVARS lppnLocalVars)   // Ptr to local pnLocalVars
 
 {
@@ -5372,12 +5594,7 @@ PN_YYSTYPE PN_MakeHcxPoint
 
         // Check for errors
         if (lppnLocalVars->lpCoeff[0] EQ NULL)
-        {
-            // Signal an error
-            pn_yyerror (lppnLocalVars, PN_WSFULL);
-
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Save the smaller value
         uNumStart = min (uNumStart, lpC0->uNumStart);
@@ -5396,12 +5613,7 @@ PN_YYSTYPE PN_MakeHcxPoint
 
         // Check for errors
         if (lppnLocalVars->lpCoeff[iCoeff] EQ NULL)
-        {
-            // Signal an error
-            pn_yyerror (lppnLocalVars, PN_WSFULL);
-
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Save the smaller value
         uNumStart = min (uNumStart, lpC1->uNumStart);
@@ -5434,12 +5646,7 @@ PN_YYSTYPE PN_MakeHcxPoint
 
         // Check for errors
         if (lppnLocalVars->lpCoeff[i] EQ NULL)
-        {
-            // Signal an error
-            pn_yyerror (lppnLocalVars, PN_WSFULL);
-
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Save the starting value
         lppnLocalVars->lpCoeff[i]->uNumStart = uNumStart;
@@ -5456,8 +5663,11 @@ PN_YYSTYPE PN_MakeHcxPoint
         case 2:
             pnRes = PN_MakeHc2Point (lppnLocalVars->lpCoeff[0],
                                      lppnLocalVars->lpCoeff[1],
-                                     'i',
+                                     cConvType,
                                      lppnLocalVars);
+            // Check for error
+            if (lppnLocalVars->bYYERROR)
+                goto SYNTAX_EXIT;
             break;
 
         case 4:
@@ -5471,9 +5681,25 @@ PN_YYSTYPE PN_MakeHcxPoint
             break;
 
         defstop
-            goto ERROR_EXIT;
+            goto SYNTAX_EXIT;
     } // End SWITCH
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    // Signal an error
+    pn_yyerror (lppnLocalVars, PN_WSFULL);
+
+    goto ERROR_EXIT;
+
+SYNTAX_EXIT:
+    // Signal an error
+    pn_yyerror (lppnLocalVars, PN_SYNTAX);
+
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     // Clear all lppnLocalVars->lpCoeff
 
     // Loop through all of the parts

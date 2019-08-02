@@ -1565,10 +1565,10 @@ HGLOBAL LoadWorkspaceGlobal_EM
                       bFcnDir = FALSE,      // TRUE iff the SYMENTRY is a FcnDir
                       bQuadFEATURE,         // TRUE iff the symbol is []FEATURE
                       bDispMPSuf,           // Save area for OptionFlags value
-                      bJ4i,                 // ...
                       bDisp0Imag,           // ...
                       bDispInfix,           // ...
                       bDispOctoDig;         // ...
+    UINT              uCNDSEP;              // ...
     LPVARARRAY_HEADER lpMemHdrObj = NULL;   // Ptr to the array header
     LPVOID            lpMemObj;             // Ptr to object global memory
     APLINT            aplInteger;           // Temporary integer
@@ -1580,7 +1580,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
     // Save OptionFlags for display to fixed
     //   values so we convert values on )LOAD,
     //   )SAVE, )COPY, )OUT, and []TF consistently.
-    SetOptionFlagsDisplay (&bJ4i, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
+    SetOptionFlagsDisplay (&uCNDSEP, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -2556,7 +2556,7 @@ ERROR_EXIT:
     hGlbObj = NULL;
 NORMAL_EXIT:
     // Restore the OptionFlags values
-    RestoreOptionFlagsDisplay (bJ4i, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
+    RestoreOptionFlagsDisplay (uCNDSEP, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
 
     return hGlbObj;
 } // End LoadWorkspaceGlobal_EM

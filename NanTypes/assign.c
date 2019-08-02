@@ -213,9 +213,6 @@ UBOOL AssignName_EM
                      || IsGlbTypeFcnDir_PTB (lptkSrc->tkData.tkSym->stData.stGlbData)
                      || IsGlbTypeDfnDir_PTB (lptkSrc->tkData.tkSym->stData.stGlbData));
 
-                // Get the source global memory handle
-                hGlbSrc = lptkSrc->tkData.tkSym->stData.stGlbData;
-
                 // Check for internal functions
                 if (lptkSrc->tkData.tkSym->stFlags.FcnDir)
                 {
@@ -233,6 +230,9 @@ UBOOL AssignName_EM
                 {
                     HGLOBAL hGlbNam;            // Target's global memory handle
                     STFLAGS stFlags;            // Target's flags after <CopyUDFO>
+
+                    // Get the source global memory handle
+                    hGlbSrc = lptkSrc->tkData.tkSym->stData.stGlbData;
 
                     // Copy the source global memory handle
                     //   and save it as the new global memory ptr

@@ -1,0 +1,12 @@
+Build #2168 -- Version 0.6.0.xx
+-------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NanTypes:
+
+ASSIGN.C:
+  Move stmt into inner nesting.
+
+SC_DEBUG.C:
+  Reorder macro calls as they are order dependent.

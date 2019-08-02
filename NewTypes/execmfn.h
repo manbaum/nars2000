@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -74,7 +74,9 @@ typedef enum tagMFO
     MFOE_MonShriek       ,      // 30:  Monadic Shriek
     MFOE_MatOpr          ,      // 31:  Matrix Operator
     MFOE_DydDot2         ,      // 32:  APL2's defn of Inner Product
-    MFOE_LENGTH                 // 33:  # entries in this enum
+    MFOE_DydMask         ,      // 33:  Dyadic function derived from Monadic Mask Operator
+    MFOE_DydMesh         ,      // 34:  ...                                  Mesh ...
+    MFOE_LENGTH                 // 35:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -129,6 +131,8 @@ typedef enum tagMFO
 #define MFON_MatOpr             L"#MatOpr"
 #define MFON_DetPerm            L"#DetPerm"
 #define MFON_DydDot2            L"#DydDot2"
+#define MFON_DydMask            L"#DydMask"
+#define MFON_DydMesh            L"#DydMesh"
 
 // Magic Function/Operator Variables
 #define $ALPHA          WS_UTF16_ALPHA

@@ -73,6 +73,8 @@ extern MAGIC_FCNOPR MFO_MonShriek;
 extern MAGIC_FCNOPR MFO_MatOpr;
 extern MAGIC_FCNOPR MFO_DetPerm;
 extern MAGIC_FCNOPR MFO_DydDot2;
+extern MAGIC_FCNOPR MFO_DydMask;
+extern MAGIC_FCNOPR MFO_DydMesh;
 
 
 //***************************************************************************
@@ -152,9 +154,9 @@ LPPL_YYSTYPE ExecuteMagicFunction_EM_YY
 LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN      lptkFunc,             // Ptr to function token
-     LPPL_YYSTYPE lpYYFcnStrLft,        // Ptr to left operand function strand (may be NULL if not an operator)
+     LPPL_YYSTYPE lpYYFcnStrLftOpr,     // Ptr to left operand function strand (may be NULL if not an operator)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand (may be NULL if not an operator)
-     LPPL_YYSTYPE lpYYFcnStrRht,        // Ptr to right operand function strand (may be NULL if not a dyadic operator)
+     LPPL_YYSTYPE lpYYFcnStrRhtOpr,     // Ptr to right operand function strand (may be NULL if not a dyadic operator)
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
      LPTOKEN      lptkAxis,             // Ptr to axis token (may be NULL)
      HGLOBAL      hGlbMFO,              // Magic function/operator global memory handle
@@ -187,14 +189,14 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
     } // End IF
 
     lpYYRes =
-      ExecDfnOprGlb_EM_YY (hGlbMFO,         // Magic function/operator global memory handle
-                           lptkLftArg,      // Ptr to left arg token
-                           lpYYFcnStrLft,   // Ptr to left operand function strand
-                           lpYYFcnStrOpr,   // Ptr to operator function strand
-                           lpYYFcnStrRht,   // Ptr to right operand function strand
-                           lptkAxis,        // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                           lptkRhtArg,      // Ptr to right arg token
-                           startLineType);  // Starting line type (see LINE_NUMS)
+      ExecDfnOprGlb_EM_YY (hGlbMFO,             // Magic function/operator global memory handle
+                           lptkLftArg,          // Ptr to left arg token
+                           lpYYFcnStrLftOpr,    // Ptr to left operand function strand
+                           lpYYFcnStrOpr,       // Ptr to operator function strand
+                           lpYYFcnStrRhtOpr,    // Ptr to right operand function strand
+                           lptkAxis,            // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                           lptkRhtArg,          // Ptr to right arg token
+                           startLineType);      // Starting line type (see LINE_NUMS)
     // If this magic function/operator uses a separate HTS, ...
     if (lphtsPTD NE NULL)
     {
@@ -840,6 +842,8 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MatOpr           ]  = Init1MagicFunction (MFON_MatOpr           , &MFO_MatOpr           , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DetPerm          ]  = Init1MagicFunction (MFON_DetPerm          , &MFO_DetPerm          , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydDot2          ]  = Init1MagicFunction (MFON_DydDot2          , &MFO_DydDot2          , lpMemPTD, hWndEC, NULL));
+    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydMask          ]  = Init1MagicFunction (MFON_DydMask          , &MFO_DydMask          , lpMemPTD, hWndEC, NULL));
+    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydMesh          ]  = Init1MagicFunction (MFON_DydMesh          , &MFO_DydMesh          , lpMemPTD, hWndEC, NULL));
 
     //***************************************************************
     //  N.B.:  If you define an additional MFO with a local

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -85,17 +85,27 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
      UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
-    LPPL_YYSTYPE lpYYFcnStrLft,         // Ptr to left operand function strand
-                 lpYYFcnStrRht,         // Ptr to right ...
-                 lpYYRes,               // Ptr to the result
-                 lpYYRes2;              // Ptr to secondary result
-    UBOOL        bLftOpr,               // TRUE iff left operand is a function/operator
-                 bRhtOpr;               //          right ...
-    LPPRIMFNS    lpPrimProtoLft;        // Ptr to left operand prototype function
-    LPPRIMFNS    lpPrimProtoRht;        // Ptr to right ...
-    LPTOKEN      lptkAxisOpr,           // Ptr to axis token (may be NULL)
-                 lptkAxisLft,           // Ptr to left operand axis token (may be NULL)
-                 lptkAxisRht;           // Ptr to right ...
+    LPPL_YYSTYPE      lpYYFcnStrLft,        // Ptr to left operand function strand
+                      lpYYFcnStrRht,        // Ptr to right ...
+                      lpYYRes = NULL,       // Ptr to the result
+                      lpYYRes2;             // Ptr to secondary result
+    UBOOL             bLftOpr,              // TRUE iff left operand is a function/operator
+                      bRhtOpr,              //          right ...
+                      bRet;                 // TRUE iff the result is valid
+    LPPRIMFNS         lpPrimProtoLft;       // Ptr to left operand prototype function
+    LPPRIMFNS         lpPrimProtoRht;       // Ptr to right ...
+    LPTOKEN           lptkAxisOpr,          // Ptr to axis token (may be NULL)
+                      lptkAxisLft,          // Ptr to left operand axis token (may be NULL)
+                      lptkAxisRht;          // Ptr to right ...
+    HGLOBAL           hGlbLft = NULL,       // Global memory handle
+                      hGlbRht = NULL,       // ...
+                      hGlbAxis = NULL;      // ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to global memory header
+                      lpMemHdrRht = NULL,   // ...
+                      lpMemHdrAxis = NULL;  // ...
+    LPVOID            lpMemAxis;            // Ptr to axis global memory data
+    LPAPLDIM          lpMemDimLft,          // Ptr to dimensions
+                      lpMemDimRht;          // ...
 
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_JOT);
 
@@ -189,7 +199,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
                                               lpYYFcnStrRht,            // Ptr to right operand function strand
                                               lptkRhtArg,               // Ptr to right arg token (may be NULL if niladic)
                                               lptkAxisRht);             // Ptr to right operand axis token (may be NULL)
-            if (lpYYRes2)
+            if (lpYYRes2 NE NULL)
             {
                 // Execute the left operand dyadically
                 //   between the (optional) left arg and the
@@ -215,9 +225,174 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
             break;
 
         case 0 * 2 + 1 * 1:     // V Jot F -> V F R or SYNTAX ERROR
-            // If there's a left arg, signal a SYNTAX ERROR
-            if (lptkLftArg)
-                goto LEFT_SYNTAX_EXIT;
+            // If there's a left arg, ...
+            if (lptkLftArg NE NULL)
+            {
+                // Check for the right operand as / or \ or some Axis operator variant
+                if (lpYYFcnStrRht->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+                 && (lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_SLASH
+                  || lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_SLASHBAR
+                  || lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_SLOPE
+                  || lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR))
+                {
+                    HGLOBAL           hGlbMFO;              // Magic function/operator global memory handle
+                    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+                    APLNELM           uCnt,                 // Loop counter
+                                      aplAxis;
+                    APLLONGEST        aplLongestAxis;       // Axis immediate value
+                    APLSTYPE          aplTypeLOP,           // Left operand storage type
+                                      aplTypeAxis;          // Axis         ...
+                    APLRANK           aplRankLft,           // Rank of left arg
+                                      aplRankRht,           // ...     right ...
+                                      aplRankLOP,           // ...     Left Operand
+                                      aplRankAxis;          // ...     Axis
+                    APLNELM           aplNELMAxis;
+                    TOKEN             tkAxis = {0};         // Temporary Axis token
+
+                    // Get ptr to PerTabData global memory
+                    lpMemPTD = GetMemPTD ();
+
+                    // Get the attributes (Type, NELM, and Rank)
+                    //   of the left & right args and left operand
+                    AttrsOfToken ( lptkLftArg            , NULL       , NULL       , &aplRankLft, NULL);
+                    AttrsOfToken ( lptkRhtArg            , NULL       , NULL       , &aplRankRht, NULL);
+                    AttrsOfToken (&lpYYFcnStrLft->tkToken, &aplTypeLOP, NULL       , &aplRankLOP, NULL);
+
+                    // If the Axis operator is present on the right Operand, ...
+                    if (lptkAxisRht NE NULL)
+                    {
+                        // Get the attributes (Type, NELM, and Rank)
+                        AttrsOfToken ( lptkAxisRht           , &aplTypeAxis, &aplNELMAxis, &aplRankAxis, NULL);
+
+                        // Check for errors in the Axis operator
+                        if (IsRank2P (aplRankAxis))
+                            goto RIGHT_AXIS_RANK_EXIT;
+                        if (!IsSingleton (aplNELMAxis))
+                            goto RIGHT_AXIS_LENGTH_EXIT;
+                        if (!IsNumeric (aplTypeAxis))
+                            goto RIGHT_AXIS_DOMAIN_EXIT;
+                    } // End IF
+
+                    // Check for errors in the left operand
+                    if (IsRank2P (aplRankLOP))
+                        goto LEFT_OPERAND_RANK_EXIT;
+
+                    if (!IsNumeric (aplTypeLOP))
+                        goto LEFT_OPERAND_DOMAIN_EXIT;
+
+                    // Get Left & right arg's global ptrs
+                    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+                    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+
+                    // Check for slashbar/slopebar with no explicit axis
+                    if (lptkAxisRht EQ NULL
+                     && (lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_SLASHBAR
+                      || lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR))
+                    {
+                        // Create a first coordinate axis value
+                        tkAxis.tkFlags.TknType  = TKT_VARIMMED;
+                        tkAxis.tkFlags.ImmType  = IMMTYPE_INT;
+                        tkAxis.tkSynObj         = soA;
+                        tkAxis.tkData.tkInteger = GetQuadIO ();
+
+                        // Point to a first coordinate axis
+                        lptkAxisRht = &tkAxis;
+                    } // End IF
+
+                    // Is it Mask or Mesh?
+                    if (lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_SLASH
+                     || lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_SLASHBAR)
+                    {
+                        // Check for errors In Mask
+                        if (!IsScalar (aplRankLft)
+                         && !IsScalar (aplRankRht))
+                        {
+                            // Must be the same rank
+                            if (aplRankLft NE aplRankRht)
+                                goto RANK_EXIT;
+
+                            // Skip over the header to dimensions
+                            lpMemDimLft = VarArrayBaseToDim (lpMemHdrLft);
+                            lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
+
+                            // Must be the same shape
+                            for (uCnt = 0; uCnt < aplRankLft; uCnt++)
+                            if (lpMemDimLft[uCnt] NE lpMemDimRht[uCnt])
+                                goto LENGTH_EXIT;
+                        } // End IF
+
+                        // Select the magic function/operator global memory handle
+                        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydMask];
+                    } else
+                    {
+                        // Check for errors in Mesh
+                        if (!IsScalar (aplRankLft)
+                         && !IsScalar (aplRankRht))
+                        {
+                            // Must be the same rank
+                            if (aplRankLft NE aplRankRht)
+                                goto RANK_EXIT;
+
+                            // Skip over the header to dimensions
+                            lpMemDimLft = VarArrayBaseToDim (lpMemHdrLft);
+                            lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
+
+                            // Get the axis value
+                            if (lptkAxisRht NE NULL)
+                            {
+                                // Get the Axis
+                                aplLongestAxis = GetGlbPtrs_LOCK (lptkAxisRht, &hGlbAxis, &lpMemHdrAxis);
+
+                                // If the Axis value is a global, ...
+                                if (lpMemHdrAxis NE NULL)
+                                    // Point to axis value(s)
+                                    lpMemAxis = VarArrayDataFmBase (lpMemHdrAxis);
+                                else
+                                    // Point to axis value
+                                    lpMemAxis = &aplLongestAxis;
+
+                                // Attempt to convert to an integer
+                                aplAxis = ConvertToInteger_SCT (aplTypeAxis, lpMemAxis, 0, &bRet);
+
+                                if (!bRet)
+                                    goto RIGHT_AXIS_DOMAIN_EXIT;
+
+                                // Convert to origin-0
+                                aplAxis -= GetQuadIO ();
+
+                                // The Axis value may be out-or-range, but that'll be caught in the Magic Function
+                            } else
+                                aplAxis = max (aplRankLft, aplRankRht) - 1;
+
+                            // Must be the same shape except for the axis
+                            for (uCnt = 0; uCnt < aplRankLft; uCnt++)
+                            if (uCnt NE aplAxis
+                             && lpMemDimLft[uCnt] NE lpMemDimRht[uCnt])
+                                goto LENGTH_EXIT;
+                        } // End IF
+
+                        // Select the magic function/operator global memory handle
+                        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydMesh];
+                    } // End IF/ELSE
+
+                    //  Use an internal magic function/operator.
+                    lpYYRes =
+                      ExecuteMagicOperator_EM_YY (lptkLftArg,               // Ptr to left arg token (may be NULL)
+                                                 &lpYYFcnStrOpr->tkToken,   // Ptr to function token
+                                                  lpYYFcnStrLft,            // Ptr to left operand function strand
+                                                  lpYYFcnStrOpr,            // Ptr to function strand
+                                                  NULL,                     // Ptr to right operand function strand (may be NULL)
+                                                  lptkRhtArg,               // Ptr to right arg token
+                                                  lptkAxisRht,              // Ptr to axis token (may be NULL)
+                                                  hGlbMFO,                  // Magic function/operator global memory handle
+                                                  NULL,                     // Ptr to HSHTAB struc (may be NULL)
+                                   bPrototyping ? LINENUM_PRO               // Starting line # type (see LINE_NUMS)
+                                                : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
+                    break;
+                } else
+                    // Signal a SYNTAX ERROR
+                    goto LEFT_SYNTAX_EXIT;
+            } // End IF
 
             // Execute the right operand dyadically
             //   between the left operand and the right arg.
@@ -239,7 +414,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
 
         case 1 * 2 + 0 * 1:     // F Jot V -> R F V
             // If there's a left arg, signal a SYNTAX ERROR
-            if (lptkLftArg)
+            if (lptkLftArg NE NULL)
                 goto LEFT_SYNTAX_EXIT;
 
             // Execute the left operand dyadically
@@ -267,43 +442,105 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
             break;
     } // End SWITCH
 
-    return lpYYRes;
+    goto NORMAL_EXIT;
 
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxisOpr);
-    return NULL;
+    goto ERROR_EXIT;
+
+RIGHT_AXIS_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkAxisRht);
+    goto ERROR_EXIT;
+
+RIGHT_AXIS_LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkAxisRht);
+    goto ERROR_EXIT;
+
+RIGHT_AXIS_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkAxisRht);
+    goto ERROR_EXIT;
+
+LEFT_OPERAND_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
 
 LEFT_OPERAND_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
-    return NULL;
+    goto ERROR_EXIT;
 
 RIGHT_OPERAND_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
-    return NULL;
+    goto ERROR_EXIT;
 
 LEFT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
-    return NULL;
+    goto ERROR_EXIT;
 
 RIGHT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
-    return NULL;
+    goto ERROR_EXIT;
 
 VALENCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_VALENCE_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
-    return NULL;
+    goto ERROR_EXIT;
 
 LEFT_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkLftArg);
-    return NULL;
+    goto ERROR_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    // If the axis is a global, ...
+    if (hGlbAxis NE NULL && lpMemHdrAxis NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbAxis); lpMemHdrAxis = NULL;
+    } // End IF
+
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+    } // End IF
+
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+    } // End IF
+
+    return lpYYRes;
 } // End PrimOpJotCommon_EM_YY
+
+
+//***************************************************************************
+//  Magic function/operator for dyadic mask and mesh
+//
+//  Dyadic Mask & Mesh
+//***************************************************************************
+
+#include "mf_jot.h"
 
 
 //***************************************************************************

@@ -1,6 +1,21 @@
 Version 0.5.12.xx consists of the following Builds:
 
 
+Build #2173 -- Version 0.5.12.xx
+--------------------------------
+
+* Fix Bug In System Command With No Tail
+
+Directory branches/bsmith/NewTypes:
+
+SC_COMMON.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Include "Hdr" In Name Of Result Of <MyGlobalLock>.
+
+SYSCMDS.C:
+  Fix bug with System Command with no following argument.
+
+
 Build #2171 -- Version 0.5.12.xx
 --------------------------------
 
@@ -8,7 +23,7 @@ Build #2171 -- Version 0.5.12.xx
 
 Directory branches/bsmith/NewTypes:
 
-REBAR.H::
+REBAR.H:
   Document Complex Angle Notation in the Language Bar.
 
 

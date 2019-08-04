@@ -5,5 +5,5 @@ Build #2171 -- Version 0.5.12.xx
 
 Directory branches/bsmith/NewTypes:
 
-REBAR.H::
+REBAR.H:
   Document Complex Angle Notation in the Language Bar.

@@ -145,8 +145,10 @@ SYSCMDS_ENUM ExecSysCmd
         wp = &lpwszLine[lstrlenW (lpwszLine)];
     else
     {
-        // Make the command into a zero-terminated string
-        *wp++ = WC_EOS;
+        // If it isn't already zero-terminated, ...
+        if (*wp NE WC_EOS)
+            // Make the command into a zero-terminated string
+            *wp++ = WC_EOS;
 
         // Otherwise, skip over all leading spaces
         while (IsWhiteW (*wp))

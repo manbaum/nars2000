@@ -90,7 +90,7 @@ HBITMAP hBitmapWS,                  // Handle to WS bitmap strip
 #define MAX_PTSIZE      72
 #define MIN_PTSIZE       8
 
-#define MAXTIPWIDTHINCHARS  70
+#define MAXTIPWIDTHINCHARS  80
 
 
 //***************************************************************
@@ -3013,6 +3013,15 @@ typedef struct tagLANGCHARS
                                            L"Keyboard:  Alt-'5'\n\n"
                                            L"Unicode:  0x2205 or 8709"},
         LANGCHARS_SEPARATOR
+        {L"a"                       , {0}, L"Complex Angle Notation",
+                                           L"This infix notation for a Complex Number may take one of four forms:  1ad45, 1ah0.25, 1ar2, or 1au0.5.  "
+                                           L"The number on the left is the unsigned magnitude of the distance from the origin to the Complex number; "
+                                           L"the number on the right is the Angle of the Complex number whose units depend upon the infix notation:\r\n\r\n"
+                                           L"* for 'ad', the Angle is in units of Signed Degrees in the domain [" WS_UTF16_OVERBAR L"360, 360];\r\n"
+                                           L"* for 'ah', the Angle is in units of Signed Half Unit Normalized [" WS_UTF16_OVERBAR L"0.5, 0.5];\r\n"
+                                           L"* for 'ar', the Angle is in units of Signed Radians [" WS_UTF16_OVERBAR L"2p1, 2p1];\r\n"
+                                           L"* for 'au', the Angle is in units of Unsigned Unit Normalized [0, 1]."
+                                           },
         {L"b"                       , {0}, L"Base Point Notation",
                                            L"This infix notation make it easy to enter numeric constants in an abritrary base as in 16bFFFF to represent 16" WS_UTF16_UPTACK L"15 15 15 15 or 65535.  "
                                            L"The number to the left of the b is the base of the number system for the characters to the right of the b."
@@ -3028,8 +3037,6 @@ typedef struct tagLANGCHARS
                                            },
         {L"iJ"                      , {0}, L"Complex Point Notation",
                                            L"This infix notation alllows you to enter numeric constants of the form 2.3i4.5 or 2.3J4.5 as a Complex number."
-                                           L"  Alternate forms of Angle in Degrees (ad -- as in 1ad45 for magnitude 1 at an angle of 45 degrees) and Angle in Radians"
-                                           L" (ar -- as in 2ar3 for magnitude 2 at an angle of 3 radians)."
                                            L"  A suffix notation of 2i (=0i2) is also recognized."
                                            },
         {L"ijk"                     , {0}, L"Quaternion Point Notation",

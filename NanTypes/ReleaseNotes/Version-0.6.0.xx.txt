@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2172 -- Version 0.6.0.xx
+-------------------------------
+
+* Document Complex Angle Notation In Language Bar
+
+Directory branches/bsmith/NanTypes:
+
+REBAR.H:
+  Document Complex Angle Notation in the Language Bar.
+
+
 Build #2170 -- Version 0.6.0.xx
 -------------------------------
 

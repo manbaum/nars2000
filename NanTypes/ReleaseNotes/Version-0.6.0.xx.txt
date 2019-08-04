@@ -1,6 +1,21 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2174 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In System Command With No Tail
+
+Directory branches/bsmith/NanTypes:
+
+SC_COMMON.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Include "Hdr" In Name Of Result Of <MyGlobalLock>.
+
+SYSCMDS.C:
+  Fix bug with System Command with no following argument.
+
+
 Build #2172 -- Version 0.6.0.xx
 -------------------------------
 

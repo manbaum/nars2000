@@ -55,7 +55,7 @@ void MakeWorkspaceNameCanonical
     // If the name doesn't begin with a drive letter and
     //   doesn't start at the root or a dot, prepend the
     //   default dir
-    if (lpwszDefDir                 // Not NULL
+    if (lpwszDefDir NE NULL         // Not NULL
      && lpwszInp[0] NE WC_EOS       // Non-empty,
      && ((lpwszInp[0] EQ L'.'
        && lpwszInp[1] EQ L'.')      // and up one dir
@@ -100,7 +100,7 @@ void AppendBackslash
     uLen = lstrlenW (lpwsz);
 
     // If there's no trailing backslash, ...
-    if (uLen && lpwsz[uLen - 1] NE WC_SLOPE)
+    if (uLen NE 0 && lpwsz[uLen - 1] NE WC_SLOPE)
         // Append one
         strcatW (lpwsz, WS_SLOPE);
 } // End AppendBackslash
@@ -295,13 +295,14 @@ UBOOL SaveNewWsid_EM
     (LPAPLCHAR lpMemSaveWSID)           // Ptr to []WSID to save (includes WS_WKSEXT)
 
 {
-    HGLOBAL      hGlbWSID;              // []WSID global memory handle
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    int          iLen,                  // Length of []WSID (with WS_WKSEXT)
-                 iLen2;                 // ...              (w/o  ...)
-    APLUINT      ByteWSID;              // # bytes in the []WSID
-    LPAPLCHAR    lpMemNewWSID;          // Ptr to new []WSID global memory
-    UBOOL        bRet = FALSE;          // TRUE iff result is valid
+    HGLOBAL           hGlbWSID;             // []WSID global memory handle
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+    int               iLen,                 // Length of []WSID (with WS_WKSEXT)
+                      iLen2;                // ...              (w/o  ...)
+    APLUINT           ByteWSID;             // # bytes in the []WSID
+    LPVARARRAY_HEADER lpMemHdrWSID = NULL;  // Ptr to new []WSID global memory header
+    LPAPLCHAR         lpMemNewWSID;         // Ptr to new []WSID global memory
+    UBOOL             bRet = FALSE;         // TRUE iff result is valid
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -310,7 +311,7 @@ UBOOL SaveNewWsid_EM
     iLen = lstrlenW (lpMemSaveWSID);
 
     // If the []WSID is non-empty, ...
-    if (iLen)
+    if (iLen NE 0)
     {
         // Omit the trailing WS_WKSEXT
         iLen2 = iLen - WS_WKSEXT_LEN;
@@ -333,9 +334,9 @@ UBOOL SaveNewWsid_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemNewWSID = MyGlobalLock000 (hGlbWSID);
+        lpMemHdrWSID = MyGlobalLock000 (hGlbWSID);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemNewWSID)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemHdrWSID)
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_CHAR;
@@ -347,16 +348,16 @@ UBOOL SaveNewWsid_EM
 #undef  lpHeader
 
         // Fill in the dimension
-        *VarArrayBaseToDim (lpMemNewWSID) = iLen2;
+        *VarArrayBaseToDim (lpMemHdrWSID) = iLen2;
 
         // Skip over the header and dimensions to the data
-        lpMemNewWSID = VarArrayDataFmBase (lpMemNewWSID);
+        lpMemNewWSID = VarArrayDataFmBase (lpMemHdrWSID);
 
         // Copy data to the new []WSID
         CopyMemoryW (lpMemNewWSID, lpMemSaveWSID, iLen2);
 
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbWSID); lpMemNewWSID = NULL;
+        MyGlobalUnlock (hGlbWSID); lpMemHdrWSID = NULL;
     } else
         hGlbWSID = hGlbV0Char;
 
@@ -382,7 +383,7 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (iLen)
+    if (iLen NE 0)
         // Restore zapped char
         lpMemSaveWSID[iLen2] = L'.';
 
@@ -495,7 +496,7 @@ UBOOL CheckCommandLine
     UINT    uCnt;                       // Loop counter
 
     // If there's a command tail, ...
-    if (lpwszTail[0])
+    if (lpwszTail[0] NE WC_EOS)
         // Convert the argument line to argc/argv format
         *lplplpwszArgs =
           CommandLineToArgvW (lpwszTail, lpuArgCnt);
@@ -519,7 +520,7 @@ UBOOL CheckCommandLine
 
             case 2:             // Dir and switch
                 // If there's a switch specified, ...
-                if (lpwszSwitch)
+                if (lpwszSwitch NE NULL)
                     break;
 
                 // Fall through to error code
@@ -531,7 +532,7 @@ UBOOL CheckCommandLine
         } // End SWITCH
     } else
     {
-        if (*lpuArgCnt)
+        if (*lpuArgCnt NE 0)
             lpwszSwitch = (*lplplpwszArgs)[0];
 
         // Check for too much on the line
@@ -544,7 +545,7 @@ UBOOL CheckCommandLine
     } // End IF/ELSE
 
     // If there's a switch, ...
-    if (lpwszSwitch)
+    if (lpwszSwitch NE NULL)
     {
         // Set a ptr to the first part
         *lplpwszLeadRange = lpwszSwitch;
@@ -553,7 +554,7 @@ UBOOL CheckCommandLine
         lpw = strchrW (lpwszSwitch, L'-');
 
         // If it's present, ...
-        if (lpw)
+        if (lpw NE NULL)
         {
             // Zap it, terminating the first range
             *lpw = WC_EOS;
@@ -593,7 +594,7 @@ LPWCHAR SplitSwitches
     lpwszCmd = SkipToStrDQW (lpwszTail, WS_WHITE);
     wcTmp = *lpwszCmd; *lpwszCmd++ = WC_EOS; lpwszNxt = lpwszCmd;
 
-    if (wcTmp)
+    if (wcTmp NE WC_EOS)
     while (TRUE)
     {
         // Move the switches down over any leading blanks

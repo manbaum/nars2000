@@ -50,7 +50,7 @@ static LPAPLCHAR DydBody[] =
  L"  ⎕ERROR ((≢"S L"L)≢≢"S L"X)/'LENGTH ERROR'",
  L"  ⎕ERROR (~∧/"S L"X∊⍳⍴⍴"S L"R)/'AXIS ERROR'",
  L"  ⎕ERROR ((≢"S L"X)≢≢∪"S L"X)/'AXIS ERROR'",
- L"  "S L"A←((⍳⍴⍴"S L"R)∊"S L"X)\\(1/"S L"L)[⍋"S L"X]",  // Double the \ to avoid it being confused with a character escape sequence
+ L"  "S L"A←((⍳⍴⍴"S L"R)∊"S L"X)\\(1/"S L"L)[⍋1/"S L"X]",  // Double the \ to avoid it being confused with a character escape sequence
  L"  "S L"B←(⍳⍴⍴"S L"R)~"S L"X",
  L"  "S L"A["S L"B]←⍳¨(⍴1/"S L"R)["S L"B]",
  L":else",

@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2178 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In Display Of VFP Numbers
+
+Directory branches/bsmith/NanTypes:
+
+DISPLAY.C:
+  In <FormatAplVfpFC>, calculate the # significant digits separately for large and small numbers.
+
+
 Build #2176 -- Version 0.6.0.xx
 -------------------------------
 

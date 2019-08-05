@@ -1,0 +1,9 @@
+Build #2177 -- Version 0.5.12.xx
+--------------------------------
+
+* Fix Bug In Display Of VFP Numbers
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  In <FormatAplVfpFC>, calculate the # significant digits separately for large and small numbers.

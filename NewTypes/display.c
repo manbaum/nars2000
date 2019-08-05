@@ -2538,9 +2538,14 @@ LPAPLCHAR FormatAplVfpFC
             {
                 // If nDigits is # fractional digits, ...
                 if (bFractDigs)
+                {
                     iFrcDigs = (int) nDigits;
-                else
+                    iSigDigs = iIntDigs + iFrcDigs;
+                } else
+                {
                     iFrcDigs = max (iPrcDigs - iIntDigs, 0);
+                    iSigDigs = (int) nDigits;
+                } // End IF/ELSE
             } // End IF/ELSE
         } else
         // abs (number) < 1
@@ -2554,21 +2559,26 @@ LPAPLCHAR FormatAplVfpFC
             {
                 // If nDigits is # fractional digits, ...
                 if (bFractDigs)
+                {
                     iFrcDigs = (int) nDigits;
-                else
+                    iSigDigs = iIntDigs + iFrcDigs;
+                } else
+                {
                     iFrcDigs = (int) nDigits - expptr;
+                    iSigDigs = (int) nDigits;
+                } // End IF/ELSE
             } // End IF/ELSE
         } // End IF/ELSE
 
         // If we're not displaying in E-format, ...
         if (nDigits >= 0)
         {
-            // If abs (number) >= 1,
-            //   and nDigits is # fractional digits, ...
-            if (expptr > 0
-             && bFractDigs)
-                // Add in the # integer digits
-                iSigDigs += expptr;
+////        // If abs (number) >= 1,
+////        //   and nDigits is # fractional digits, ...
+////        if (expptr > 0
+////         && bFractDigs)
+////            // Add in the # integer digits
+////            iSigDigs += expptr;
 ////////////else
 ////////////    // iSigDigs set above
 

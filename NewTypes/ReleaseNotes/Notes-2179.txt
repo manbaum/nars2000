@@ -1,0 +1,12 @@
+Build #2179 -- Version 0.5.12.xx
+--------------------------------
+
+* Implement Chained Guards In Anonymous Functions/Operators
+
+Directory branches/bsmith/NewTypes:
+
+AFOFNS.C:
+  In <AfoGuard>, if the Cond is FALSE, skip over all adjacent AFOGUARD statements.
+
+TOKENIZE.C:
+  In <fnClnDone>, allow Chained Guard statements.

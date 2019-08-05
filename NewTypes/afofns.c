@@ -259,22 +259,27 @@ UBOOL AfoGuard
          goto DOMAIN_EXIT;
 
     // If the guard is FALSE, ...
-    if (aplLongestRht EQ 0)
+    if (aplLongestRht EQ FALSE)
     {
         // If we're at the EOL, ...
         if (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_EOL)
             goto SYNTAX_EXIT;
 
-        Assert (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_EOS);
+        // While the next stmt is AFOGUARD, ...
+        while (lpplLocalVars->lptkNext->tkFlags.TknType EQ TKT_AFOGUARD)
+        {
+            // And the one before that is an EOS
+            Assert (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_EOS);
 
-        // Skip over the current stmt to the last token of the next stmt
-        // When pl_yylex gets the next token it decrements this ptr first
-        //   so that the next token it processes is an EOS/EOL which causes
-        //   it to skip the next stmt.
-        lpplLocalVars->lptkNext += lpplLocalVars->lptkNext[-1].tkData.tkIndex;
+            // Skip over the current stmt to the last token of the next stmt
+            // When pl_yylex gets the next token it decrements this ptr first
+            //   so that the next token it processes is an EOS/EOL which causes
+            //   it to skip the next stmt.
+            lpplLocalVars->lptkNext += lpplLocalVars->lptkNext[-1].tkData.tkIndex;
 
-        // Save a ptr to the EOS/EOL token
-        lpplLocalVars->lptkEOS = lpplLocalVars->lptkNext - 1;
+            // Save a ptr to the EOS/EOL token
+            lpplLocalVars->lptkEOS = lpplLocalVars->lptkNext - 1;
+        } // End WHILE
     } // End IF
 
     goto NORMAL_EXIT;

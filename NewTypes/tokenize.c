@@ -2124,14 +2124,19 @@ UBOOL fnClnDone
     // If we're in an AFO, ...
     if (lptkLocalVars->lpSF_Fcns->bAFO)
     {
-        UBOOL bSyntErr;
-
-        // If the previous stmt is a guard stmt, ...
-        bSyntErr = lptkLocalVars->lptkLastEOS->tkFlags.bGuardStmt;
-
         if (lptkLocalVars->lptkLastEOS[1].tkFlags.TknType EQ TKT_NOP)
             // Change the token type from NOP to AFOGUARD and set the SYNOBJ
             SetTknTypeSynObj (&lptkLocalVars->lptkLastEOS[1], TKT_AFOGUARD);
+
+        // If the last stmt is a Guard Stmt, ...
+        if (lptkLocalVars->lptkLastEOS->tkFlags.bGuardStmt)
+        {
+            // Then the one before that is AFORETURN
+            Assert (lptkLocalVars->lptkLastEOS[1].tkFlags.TknType EQ TKT_AFORETURN);
+
+            // Change the token type from AFORETURN to AFOGUARD
+            SetTknTypeSynObj (&lptkLocalVars->lptkLastEOS[1], TKT_AFOGUARD);
+        } // End IF
 
         // End the stmt
         if (!fnDiaDone (lptkLocalVars))
@@ -2143,11 +2148,6 @@ UBOOL fnClnDone
 
         // Mark as the previous stmt is a guard stmt
         lptkLocalVars->lptkLastEOS->tkFlags.bGuardStmt = TRUE;
-
-        // If it's a SYNTAX ERROR, ...
-        if (bSyntErr)
-            // Pass it on
-            lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
 
         return TRUE;
     } else

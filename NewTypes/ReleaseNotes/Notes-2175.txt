@@ -1,0 +1,9 @@
+Build #2175 -- Version 0.5.12.xx
+--------------------------------
+
+* Fix Bug In Dyadic Squad With Scalar Axis
+
+Directory branches/bsmith/NewTypes:
+
+MF_SQUAD.H:
+  Fix bug in Dyadic Squad with scalar Axis.

@@ -9220,38 +9220,20 @@ void TCA_NEST_BOOL
      LPUBOOL     lpbRet)
 
 {
-#define lpSymEntry  ((LPSYMENTRY *) lpaplNested)[uInt]
-#define arrType     TranslateImmTypeToArrayType (lpSymEntry->stFlags.ImmType)
+    UBOOL bRet = FALSE;
 
-    // Split cases based upon the ptr type bits
-    switch (GetPtrTypeDir (lpaplNested[uInt]))
-    {
-        case PTRTYPE_STCONST:
-            // If it's numeric, ...
-            lpAllTypes->aplInteger =
-              ConvertToInteger_SCT (arrType,                        // Arg storage type
-                                   &lpSymEntry->stData.stLongest,   // Ptr to global memory
-                                    0,                              // Index into ...
-                                    lpbRet);                        // Ptr to TRUE iff the result is valid
-            // If the flag ptr is valid, ...
-            if (lpbRet NE NULL)
-                // Ensure the value is Boolean
-                lpbRet[0] = IsBooleanValue (lpAllTypes->aplInteger);
+    // If the flag ptr is valid, ...
+    if (lpbRet NE NULL)
+        // Point to our local copy
+        lpbRet = &bRet;
 
-            break;
+    TCA_NEST_INT (lpaplNested,
+                  uInt,
+                  lpAllTypes,
+                  lpbRet);
 
-        case PTRTYPE_HGLOBAL:
-            // If the flag ptr is valid, ...
-            if (lpbRet NE NULL)
-                // Mark as in error
-                lpbRet[0] = FALSE;
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-#undef  arrType
-#undef  lpSymEntry
+    // Check for errors
+    lpbRet[0] &= IsBooleanValue (lpAllTypes->aplInteger);
 } // TCA_NEST_BOOL
 
 
@@ -9269,6 +9251,13 @@ void TCA_NEST_INT
 #define lpSymEntry  ((LPSYMENTRY *) lpaplNested)[uInt]
 #define arrType     TranslateImmTypeToArrayType (lpSymEntry->stFlags.ImmType)
 
+    UBOOL bRet = FALSE;
+
+    // If the flag ptr is valid, ...
+    if (lpbRet NE NULL)
+        // Point to our local copy
+        lpbRet = &bRet;
+
     // Split cases based upon the ptr type bits
     switch (GetPtrTypeDir (lpSymEntry))
     {
@@ -9282,11 +9271,31 @@ void TCA_NEST_INT
             break;
 
         case PTRTYPE_HGLOBAL:
-            // If the flag ptr is valid, ...
-            if (lpbRet NE NULL)
-                // Mark as in error
-                lpbRet[0] = FALSE;
+        {
+            LPVARARRAY_HEADER lpMemHdrObj;
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrObj = MyGlobalLockVar (lpSymEntry);
+
+            // Ensure the object is a numeric scalar
+            lpbRet[0] = (IsNumeric (lpMemHdrObj->ArrType)
+                      && IsScalar  (lpMemHdrObj->Rank));
+            // Check for errors
+            if (lpbRet[0])
+            {
+                // If it's numeric, ...
+                lpAllTypes->aplInteger =
+                  ConvertToInteger_SCT (lpMemHdrObj->ArrType,               // Arg storage type
+                                        VarArrayDataFmBase (lpMemHdrObj),   // Ptr to global memory
+                                        0,                                  // Index into ...
+                                        lpbRet);                            // Ptr to TRUE iff the result is valid
+            } // End IF
+
+            // We no longer need this ptr
+            MyGlobalUnlock (lpSymEntry); lpMemHdrObj = NULL;
+
             break;
+        } // End PTRTYPE_HGLOBAL
 
         defstop
             break;
@@ -9310,6 +9319,13 @@ void TCA_NEST_FLT
 #define lpSymEntry  ((LPSYMENTRY *) lpaplNested)[uInt]
 #define arrType     TranslateImmTypeToArrayType (lpSymEntry->stFlags.ImmType)
 
+    UBOOL bRet = FALSE;
+
+    // If the flag ptr is valid, ...
+    if (lpbRet NE NULL)
+        // Point to our local copy
+        lpbRet = &bRet;
+
     // Split cases based upon the ptr type bits
     switch (GetPtrTypeDir (lpaplNested[uInt]))
     {
@@ -9318,15 +9334,36 @@ void TCA_NEST_FLT
             lpAllTypes->aplFloat =
               ConvertToFloat (arrType,                      // Arg storage type
                              &lpSymEntry->stData.stLongest, // Ptr to global memory
+                              0,                            // Index into <lpSymGlbArg>
                               lpbRet);                      // Ptr to TRUE iff the result is valid
             break;
 
         case PTRTYPE_HGLOBAL:
-            // If the flag ptr is valid, ...
-            if (lpbRet NE NULL)
-                // Mark as in error
-                lpbRet[0] = FALSE;
+        {
+            LPVARARRAY_HEADER lpMemHdrObj;
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrObj = MyGlobalLockVar (lpSymEntry);
+
+            // Ensure the object is a numeric scalar
+            lpbRet[0] = (IsNumeric (lpMemHdrObj->ArrType)
+                      && IsScalar  (lpMemHdrObj->Rank));
+            // Check for errors
+            if (lpbRet[0])
+            {
+                // If it's numeric, ...
+                lpAllTypes->aplFloat =
+                  ConvertToFloat (lpMemHdrObj->ArrType,             // Arg storage type
+                                  VarArrayDataFmBase (lpMemHdrObj), // Ptr to global memory
+                                  0,                                // Index into ...
+                                  lpbRet);                          // Ptr to TRUE iff the result is valid
+            } // End IF
+
+            // We no longer need this ptr
+            MyGlobalUnlock (lpSymEntry); lpMemHdrObj = NULL;
+
             break;
+        } // End PTRTYPE_HGLOBAL
 
         defstop
             break;
@@ -9347,34 +9384,53 @@ void TCA_NEST_CHAR
      LPUBOOL     lpbRet)
 
 {
-    UBOOL bRet;
+#define lpSymEntry  ((LPSYMENTRY *) lpaplNested)[uInt]
+
+    UBOOL bRet = FALSE;
+
+    // If the flag ptr is valid, ...
+    if (lpbRet NE NULL)
+        // Point to our local copy
+        lpbRet = &bRet;
+
 
     // Split cases based upon the ptr type bits
     switch (GetPtrTypeDir (lpaplNested[uInt]))
     {
         case PTRTYPE_STCONST:
             // Determine if it's a character
-            bRet = IsImmChr (((LPSYMENTRY) lpaplNested)[uInt].stFlags.ImmType);
+            lpbRet[0] = IsImmChr (((LPSYMENTRY) lpaplNested)[uInt].stFlags.ImmType);
 
             // If it's character, ...
-            if (bRet)
+            if (lpbRet[0])
                 lpAllTypes->aplChar = ((LPSYMENTRY) lpaplNested)[uInt].stData.stChar;
-            // If the flag ptr is valid, ...
-            if (lpbRet NE NULL)
-                // Mark as done
-                lpbRet[0] = bRet;
             break;
 
         case PTRTYPE_HGLOBAL:
-            // If the flag ptr is valid, ...
-            if (lpbRet NE NULL)
-                // Mark as in error
-                lpbRet[0] = FALSE;
+        {
+            LPVARARRAY_HEADER lpMemHdrObj;
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrObj = MyGlobalLockVar (lpSymEntry);
+
+            // Ensure the object is a numeric scalar
+            lpbRet[0] = (IsSimpleChar (lpMemHdrObj->ArrType)
+                      && IsScalar     (lpMemHdrObj->Rank));
+            // Check for errors
+            if (lpbRet[0])
+                // If it's character, ...
+                lpAllTypes->aplChar =
+                  *(LPAPLCHAR) VarArrayDataFmBase (lpMemHdrObj);
+            // We no longer need this ptr
+            MyGlobalUnlock (lpSymEntry); lpMemHdrObj = NULL;
+
             break;
+        } // End PTRTYPE_HGLOBAL
 
         defstop
             break;
     } // End SWITCH
+#undef  lpSymEntry
 } // TCA_NEST_CHAR
 
 

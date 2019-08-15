@@ -62,7 +62,7 @@ UBOOL CmdSave_EM
                  bDisp0Imag,                // ...
                  bDispInfix,                // ...
                  bDispOctoDig;              // ...
-    UINT         uCNDSEP;                   // ...
+    APLCHAR      lpwCopyFC[FCNDX_LENGTH];   // ...
     APLU3264     uNameLen;                  // Length of the object name in WCHARs
     int          iCmp;                      // Comparison result
     UINT         uGlbCnt = 0,               // # entries in [Globals] section
@@ -86,7 +86,7 @@ UBOOL CmdSave_EM
     // Save OptionFlags for display to fixed
     //   values so we convert values on )LOAD,
     //   )SAVE, )COPY, )OUT, and []TF consistently.
-    SetOptionFlagsDisplay (&uCNDSEP, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
+    SetOptionFlagsDisplay (lpwCopyFC, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
 
     // Skip to the next blank
     //   past what might be a DoubleQuoted string
@@ -321,7 +321,7 @@ UBOOL CmdSave_EM
         if (lpSymTabNext->stFlags.Inuse)        // Must be Inuse
         // Handle different SI levels
         for (lpSymEntry = lpSymTabNext;
-             lpSymEntry;
+             lpSymEntry NE NULL;
              lpSymEntry = lpSymEntry->stPrvEntry)
         if (lpSymEntry->stHshEntry->htGlbName NE NULL   // Must have a name (not steZero, etc.),
          && lpSymEntry->stFlags.ObjName NE OBJNAME_MFO  // and not be a Magic Function/Operator,
@@ -377,6 +377,7 @@ UBOOL CmdSave_EM
                         savedWsVar_CB.lpDict       = lpDict;
                         savedWsVar_CB.iMaxLength   = 1000;
                         savedWsVar_CB.iIndex       = -1;
+                        savedWsVar_CB.lpwCopyFC    = lpwCopyFC;
 
                         // Append separator
                         *lpaplChar++ = L'=';
@@ -392,7 +393,8 @@ UBOOL CmdSave_EM
                                                  0,                                 // Object rank
                                                  NULL,                              // Ptr to object dimensions
                                                  NULL,                              // Ptr to common VFP array precision (0 if none) (may be NULL)
-                                                 NULL);                             // Ptr to array header
+                                                 NULL,                              // Ptr to array header
+                                                 NULL);                             // Ptr to the data
                             // Split cases based upon the immediate type
                             switch (stFlags.ImmType)
                             {
@@ -410,7 +412,7 @@ UBOOL CmdSave_EM
                                                      stFlags.ImmType,                   // Immediate type
                                                     &lpSymEntry->stData.stLongest,      // Ptr to value to format
                                                      DEF_MAX_QUADPP_IEEE,               // Precision to use
-                                                     UTF16_DOT,                         // Char to use as decimal separator
+                                                     DecSep,                            // Char to use as decimal separator
                                                      UTF16_BAR,                         // Char to use as overbar
                                                      FLTDISPFMT_RAWFLT,                 // Float display format
                                                      TRUE);                             // TRUE iff we're to substitute text for infinity
@@ -704,7 +706,7 @@ NORMAL_EXIT:
     EXIT_TEMP_OPEN
 
     // Restore the OptionFlags values
-    RestoreOptionFlagsDisplay (uCNDSEP, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
+    RestoreOptionFlagsDisplay (lpwCopyFC, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
 
     return bRet;
 } // End CmdSave_EM
@@ -1276,17 +1278,17 @@ LPAPLCHAR SavedWsFormGlbFcn
                         lpaplCharMon =
                           FormatAplIntFC (lpaplCharMon,             // Ptr to output save area
                                           lpMemMonInfo->IncSubFns,  // The value to format
-                                          UTF16_OVERBAR);           // Char to use as overbar
+                                          UTF16_BAR);               // Char to use as overbar
                         // Format the ExcSubFns value
                         lpaplCharMon =
                           FormatAplIntFC (lpaplCharMon,             // Ptr to output save area
                                           lpMemMonInfo->ExcSubFns,  // The value to format
-                                          UTF16_OVERBAR);           // Char to use as overbar
+                                          UTF16_BAR);               // Char to use as overbar
                         // Format the Count value
                         lpaplCharMon =
                           FormatAplIntFC (lpaplCharMon,             // Ptr to output save area
                                           lpMemMonInfo->Count,      // The value to format
-                                          UTF16_OVERBAR);           // Char to use as overbar
+                                          UTF16_BAR);               // Char to use as overbar
                         // Append a separator
                         lpaplCharMon[-1] = L',';
                     } // End FOR
@@ -1441,7 +1443,10 @@ LPAPLCHAR SavedWsFormGlbVar
     APLUINT      uObj,                  // WS object loop counter
                  uQuadPP,               // []PP save area
                  uCommPrec;             // Common precision for an array of VFP numbers (0 if none)
-    LPVOID       lpMemObj = NULL;       // Ptr to WS object global memory
+    LPVOID       lpMemHdrObj = NULL;    // Ptr to WS object global memory header
+    LPAPLDIM     lpMemDimObj;           // ...                            dimensions
+    LPVOID       lpMemObj;              // ...                            data
+    VARARRAY_HEADER varArrHdrFC;        // FC header
     LPAPLCHAR    lpMemProKeyName,       // Ptr to profile keyname
                  lpaplCharStart;        // Ptr to start of buffer
     UINT         uBitIndex;             // Bit index when marching through Booleans
@@ -1487,11 +1492,11 @@ LPAPLCHAR SavedWsFormGlbVar
         if (bUsrDfn)
         {
             // Lock the memory to get a ptr to it
-            lpMemObj = MyGlobalLockDfn (hGlbObj);
+            lpMemHdrObj = MyGlobalLockDfn (hGlbObj);
 
             // Copy the STE name instead as we don't use :nnn convention in
             //   function arrays
-#define lpHeader        ((LPDFN_HEADER) lpMemObj)
+#define lpHeader        ((LPDFN_HEADER) lpMemHdrObj)
             // ***FIXME*** -- We certainly use :nnn in function arrays as in Z{is}(L{jot}lmx)MonPower 2
             lpaplChar =
               CopySteName (lpaplChar,               // Ptr to output area
@@ -1515,15 +1520,60 @@ LPAPLCHAR SavedWsFormGlbVar
     *lpaplChar++ = L'V';
     *lpaplChar++ = L' ';
 
-    // Lock the memory to get a ptr to it
-    lpMemObj = MyGlobalLockVar (hGlbObj);
+    // If this var is []FC, ...
+    if (IsSymSysName (lpSymEntry, $QUAD_FC))
+    {
+        // Zap the global memory handle
+        //   so we don't unlock it
+        hGlbObj     = NULL;
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemObj)
-    // Get the array attributes
-    aplTypeObj = lpHeader->ArrType;
-    aplNELMObj = lpHeader->NELM;
-    aplRankObj = lpHeader->Rank;
-    permNdx    = lpHeader->PermNdx;
+        // Fill in the pseudo-header for []FC
+        varArrHdrFC.Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        varArrHdrFC.ArrType    = ARRAY_CHAR;
+        varArrHdrFC.PermNdx    = PERMNDX_QUADFC;
+        varArrHdrFC.SysVar     = TRUE;
+        varArrHdrFC.PV0        =
+        varArrHdrFC.PV1        =
+        varArrHdrFC.bSelSpec   =
+        varArrHdrFC.All2s      =
+        varArrHdrFC.bSplitNum  = FALSE;
+        varArrHdrFC.RefCnt     = 1;
+        varArrHdrFC.NELM       = FCNDX_LENGTH;
+        varArrHdrFC.Rank       = 1;
+
+        // Point to the pseudo-header
+        lpMemHdrObj = &varArrHdrFC;
+
+        // Point to the dimensions
+        lpMemDimObj = &aplNELMObj;
+
+        // Point to the data
+        lpMemObj    = lpSavedWsVar_CB->lpwCopyFC;
+
+        // Set the array attributes
+        aplTypeObj  = varArrHdrFC.ArrType;
+        aplNELMObj  = varArrHdrFC.NELM;
+        aplRankObj  = varArrHdrFC.Rank;
+        permNdx     = varArrHdrFC.PermNdx;
+    } else
+    {
+        // Lock the memory to get a ptr to it
+        lpMemHdrObj = MyGlobalLockVar (hGlbObj);
+
+        // Skip over the header to the dimensions
+        lpMemDimObj = VarArrayBaseToDim (lpMemHdrObj);
+
+        // Skip over the header and dimensions to the data
+        lpMemObj    = VarArrayDataFmBase (lpMemHdrObj);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemHdrObj)
+        // Get the array attributes
+        aplTypeObj  = lpHeader->ArrType;
+        aplNELMObj  = lpHeader->NELM;
+        aplRankObj  = lpHeader->Rank;
+        permNdx     = lpHeader->PermNdx;
+#undef  lpHeader
+    } // End IF/ELSE
 
     // Get the HC Dimension (1, 2, 4, 8)
     iHCDimVar = TranslateArrayTypeToHCDim (aplTypeObj);
@@ -1541,13 +1591,10 @@ LPAPLCHAR SavedWsFormGlbVar
                          TranslateArrayTypeToChar (aplTypeObj), // Object storage type as WCHAR
                          aplNELMObj,                            // Object NELM
                          aplRankObj,                            // Object rank
-                         VarArrayBaseToDim (lpMemObj),          // Ptr to object dimensions
+                         lpMemDimObj,                           // Ptr to object dimensions
                         &uCommPrec,                             // Ptr to common VFP array precision (0 if none) (may be NULL)
-                         lpHeader);                             // Ptr to array header
-#undef  lpHeader
-    // Skip over the header and dimensions to the data
-    lpMemObj = VarArrayDataFmBase (lpMemObj);
-
+                         lpMemHdrObj,                           // Ptr to array header
+                         lpMemObj);                             // Ptr to the data
     __try
     {
         // Split cases based the object storage type
@@ -1622,7 +1669,7 @@ LPAPLCHAR SavedWsFormGlbVar
                       FormatAplFltFC (lpaplChar,            // Ptr to output save area
                                     *(LPAPLFLOAT) lpMemObj, // The value to format
                                       DEF_MAX_QUADPP_IEEE,  // Precision to use
-                                      UTF16_DOT,            // Char to use as decimal separator
+                                      DecSep,               // Char to use as decimal separator
                                       UTF16_BAR,            // Char to use as overbar
                                       FLTDISPFMT_RAWFLT,    // Float display format
                                       TRUE);                // TRUE iff we're to substitute text for infinity
@@ -1719,7 +1766,8 @@ LPAPLCHAR SavedWsFormGlbVar
                                              0,                                 // Object rank
                                              NULL,                              // Ptr to object dimensions
                                              NULL,                              // Ptr to common VFP array precision (0 if none) (may be NULL)
-                                             NULL);                             // Ptr to array header
+                                             NULL,                              // Ptr to array header
+                                             NULL);                             // Ptr to the data
                         // Split cases based upon the immediate type
                         switch (stFlags.ImmType)
                         {
@@ -1737,7 +1785,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                                  stFlags.ImmType,                       // Immediate type
                                                 &lpSymEntry->stData.stLongest,          // Ptr to value to format
                                                  DEF_MAX_QUADPP_IEEE,                   // Precision to use
-                                                 UTF16_DOT,                             // Char to use as decimal separator
+                                                 DecSep,                                // Char to use as decimal separator
                                                  UTF16_BAR,                             // Char to use as overbar
                                                  FLTDISPFMT_RAWFLT,                     // Float display format
                                                  TRUE);                                 // TRUE iff we're to substitute text for infinity
@@ -1850,7 +1898,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                       lpMemObj,             // Ptr to the value to format
                                       0,                    // # significant digits (0 = all)
                                       0,                    // Maximum width including sign & decpt (0 = none)
-                                      L'.',                 // Char to use as decimal separator
+                                      DecSep,               // Char to use as decimal separator
                                       UTF16_BAR,            // Char to use as overbar
                                       FLTDISPFMT_RAWFLT,    // Float display format
                                       FALSE,                // TRUE iff nDigits is # fractional digits
@@ -1940,7 +1988,7 @@ LPAPLCHAR SavedWsFormGlbVar
                       FormatAplHC2FFC (lpaplChar,               // Ptr to output save area
                                        lpMemObj,                // The value to format
                                        DEF_MAX_QUADPP_IEEE,     // Precision to use
-                                       UTF16_DOT,               // Char to use as decimal separator
+                                       DecSep,                  // Char to use as decimal separator
                                        UTF16_BAR,               // Char to use as overbar
                                        GetHC2Sep (),            // Char to use as separator
                                        FLTDISPFMT_RAWFLT,       // Float display format
@@ -1973,7 +2021,7 @@ LPAPLCHAR SavedWsFormGlbVar
                       FormatAplHCxFFC (lpaplChar,               // Ptr to output save area
                                        lpMemObj,                // Ptr to the value to format
                                        DEF_MAX_QUADPP_IEEE,     // Precision to use
-                                       UTF16_DOT,               // Char to use as decimal separator
+                                       DecSep,                  // Char to use as decimal separator
                                        UTF16_BAR,               // Char to use as overbar
                                        FLTDISPFMT_RAWFLT,       // Float display format
                                        TRUE,                    // TRUE iff we're to substitute text for infinity
@@ -2066,7 +2114,7 @@ LPAPLCHAR SavedWsFormGlbVar
                       FormatAplHC2VFC (lpaplChar,               // Ptr to output save area
                                        lpMemObj,                // The value to format
                                        0,                       // # significant digits (0 = all)
-                                       L'.',                    // Char to use as decimal separator
+                                       DecSep,                  // Char to use as decimal separator
                                        UTF16_BAR,               // Char to use as overbar
                                        GetHC2Sep (),            // Char to use as separator
                                        FLTDISPFMT_RAWFLT,       // Float display format
@@ -2101,7 +2149,7 @@ LPAPLCHAR SavedWsFormGlbVar
                       FormatAplHCxVFC (lpaplChar,               // Ptr to output save area
                                        lpMemObj,                // The value to format
                                        0,                       // # significant digits (0 = all)
-                                       L'.',                    // Char to use as decimal separator
+                                       DecSep,                  // Char to use as decimal separator
                                        UTF16_BAR,               // Char to use as overbar
                                        FLTDISPFMT_RAWFLT,       // Float display format
                                        FALSE,                   // TRUE iff nDigits is # fractional digits
@@ -2131,10 +2179,10 @@ LPAPLCHAR SavedWsFormGlbVar
         } // End SWITCH
     } __except (CheckException (GetExceptionInformation (), WFCN L" #2"))
     {
-        if (hGlbObj NE NULL && lpMemObj NE NULL)
+        if (hGlbObj NE NULL && lpMemHdrObj NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
+            MyGlobalUnlock (hGlbObj); lpMemHdrObj = NULL;
         } // End IF
 
         // Split cases based upon the ExceptionCode
@@ -2184,10 +2232,10 @@ LPAPLCHAR SavedWsFormGlbVar
     // Copy the formatted GlbCnt to the start of the buffer as the result
     strcpyW (lpaplChar, wszGlbCnt);
 NORMAL_EXIT:
-    if (hGlbObj NE NULL && lpMemObj NE NULL)
+    if (hGlbObj NE NULL && lpMemHdrObj NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
+        MyGlobalUnlock (hGlbObj); lpMemHdrObj = NULL;
     } // End IF
 
     // Return a ptr to the profile keyname's terminating zero
@@ -2283,7 +2331,8 @@ LPAPLCHAR AppendArrayHeader
      APLRANK           aplRankObj,              // Object rank
      LPAPLDIM          lpaplDimObj,             // Ptr to object dimensions
      LPAPLUINT         lpuCommPrec,             // Ptr to common VFP array precision (0 if none) (may be NULL)
-     LPVARARRAY_HEADER lpHeader)                // Ptr to array header
+     LPVARARRAY_HEADER lpHeader,                // Ptr to array header
+     LPVOID            lpMemObj)                // Ptr to the data
 
 {
     APLRANK uObj;                   // Loop counter
@@ -2326,25 +2375,25 @@ LPAPLCHAR AppendArrayHeader
         // Check for array property:  PV0
         if (lpHeader->PV0)
         {
-            strcpyW (lpaplChar, AP_PV0);           // Copy the prefix
-            lpaplChar += strcountof (AP_PV0);       // Skip over it
-            *lpaplChar++ = L' ';                    // Append a trailing blank
+            strcpyW (lpaplChar, AP_PV0);       // Copy the prefix
+            lpaplChar += strcountof (AP_PV0);  // Skip over it
+            *lpaplChar++ = L' ';               // Append a trailing blank
         } // End IF
 
         // Check for array property:  PV1
         if (lpHeader->PV1)
         {
-            strcpyW (lpaplChar, AP_PV1);           // Copy the prefix
-            lpaplChar += strcountof (AP_PV1);       // Skip over it
-            *lpaplChar++ = L' ';                    // Append a trailing blank
+            strcpyW (lpaplChar, AP_PV1);       // Copy the prefix
+            lpaplChar += strcountof (AP_PV1);  // Skip over it
+            *lpaplChar++ = L' ';               // Append a trailing blank
         } // End IF
 
         // Check for array property:  All2s
         if (lpHeader->All2s)
         {
-            strcpyW (lpaplChar, AP_ALL2S);         // Copy the prefix
-            lpaplChar += strcountof (AP_ALL2S);     // Skip over it
-            *lpaplChar++ = L' ';                    // Append a trailing blank
+            strcpyW (lpaplChar, AP_ALL2S);      // Copy the prefix
+            lpaplChar += strcountof (AP_ALL2S); // Skip over it
+            *lpaplChar++ = L' ';                // Append a trailing blank
         } // End IF
 
         // If common VFP array precision requested,
@@ -2355,8 +2404,8 @@ LPAPLCHAR AppendArrayHeader
         {
             LPAPLVFP lpaplVfp;
 
-            // Skip over the header and dimensions to the data
-            lpaplVfp = VarArrayDataFmBase (lpHeader);
+            // Point to the data
+            lpaplVfp = lpMemObj;
 
             // Get the initial precision
             *lpuCommPrec = mpfr_get_prec (lpaplVfp++);
@@ -2370,7 +2419,7 @@ LPAPLCHAR AppendArrayHeader
                 break;
             } // End FOR
 
-            strcpyW (lpaplChar, AP_FPC);       // Copy the prefix
+            strcpyW (lpaplChar, AP_FPC);        // Copy the prefix
             lpaplChar += strcountof (AP_FPC);   // Skip over it
 
             // If there's a common precision, ...
@@ -2464,17 +2513,24 @@ LPAPLCHAR SavedWsGlbFcnConv
 //***************************************************************************
 
 void SetOptionFlagsDisplay
-    (LPUINT  lpuCNDSEP,         // Ptr to save area for uCNDSEP
-     LPUBOOL lpbDisp0Imag,      // ...                  bDisp0Imag
-     LPUBOOL lpbDispInfix,      // ...                  bDispInfix
-     LPUBOOL lpbDispOctoDig,    // ...                  bDispOctoDig
-     LPUBOOL lpbDispMPSuf)      // ...                  bDispMPSuf
+    (APLCHAR   lpwCopyFC[FCNDX_LENGTH], // Ptr to save area for []FC
+     LPUBOOL   lpbDisp0Imag,            // ...                  bDisp0Imag
+     LPUBOOL   lpbDispInfix,            // ...                  bDispInfix
+     LPUBOOL   lpbDispOctoDig,          // ...                  bDispOctoDig
+     LPUBOOL   lpbDispMPSuf)            // ...                  bDispMPSuf
 
 {
-    // Save the current uCNDSEP and set to DEF_CNDSEP
-    //  so we convert values the same way every time
-    *lpuCNDSEP             = OptionFlags.uCNDSEP;
-    OptionFlags.uCNDSEP    = DEF_CNDSEP;
+    FC_INDICES uCnt;                    // Loop counter
+
+    // Loop through the items of []FC
+    for (uCnt = 0; uCnt < FCNDX_LENGTH; uCnt++)
+    {
+        // Save the old value
+        lpwCopyFC[uCnt] = GetQuadFCValue (uCnt);
+
+        // Save the new value
+        SetQuadFCValue (uCnt, aplDefaultFC[uCnt]);
+    } // End FOR
 
     // Save the current bDisp0Imag flag and set to TRUE
     //  so we convert values the same way every time
@@ -2507,14 +2563,20 @@ void SetOptionFlagsDisplay
 //***************************************************************************
 
 void RestoreOptionFlagsDisplay
-    (UINT  uCNDSEP,             // Original value for uCNDSEP
-     UBOOL bDisp0Imag,          // ...                bDisp0Imag
-     UBOOL bDispInfix,          // ...                bDispInfix
-     UBOOL bDispOctoDig,        // ...                bDispOctoDig
-     UBOOL bDispMPSuf)          // ...                bDispMPSuf
+    (APLCHAR lpwCopyFC[FCNDX_LENGTH],   // Original value for aplCNDSEP
+     UBOOL   bDisp0Imag,                // ...                bDisp0Imag
+     UBOOL   bDispInfix,                // ...                bDispInfix
+     UBOOL   bDispOctoDig,              // ...                bDispOctoDig
+     UBOOL   bDispMPSuf)                // ...                bDispMPSuf
 
 {
-    OptionFlags.uCNDSEP      = uCNDSEP   ;
+    FC_INDICES uCnt;                    // Loop counter
+
+    // Loop through the items of []FC
+    for (uCnt = 0; uCnt < FCNDX_LENGTH; uCnt++)
+        // Set the new value
+        SetQuadFCValue (uCnt, lpwCopyFC[uCnt]);
+
     OptionFlags.bDisp0Imag   = bDisp0Imag;
     OptionFlags.bDispInfix   = bDispInfix;
     OptionFlags.bDispOctoDig = bDispOctoDig;

@@ -384,9 +384,11 @@ INT_PTR CALLBACK CustomizeDlgProc
                         hWndKeycapS,            // ...             S ...
                         hWndKeycapE,            // ...             E ...
                         hWndKeycapQ,            // ...             Q ...
-                        hWndLast,               // Last (outgoing) ...
-                        hDlg,                   // Dialog          ...
-                        hWndApply,              // Apply button    ...
+                        hWndLast,               // Last (outgoing)   ...
+                        hDlg,                   // Dialog            ...
+                        hWndApply,              // Apply button      ...
+                        hWndFC_CB,              // []FC ComboBox     ...
+                        hWndFC_EC,              // []FC EditCtrl     ...
                         hWndFEATURE_CB1,        // []FEATURE ComboBox #1 ...
                         hWndFEATURE_CB2,        // []FEATURE ...      #2 ...
                         hWndIC_CB1,             // []IC ComboBox #1 ...
@@ -465,6 +467,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         hFontBold_ST = NULL;    // Bold   ...
     static APLINT       featValues[FEATURENDX_LENGTH]; // []FEATURE local values
     static APLINT       icValues[ICNDX_LENGTH]; // []IC local values
+    static APLCHAR      fcValues[FCNDX_LENGTH]; // []FC local values
     static RESET_VARS   lclResetVars;           // Local copy of bResetVars
            WCHAR        wszTemp[128];           // Temporary WCHAR storage
            char         szTemp[128];            // Temporary char storage
@@ -699,6 +702,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LR_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []LR
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_DT_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []DT
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ELX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []ELX
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []FC
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []FC
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB1 ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []FEATURE
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB2 ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []FEATURE
@@ -725,7 +729,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         hFontBold_ST = MyCreateFontIndirectW (&lf_ST);
 
                         //***************************************************************
-                        // []ALX -- CLEAR WS Values
+                        // []ALX -- INITDIALOG CLEAR WS Values
                         //***************************************************************
 
                         // Lock the memory to get a ptr to it
@@ -751,7 +755,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_ALX_EC, lpwszGlbTemp);
 
                         //***************************************************************
-                        // []CT -- CLEAR WS Values
+                        // []CT -- INITDIALOG CLEAR WS Values
                         //***************************************************************
 
                         // Format the value
@@ -770,7 +774,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_CT_EC,  lpwszGlbTemp);
 
                         //***************************************************************
-                        // []LR -- CLEAR WS Values
+                        // []LR -- INITDIALOG CLEAR WS Values
                         //***************************************************************
 
                         // Loop through the []LR names
@@ -785,7 +789,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LR_CB), CB_SETCURSEL, uCnt, 0);
 
                         //***************************************************************
-                        // []DT -- CLEAR WS Values
+                        // []DT -- INITDIALOG CLEAR WS Values
                         //***************************************************************
 
                         // Loop through the []DT names
@@ -800,7 +804,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_DT_CB), CB_SETCURSEL, uCnt, 0);
 
                         //***************************************************************
-                        // []ELX -- CLEAR WS Values
+                        // []ELX -- INITDIALOG CLEAR WS Values
                         //***************************************************************
 
                         // Lock the memory to get a ptr to it
@@ -826,8 +830,17 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_ELX_EC, lpwszGlbTemp);
 
                         //***************************************************************
-                        // []FC -- CLEAR WS Values
+                        // []FC -- INITDIALOG CLEAR WS Values
                         //***************************************************************
+
+                        // Get the window handle to the ComboBox of index names & Edit Ctrl of values
+                        hWndFC_CB = GetDlgItem (hWndProp, IDC_CLEARWS_FC_CB);
+                        hWndFC_EC = GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC);
+
+                        // Loop through the []FC items
+                        for (uCnt = 0; uCnt < FCNDX_LENGTH; uCnt++)
+                            // Append a new []FC name
+                            SendMessageW (hWndFC_CB, CB_ADDSTRING, 0, (LPARAM) (HANDLE_PTR) FCNames[uCnt].lpwszFCName);
 
                         // Lock the memory to get a ptr to it
                         lpMemChr = MyGlobalLockVar (hGlbQuadFC_CWS);
@@ -839,26 +852,34 @@ INT_PTR CALLBACK CustomizeDlgProc
                         // Skip over the header and dimension to the data
                         lpMemChr = VarArrayDataFmBase (lpMemChr);
 
-                        // Copy to temp string so we can zero-terminate it
-                        CopyMemoryW (lpwszGlbTemp, lpMemChr, (APLU3264) aplNELM);
+                        // Initialize the []FC local values
+                        for (uCnt = 0; uCnt < FCNDX_LENGTH; uCnt++)
+                        if (uCnt < aplNELM)
+                            fcValues[uCnt] = lpMemChr[uCnt];
+                        else
+                            fcValues[uCnt] = aplDefaultFC[uCnt];
+
+                        // Select the first name
+                        SendMessageW (hWndFC_CB, CB_SETCURSEL, 0, 0);
+
+                        // Limit the text to one character, e.g. 'iJdhru'
+                        SendMessageW (hWndFC_EC, EM_SETLIMITTEXT, 1, 0);
+
+                        // Fill in the FC EditCtrl with the matching value
+                        FillInFCValue (hWndFC_EC, 0, fcValues[0]);
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbQuadFC_CWS); lpMemChr = NULL;
 
-                        // Ensure properly terminated
-                        lpwszGlbTemp[aplNELM] = WC_EOS;
-
-                        // Set the text
-                        SetDlgItemTextW (hWndProp, IDC_CLEARWS_FC_EC,  lpwszGlbTemp);
-
                         //***************************************************************
-                        // []FEATURE -- CLEAR WS Values
+                        // []FEATURE -- INITDIALOG CLEAR WS Values
                         //***************************************************************
 
                         // Get the window handle to the ComboBox of index names & values
                         hWndFEATURE_CB1 = GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB1);
                         hWndFEATURE_CB2 = GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB2);
 
+#ifdef FEATURE_TT
                         // Get the ComboBox info
                         SendMessageW (hWndFEATURE_CB1, CB_GETCOMBOBOXINFO, 0, (LPARAM) &cbi);
 
@@ -882,6 +903,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                           SetWindowLongPtrW (cbi.hwndList,
                                              GWLP_WNDPROC,
                                              (APLU3264) (LONG_PTR) (WNDPROC) &LclFEATUREComboLboxWndProc);
+#endif
 
                         // Insert the []FEATURE index names
                         for (uCnt = 0; uCnt < FEATURENDX_LENGTH; uCnt++)
@@ -917,7 +939,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         MyGlobalUnlock (hGlbQuadFEATURE_CWS); lpMemInt = NULL;
 
                         //***************************************************************
-                        // []FPC -- CLEAR WS Values
+                        // []FPC -- INITDIALOG CLEAR WS Values
                         //***************************************************************
 
                         // Get the []FPC UpDown Control window handle
@@ -930,19 +952,21 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SendMessageW (hWnd_UD, UDM_SETPOS32, 0, (LPARAM) uQuadFPC_CWS);
 
                         //***************************************************************
-                        // []IC -- CLEAR WS Values
+                        // []IC -- INITDIALOG CLEAR WS Values
                         //***************************************************************
 
                         // Get the window handle to the ComboBox of index names & values
                         hWndIC_CB1 = GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB1);
                         hWndIC_CB2 = GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB2);
 
-                        // Insert the []IC index names
+                        // Loop through the []IC names
                         for (uCnt = 0; uCnt < ICNDX_LENGTH; uCnt++)
+                            // Append a new []IC name
                             SendMessageW (hWndIC_CB1, CB_ADDSTRING, 0, (LPARAM) (HANDLE_PTR) icIndexNames[uCnt]);
 
-                        // Insert the []IC index values
+                        // Loop through the []IC values
                         for (uCnt = 0; uCnt < ICVAL_LENGTH; uCnt++)
+                            // Append a new []IC value
                             SendMessageW (hWndIC_CB2, CB_ADDSTRING, 0, (LPARAM) (HANDLE_PTR) icIndexValues[uCnt]);
 
                         // Lock the memory to get a ptr to it
@@ -971,7 +995,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         MyGlobalUnlock (hGlbQuadIC_CWS); lpMemInt = NULL;
 
                         //***************************************************************
-                        // []IO -- CLEAR WS Values
+                        // []IO -- INITDIALOG CLEAR WS Values
                         //***************************************************************
 
                         // Get the []IO UpDown Control window handle
@@ -984,7 +1008,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SendMessageW (hWnd_UD, UDM_SETPOS32, 0, bQuadIO_CWS);
 
                         //***************************************************************
-                        // []LX -- CLEAR WS Values
+                        // []LX -- INITDIALOG CLEAR WS Values
                         //***************************************************************
 
                         // Lock the memory to get a ptr to it
@@ -1010,7 +1034,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_LX_EC,  lpwszGlbTemp);
 
                         //***************************************************************
-                        // []MF -- CLEAR WS Values
+                        // []MF -- INITDIALOG CLEAR WS Values
                         //***************************************************************
 
                         // Format the value
@@ -1032,7 +1056,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SendMessageW (hWndProp1, CB_SETCURSEL, (APLU3264) uQuadMF_CWS - TIMER_SOURCE_BASE, 0);
 
                         //***************************************************************
-                        // []PP -- CLEAR WS Values
+                        // []PP -- INITDIALOG CLEAR WS Values
                         //***************************************************************
 
                         // Get the []PP UpDown Control window handle
@@ -1045,7 +1069,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SendMessageW (hWnd_UD, UDM_SETPOS32, 0, (LPARAM) uQuadPP_CWS);
 
                         //***************************************************************
-                        // []PW -- CLEAR WS Values
+                        // []PW -- INITDIALOG CLEAR WS Values
                         //***************************************************************
 
                         // Get the []PW UpDown Control window handle
@@ -1058,7 +1082,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SendMessageW (hWnd_UD, UDM_SETPOS32, 0, (LPARAM) uQuadPW_CWS);
 
                         //***************************************************************
-                        // []RL -- CLEAR WS Values
+                        // []RL -- INITDIALOG CLEAR WS Values
                         //***************************************************************
 
                         // Format the value
@@ -1697,12 +1721,6 @@ INT_PTR CALLBACK CustomizeDlgProc
                         break;
 
                     case IDD_PROPPAGE_HC_PREFS:                         // MYWM_INITDIALOG
-                        CheckDlgButton (hWndProp, IDC_HC_PREFS_RB_CNDSEP1            , OptionFlags.uCNDSEP EQ CNDSEP_i );
-                        CheckDlgButton (hWndProp, IDC_HC_PREFS_RB_CNDSEP2            , OptionFlags.uCNDSEP EQ CNDSEP_J );
-                        CheckDlgButton (hWndProp, IDC_HC_PREFS_RB_CNDSEP3            , OptionFlags.uCNDSEP EQ CNDSEP_ad);
-                        CheckDlgButton (hWndProp, IDC_HC_PREFS_RB_CNDSEP4            , OptionFlags.uCNDSEP EQ CNDSEP_ah);
-                        CheckDlgButton (hWndProp, IDC_HC_PREFS_RB_CNDSEP5            , OptionFlags.uCNDSEP EQ CNDSEP_ar);
-                        CheckDlgButton (hWndProp, IDC_HC_PREFS_RB_CNDSEP6            , OptionFlags.uCNDSEP EQ CNDSEP_au);
                         CheckDlgButton (hWndProp, IDC_HC_PREFS_XB_DISP0IMAG          , OptionFlags.bDisp0Imag          );
                         CheckDlgButton (hWndProp, IDC_HC_PREFS_XB_DISPINFIX          , OptionFlags.bDispInfix          );
                         CheckDlgButton (hWndProp, IDC_HC_PREFS_XB_DISPOCTODIG        , OptionFlags.bDispOctoDig        );
@@ -2911,18 +2929,18 @@ INT_PTR CALLBACK CustomizeDlgProc
                           SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
                         //***************************************************************
-                        // []ALX
+                        // []ALX        CLEAR WS VALUES -- Apply
                         //***************************************************************
 
                         // Read in and save the new []ALX value
                         GetClearWsChrValue (hWndProp, IDC_CLEARWS_ALX_EC, &hGlbQuadALX_CWS);
 
                         //***************************************************************
-                        // []CT
+                        // []CT         CLEAR WS VALUES -- Apply
                         //***************************************************************
 
                         // Tell the Edit Ctrl how big our buffer is
-                        lpwszGlbTemp[0] = 1024;
+                        ((LPWORD) lpwszGlbTemp)[0] = 1024;
 
                         // Get the []CT text
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC), EM_GETLINE, 0, (LPARAM) lpwszGlbTemp);
@@ -2942,7 +2960,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         fQuadCT_CWS = MyStrtod (szTemp, NULL);
 
                         //***************************************************************
-                        // []DT
+                        // []DT         CLEAR WS VALUES -- Apply
                         //***************************************************************
 
                         // Get the index of the currently selected []DT name
@@ -2953,47 +2971,47 @@ INT_PTR CALLBACK CustomizeDlgProc
                         cQuadDT_CWS = wszQuadDTAllow[uCnt];
 
                         //***************************************************************
-                        // []ELX
+                        // []ELX        CLEAR WS VALUES -- Apply
                         //***************************************************************
 
                         // Read in and save the new []ELX value
                         GetClearWsChrValue (hWndProp, IDC_CLEARWS_ELX_EC, &hGlbQuadELX_CWS);
 
                         //***************************************************************
-                        // []FC
+                        // []FC         CLEAR WS VALUES -- Apply
                         //***************************************************************
 
-                        // Read in and save the new []FC value
-                        GetClearWsChrValue (hWndProp, IDC_CLEARWS_FC_EC, &hGlbQuadFC_CWS);
+                        // Save the new []FC value
+                        GetClearWsComValue (ARRAY_CHAR, FCNDX_LENGTH, &hGlbQuadFC_CWS, fcValues, sizeof (fcValues[0]));
 
                         //***************************************************************
-                        // []FEATURE
+                        // []FEATURE    CLEAR WS VALUES -- Apply
                         //***************************************************************
 
                         // Save the new []FEATURE value
                         GetClearWsComValue (ARRAY_INT, FEATURENDX_LENGTH, &hGlbQuadFEATURE_CWS, featValues, sizeof (featValues[0]));
 
                         //***************************************************************
-                        // []FPC
+                        // []FPC        CLEAR WS VALUES -- Apply
                         //***************************************************************
                         uQuadFPC_CWS =
                           GetDlgItemInt (hWndProp, IDC_CLEARWS_FPC_EC, NULL, FALSE);
 
                         //***************************************************************
-                        // []IC
+                        // []IC         CLEAR WS VALUES -- Apply
                         //***************************************************************
 
                         // Save the new []IC value
                         GetClearWsComValue (ARRAY_INT, ICNDX_LENGTH, &hGlbQuadIC_CWS, icValues, sizeof (icValues[0]));
 
                         //***************************************************************
-                        // []IO
+                        // []IO         CLEAR WS VALUES -- Apply
                         //***************************************************************
                         bQuadIO_CWS =
                           GetDlgItemInt (hWndProp, IDC_CLEARWS_IO_EC, NULL, FALSE);
 
                         //***************************************************************
-                        // []LR
+                        // []LR         CLEAR WS VALUES -- Apply
                         //***************************************************************
 
                         // Get the index of the currently selected []LR name
@@ -3004,33 +3022,33 @@ INT_PTR CALLBACK CustomizeDlgProc
                         cQuadLR_CWS = wszQuadLRAllow[uCnt];
 
                         //***************************************************************
-                        // []LX
+                        // []LX         CLEAR WS VALUES -- Apply
                         //***************************************************************
 
                         // Read in and save the new []LX value
                         GetClearWsChrValue (hWndProp, IDC_CLEARWS_LX_EC, &hGlbQuadLX_CWS);
 
                         //***************************************************************
-                        // []MF
+                        // []MF         CLEAR WS VALUES -- Apply
                         //***************************************************************
                         uQuadMF_CWS =
                           TIMER_SOURCE_BASE
                         + SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_MF_CB), CB_GETCURSEL, 0, 0);
 
                         //***************************************************************
-                        // []PP
+                        // []PP         CLEAR WS VALUES -- Apply
                         //***************************************************************
                         uQuadPP_CWS =
                           GetDlgItemInt (hWndProp, IDC_CLEARWS_PP_EC, NULL, FALSE);
 
                         //***************************************************************
-                        // []PW
+                        // []PW         CLEAR WS VALUES -- Apply
                         //***************************************************************
                         uQuadPW_CWS =
                           GetDlgItemInt (hWndProp, IDC_CLEARWS_PW_EC, NULL, FALSE);
 
                         //***************************************************************
-                        // []RL
+                        // []RL         CLEAR WS VALUES -- Apply
                         //***************************************************************
                         uQuadRL_CWS =
                           GetDlgItemInt64 (hWndProp, IDC_CLEARWS_RL_EC, NULL, FALSE);
@@ -3415,24 +3433,6 @@ INT_PTR CALLBACK CustomizeDlgProc
                         hWndProp = (HWND)
                           SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
-                        if (IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_RB_CNDSEP1))
-                            OptionFlags.uCNDSEP = CNDSEP_i;
-                        else
-                        if (IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_RB_CNDSEP2))
-                            OptionFlags.uCNDSEP = CNDSEP_J;
-                        else
-                        if (IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_RB_CNDSEP3))
-                            OptionFlags.uCNDSEP = CNDSEP_ad;
-                        else
-                        if (IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_RB_CNDSEP4))
-                            OptionFlags.uCNDSEP = CNDSEP_ah;
-                        else
-                        if (IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_RB_CNDSEP5))
-                            OptionFlags.uCNDSEP = CNDSEP_ar;
-                        else
-                        if (IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_RB_CNDSEP6))
-                            OptionFlags.uCNDSEP = CNDSEP_au;
-
                         OptionFlags.bDisp0Imag           = IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_XB_DISP0IMAG          );
                         OptionFlags.bDispInfix           = IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_XB_DISPINFIX          );
                         OptionFlags.bDispOctoDig         = IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_XB_DISPOCTODIG        );
@@ -3528,14 +3528,112 @@ INT_PTR CALLBACK CustomizeDlgProc
                     // Return dialog result
                     DlgMsgDone (hDlg);              // We handled the msg
 
-
                 //***************************************************************
                 // CLEAR WS VALUES -- WM_COMMAND
                 //***************************************************************
 
+                case IDC_CLEARWS_FC_EC:
+                {
+                    UINT uID_EC;        // Edit Ctrl ID
+                    HWND hWndFC_EC,     // Window handle for Edit Ctrl
+                         hWndFC_CB;     // ...               ComboBox
+
+                    // Get the associated item data (window handle of the Property Page)
+                    hWndProp = (HWND)
+                      SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_CLEARWS_VALUES - IDD_PROPPAGE_START, 0);
+
+                    // Get the Edit Ctrl ID
+                    uID_EC = idCtl;
+
+                    // Get the ComboBox & Edit Ctrl window handles
+                    hWndFC_CB = GetDlgItem (hWndProp, IDC_CLEARWS_FC_CB);
+                    hWndFC_EC = GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC);
+
+                    // Split cases based upon the notification
+                    switch (cmdCtl)
+                    {
+                        case EN_SETFOCUS:
+                            // Select the text
+                            SendMessageW (hWndFC_EC, EM_SETSEL, 0, -1);
+
+                            break;
+
+                        case EN_CHANGE:
+                        {
+                            UINT uLen;
+
+                            // Get the text length and format it into the static text on the right
+                            uLen = (UINT) SendMessageW (hWndFC_EC, EM_LINELENGTH, 0, 0);
+
+                            // Tell the Edit Ctrl how big our buffer is
+                            ((LPWORD) wszTemp)[0] = countof (wszTemp);
+
+                            // Get the window text
+                            SendMessageW (hWndFC_EC, EM_GETLINE, 0, (LPARAM) wszTemp);
+
+                            // Get the index of the current ComboBox selection
+                            uSel = (UINT) SendMessageW (hWndFC_CB, CB_GETCURSEL, 0, 0);
+
+                            Assert (uSel NE CB_ERR);
+
+                            // If the text is invalid, ...
+                            if (uLen EQ 0 || wszTemp[0] EQ WC_EOS)
+                            {
+                                // Replace with the original value
+                                wszTemp[0] = fcValues[uSel];
+                                wszTemp[1] = WC_EOS;
+                            } // End IF
+
+                            // If it's not valid, ...
+                            if (!ValidNdxFC (uSel,
+                                             ARRAY_CHAR,
+                             (LPAPLLONGEST) &wszTemp[0],
+                                             NULL,
+                                             NULL,
+                                             NULL))
+                            {
+                                APLCHAR aplFCTemp = wszTemp[0];
+
+                                // Display an error message
+                                MySprintfW (wszTemp,
+                                            sizeof (wszTemp),
+                                           L"Invalid character in " $QUAD L"FC[%d] = '%c'",
+                                            uSel + 1,
+                                            aplFCTemp);
+                                // Display it
+                                MessageBoxW (hWndMF, wszTemp, WS_APPNAME, MB_OK | MB_ICONWARNING);
+
+                                // Replace with the original value
+                                wszTemp[0] = fcValues[uSel];
+                                wszTemp[1] = WC_EOS;
+
+                                // Set the window text back to the original value
+                                SetWindowTextW (hWndFC_EC, wszTemp);
+                            } else
+                            {
+                                // Save the new value
+                                fcValues[uSel] = wszTemp[0];
+
+                                // Enable the Apply button
+                                EnableWindow (hWndApply, TRUE);
+                            } // End IF/ELSE
+
+                            // Select the text
+                            SendMessageW (hWndFC_EC, EM_SETSEL, 0, -1);
+
+                            break;
+                        } // End EN_CHANGE
+
+                        default:
+                            break;
+                    } // End SWITCH
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+                } // End IDC_CLEARWS_FC_EC
+
                 case IDC_CLEARWS_ALX_EC:
                 case IDC_CLEARWS_ELX_EC:
-                case IDC_CLEARWS_FC_EC:
                 case IDC_CLEARWS_LX_EC:
                     // We care about EN_CHANGE only
                     if (EN_CHANGE EQ cmdCtl)
@@ -3603,7 +3701,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                               SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_CLEARWS_VALUES - IDD_PROPPAGE_START, 0);
 
                             // Tell the Edit Ctrl how big our buffer is
-                            lpwszGlbTemp[0] = 1024;
+                            ((LPWORD) lpwszGlbTemp)[0] = 1024;
 
                             // Get the text
                             SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC), EM_GETLINE, 0, (LPARAM) lpwszGlbTemp);
@@ -3652,6 +3750,31 @@ INT_PTR CALLBACK CustomizeDlgProc
                     if (CBN_SELCHANGE EQ cmdCtl)
                         // Enable the Apply button
                         EnableWindow (hWndApply, TRUE);
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                case IDC_CLEARWS_FC_CB:
+                    // We care about CBN_SELCHANGE only
+                    if (CBN_SELCHANGE EQ cmdCtl)
+                    {
+                        // Get the associated item data (window handle of the Property Page)
+                        hWndProp = (HWND)
+                          SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_CLEARWS_VALUES - IDD_PROPPAGE_START, 0);
+
+                        // Get the FC editCtrl window handle
+                        hWndFC_EC = GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC);
+
+                        // Get the changed index
+                        uSel = (UINT)
+                          SendMessageW (hWndFC_CB, CB_GETCURSEL, 0, 0);
+
+                        // Display the corresponding selection
+                        FillInFCValue (hWndFC_EC, uSel, fcValues[uSel]);
+
+                        // Note that the Apply button is enabled (below) only when
+                        //   changing the value associated with this index.
+                    } // End IF
 
                     // Return dialog result
                     DlgMsgDone (hDlg);              // We handled the msg
@@ -5251,12 +5374,6 @@ INT_PTR CALLBACK CustomizeDlgProc
                 // HC PREFERENCES -- WM_COMMAND
                 //***************************************************************
 
-                case IDC_HC_PREFS_RB_CNDSEP1:
-                case IDC_HC_PREFS_RB_CNDSEP2:
-                case IDC_HC_PREFS_RB_CNDSEP3:
-                case IDC_HC_PREFS_RB_CNDSEP4:
-                case IDC_HC_PREFS_RB_CNDSEP5:
-                case IDC_HC_PREFS_RB_CNDSEP6:
                 case IDC_HC_PREFS_XB_DISP0IMAG:
                 case IDC_HC_PREFS_XB_DISPINFIX:
                 case IDC_HC_PREFS_XB_DISPOCTODIG:
@@ -6739,6 +6856,7 @@ int CALLBACK DirsBrowseCallbackProc
 } // End DirsBrowseCallbackProc
 
 
+#ifdef FEATURE_TT
 //***************************************************************************
 //  $LclFEATUREComboLboxWndProc
 //
@@ -6855,6 +6973,85 @@ LRESULT WINAPI LclFEATUREComboLboxWndProc
                        wParam,
                        lParam);     // Pass on down the line
 } // End LclFEATUREComboLboxWndProc
+#endif
+
+
+//***************************************************************************
+//  $FillInFCValue
+//***************************************************************************
+
+void FillInFCValue
+    (HWND    hWndFC_EC,
+     UINT    uNdx,
+     APLCHAR wcFCTemp)
+
+{
+    WCHAR wszTemp[3];
+
+////static LPWCHAR ToolTips[FCNDX_LENGTH]
+////= {L"Any character allowed",                                // Decimal separator (L'.')
+////   L"Any character allowed",                                // Thousands separator (L',')
+////   L"Any character allowed",                                // Format-by-example '8' fill (L'*')
+////   L"Any character allowed",                                // Format-by-example overflow fill (L'0')
+////   L"Any character allowed except in \"" FC_NOBLANKFILL_WS L"\"",  // Blank fill (L'_') (not in FC_NOBLANKFILL_WS)
+////   L"Any character allowed",                                // Negative Sign (WS_UTF16_OVERBAR)
+////   L"Only characters in \"" FC_CNDSEP_WS L"\" allowed",     // Complex Number Display Separator (L'J')
+////  };
+
+    // Copy to temp string so we can zero-terminate it
+    wszTemp[0] = wcFCTemp;
+
+    // Ensure propery terminated
+    wszTemp[1] = WC_EOS;
+
+////// If it's CNDSEP, ...
+////if (uNdx EQ FCNDX_CNDSEP)
+////// Split cases based upon the default character
+////switch (wszTemp[0])
+////{
+////    // If it's Polar Notation, ...
+////    case L'd':
+////    case L'h':
+////    case L'r':
+////    case L'u':
+////        // Copy to second character
+////        wszTemp[1] = wszTemp[0];
+////
+////        // Fill in the Angle character
+////        wszTemp[0] = L'a';
+////
+////        // Ensure propery terminated
+////        wszTemp[2] = WC_EOS;
+////
+////        break;
+////
+////    case 'i':
+////    case 'J':
+////        // Ensure propery terminated
+////        wszTemp[1] = WC_EOS;
+////
+////        break;
+////
+////    defstop
+////        break;
+////} // End IF/SWITCH
+
+    // Select the text
+    SendMessageW (hWndFC_EC, EM_SETSEL, 0, -1);
+
+    // Set the text
+    SendMessageW (hWndFC_EC, EM_REPLACESEL, FALSE, (LPARAM) &wszTemp[0]);
+
+    // Select the text
+    SendMessageW (hWndFC_EC, EM_SETSEL, 0, -1);
+#if FALSE
+    // Set the text
+    SendMessageW (hWndFC_EC, WM_SETTEXT, 0, (LPARAM) &wszTemp[0]);
+
+    // Select the text
+    SendMessageW (hWndFC_EC, EM_SETSEL, 0, -1);
+#endif
+} // End FillInFCValue
 
 
 //***************************************************************************

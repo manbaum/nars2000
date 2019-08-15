@@ -94,8 +94,9 @@ typedef enum tagSTRAND_TYPES
                                         //      *MUST* be the last entry
 } STRAND_TYPES;
 
-// Whenever changing this <enum>, be sure to make a
-//   corresponding change to <tabConvert> in <strand.c>
+// N.B.:  Whenever changing this <enum>,
+//   be sure to make a corresponding change to
+//   <tabConvert> in <strand.c>
 
 
 typedef struct tagALLTYPES
@@ -173,8 +174,9 @@ typedef enum tagARRAY_TYPES
  ARRAY_HC1V  =   ARRAY_VFP   ,          // ...
 } ARRAY_TYPES;
 
-// Whenever changing this <enum>, be sure to make a
-//   corresponding change to <StorageType> in <primfns.c>,
+// N.B.:  Whenever changing this <enum>,
+//   be sure to make a corresponding change to
+//   <StorageType> in <primfns.c>,
 //   <TypeDemote> in <typemote.c>,
 //   <aTypePromote> in <typemote.h>,
 //   <uTypeMap> in <externs.h>,
@@ -196,12 +198,12 @@ typedef enum tagARRAY_TYPES
 //    SO YOU HAD BETTER KNOW WHAT YOU ARE DOING***
 #define defArrayTypeAsChar  L"BIFCHNLARVifrvjgswkhtx"
 
-// Whenever changing the above <#define>, be sure to make a
-//   corresponding change to
+// N.B.:  Whenever changing the above <#define>,
+//   be sure to make a corresponding change to
 //   <TranslateCharToArrayType> in <translate.c>.
 
 // Bits per element vector
-// N.B. the order of elements in this vector matches
+// N.B.:  the order of elements in this vector matches
 //   the order of elements in the above ARRAY_TYPES enum.
 //                  B   I   F   C  H  N  L   A   R   V  CI  CF  CR  CV  HI  HF  HR  HV  OI  OF  OR  OV
 #define BPE_VEC     1, 64, 64, 16, 0, 0, 0, 64,  0,  0,128,128,  0,  0,256,256,  0,  0,512,512,  0,  0
@@ -347,6 +349,10 @@ typedef struct tagVARARRAY_HEADER
                                         //      followed by the dimensions
                                         // 1C:  Length
 } VARARRAY_HEADER, *LPVARARRAY_HEADER;
+
+// N.B.:  Whenever changing this <struct>,
+//   be sure to make a corresponding change to
+//   <varArrHdrFC> in <sc_save.c>
 
 // Note that a permuation vector is a vector whose elements when placed in
 //   ascending order are identical to an APV starting at 0 or 1 with a step of 1

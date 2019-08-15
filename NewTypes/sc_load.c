@@ -1526,61 +1526,61 @@ ERROR_EXIT:
 //***************************************************************************
 
 HGLOBAL LoadWorkspaceGlobal_EM
-    (LPWCHAR      lpwGlbName,               // Ptr to keyname (FMTSTR_GLBCNT)
-     LPWCHAR      lpwSrc,                   // Ptr to next available byte
-     APLI3264     iMaxSize,                 // Maximum size of lpwSrc
-     HWND         hWndEC,                   // Edit Ctrl window handle
-     LPSYMENTRY   lpSymEntrySrc,            // Ptr to SYMENTRY of the source (may be NULL)
-     LPSYMENTRY  *lplpSymLink,              // Ptr to ptr to SYMENTRY link
-     LPWCHAR      lpwszVersion,             // Ptr to workspace version text
-     LPDICTIONARY lpDict,                   // Ptr to workspace dictionary
-     LPWCHAR     *lplpwErrMsg)              // Ptr to ptr to (constant) error message text
+    (LPWCHAR      lpwGlbName,                   // Ptr to keyname (FMTSTR_GLBCNT)
+     LPWCHAR      lpwSrc,                       // Ptr to next available byte
+     APLI3264     iMaxSize,                     // Maximum size of lpwSrc
+     HWND         hWndEC,                       // Edit Ctrl window handle
+     LPSYMENTRY   lpSymEntrySrc,                // Ptr to SYMENTRY of the source (may be NULL)
+     LPSYMENTRY  *lplpSymLink,                  // Ptr to ptr to SYMENTRY link
+     LPWCHAR      lpwszVersion,                 // Ptr to workspace version text
+     LPDICTIONARY lpDict,                       // Ptr to workspace dictionary
+     LPWCHAR     *lplpwErrMsg)                  // Ptr to ptr to (constant) error message text
 
 {
-    APLSTYPE          aplTypeObj;           // Object storage type
-    APLNELM           aplNELMObj;           // Object NELM
-    APLRANK           aplRankObj;           // Object rank
-    LPAPLDIM          lpMemDimObj;          // Ptr to object dimensions
-    HGLOBAL           hGlbObj,              // Object global memory handle
-                      hGlbDfnHdr,           // UDFO/AFO-defined global memory handle
-                      hGlbChk;              // Result from CheckGlobals
-    APLUINT           ByteObj,              // # bytes needed for the object
-                      uObj;                 // Loop counter
-    STFLAGS           stFlags = {0};        // SymTab flags
-    LPSYMENTRY        lpSymEntry,           // Ptr to STE for HGLOBAL
-                      lpSymLink;            // Ptr to SYMENTRY temp for *lplpSymLink
-    WCHAR             wcTmp,                // Temporary char
-                      wszTimeStamp[16 + 1]; // Output save area for time stamp
-    LPWCHAR           lpwFcnName,           // Ptr to function name
-                      lpwSectName,          // Ptr to section name
-                      lpwSrcStart;          // Ptr to starting point
-    UINT              uBitIndex,            // Bit index for looping through Boolean result
-                      uLineCnt;             // # lines in the current function including the header
-    mp_prec_t         uCommPrec = 0;        // Common precision for array of VFP numbers
-    FILETIME          ftCreation,           // Function creation time
-                      ftLastMod;            // ...      last modification time
-    SYSTEMTIME        systemTime;           // Current system (UTC) time
-    UBOOL             bUserDefined = FALSE, // TRUE iff the current function is User-Defined
-                      bAFO         = FALSE, // TRUE iff the current function is an AFO
-                      bFcnDir = FALSE,      // TRUE iff the SYMENTRY is a FcnDir
-                      bQuadFEATURE,         // TRUE iff the symbol is []FEATURE
-                      bDispMPSuf,           // Save area for OptionFlags value
-                      bDisp0Imag,           // ...
-                      bDispInfix,           // ...
-                      bDispOctoDig;         // ...
-    UINT              uCNDSEP;              // ...
-    LPVARARRAY_HEADER lpMemHdrObj = NULL;   // Ptr to the array header
-    LPVOID            lpMemObj;             // Ptr to object global memory
-    APLINT            aplInteger;           // Temporary integer
-    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
-    LPWCHAR           lpwszFormat,          // Ptr to formatting save area
-                      lpwszProf,            // Ptr to profile string
-                      lpwszOldTemp;         // Ptr to temporary save area
+    APLSTYPE          aplTypeObj;               // Object storage type
+    APLNELM           aplNELMObj;               // Object NELM
+    APLRANK           aplRankObj;               // Object rank
+    LPAPLDIM          lpMemDimObj;              // Ptr to object dimensions
+    HGLOBAL           hGlbObj,                  // Object global memory handle
+                      hGlbDfnHdr,               // UDFO/AFO-defined global memory handle
+                      hGlbChk;                  // Result from CheckGlobals
+    APLUINT           ByteObj,                  // # bytes needed for the object
+                      uObj;                     // Loop counter
+    STFLAGS           stFlags = {0};            // SymTab flags
+    LPSYMENTRY        lpSymEntry,               // Ptr to STE for HGLOBAL
+                      lpSymLink;                // Ptr to SYMENTRY temp for *lplpSymLink
+    WCHAR             wcTmp,                    // Temporary char
+                      wszTimeStamp[16 + 1];     // Output save area for time stamp
+    LPWCHAR           lpwFcnName,               // Ptr to function name
+                      lpwSectName,              // Ptr to section name
+                      lpwSrcStart;              // Ptr to starting point
+    UINT              uBitIndex,                // Bit index for looping through Boolean result
+                      uLineCnt;                 // # lines in the current function including the header
+    mp_prec_t         uCommPrec = 0;            // Common precision for array of VFP numbers
+    FILETIME          ftCreation,               // Function creation time
+                      ftLastMod;                // ...      last modification time
+    SYSTEMTIME        systemTime;               // Current system (UTC) time
+    UBOOL             bUserDefined = FALSE,     // TRUE iff the current function is User-Defined
+                      bAFO         = FALSE,     // TRUE iff the current function is an AFO
+                      bFcnDir = FALSE,          // TRUE iff the SYMENTRY is a FcnDir
+                      bQuadFEATURE,             // TRUE iff the symbol is []FEATURE
+                      bDispMPSuf,               // Save area for OptionFlags value
+                      bDisp0Imag,               // ...
+                      bDispInfix,               // ...
+                      bDispOctoDig;             // ...
+    APLCHAR           lpwCopyFC[FCNDX_LENGTH];  // ...
+    LPVARARRAY_HEADER lpMemHdrObj = NULL;       // Ptr to the array header
+    LPVOID            lpMemObj;                 // Ptr to object global memory
+    APLINT            aplInteger;               // Temporary integer
+    LPPERTABDATA      lpMemPTD;                 // Ptr to PerTabData global memory
+    LPWCHAR           lpwszFormat,              // Ptr to formatting save area
+                      lpwszProf,                // Ptr to profile string
+                      lpwszOldTemp;             // Ptr to temporary save area
 
     // Save OptionFlags for display to fixed
     //   values so we convert values on )LOAD,
     //   )SAVE, )COPY, )OUT, and []TF consistently.
-    SetOptionFlagsDisplay (&uCNDSEP, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
+    SetOptionFlagsDisplay (lpwCopyFC, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -2556,7 +2556,7 @@ ERROR_EXIT:
     hGlbObj = NULL;
 NORMAL_EXIT:
     // Restore the OptionFlags values
-    RestoreOptionFlagsDisplay (uCNDSEP, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
+    RestoreOptionFlagsDisplay (lpwCopyFC, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
 
     return hGlbObj;
 } // End LoadWorkspaceGlobal_EM

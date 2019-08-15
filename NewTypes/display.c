@@ -1043,7 +1043,7 @@ LPAPLCHAR FormatImmed
             lpaplChar =
               FormatAplIntFC (lpaplChar,            // Ptr to output save area
           BIT0 & *(LPAPLBOOL) lpaplLongest,         // The value to format
-                              UTF16_OVERBAR);       // Char to use as overbar
+                              NegSign);             // Char to use as overbar
             break;
 
         case IMMTYPE_INT:
@@ -1352,7 +1352,7 @@ LPAPLCHAR FormatImmedPtr
             lpaplChar =
               FormatAplIntFC (lpaplChar,        // Ptr to output save area
           BIT0 & *(LPAPLBOOL) lpaplLongest,     // The value to format
-                              UTF16_OVERBAR);   // Char to use as overbar
+                              NegSign);         // Char to use as overbar
             break;
 
         case IMMTYPE_INT:
@@ -1487,7 +1487,7 @@ LPAPLCHAR FormatAplInt
     return
       FormatAplIntFC (lpaplChar,        // Ptr to output save area
           *(LPAPLINT) lpaplInt,         // The value to format
-                      UTF16_OVERBAR);   // Char to use as overbar
+                      NegSign);         // Char to use as overbar
 } // End FormatAplInt
 
 
@@ -1569,7 +1569,7 @@ LPAPLCHAR FormatAplRat
     return
       FormatAplRatFC (lpaplChar,        // Ptr to output save area
                       lpaplRat,         // Ptr to the value to format
-                      UTF16_OVERBAR,    // Char to use as overbar
+                      NegSign,          // Char to use as overbar
                       DEF_RATSEP,       // Char to use as rational separator
                       FALSE,            // TRUE iff we're to substitute text for infinity
                       FALSE);           // TRUE iff this RAT is inside a larger syntax
@@ -1714,8 +1714,8 @@ LPAPLCHAR FormatAplFlt
       FormatAplFltFC (lpaplChar,                // Ptr to output save area
         *(LPAPLFLOAT) lpaplFloat,               // The value to format
                       nDigits,                  // # significant digits (0 = default)
-                      L'.',                     // Char to use as decimal separator
-                      UTF16_OVERBAR,            // Char to use as overbar
+                      DecSep,                   // Char to use as decimal separator
+                      NegSign,                  // Char to use as overbar
                       FLTDISPFMT_RAWFLT,        // Float display format
                       FALSE);                   // TRUE iff we're to substitute text for infinity
 } // End FormatAplFlt
@@ -2311,8 +2311,8 @@ LPAPLCHAR FormatAplVfp
                       lpaplVfp,                 // Ptr to the value to format
                       nDigits,                  // # significant digits (0 = all)
                       0,                        // Maximum width including sign & decpt (0 = none)
-                      UTF16_DOT,                // Char to use as decimal separator
-                      UTF16_OVERBAR,            // Char to use as overbar
+                      DecSep,                   // Char to use as decimal separator
+                      NegSign,                  // Char to use as overbar
                       FLTDISPFMT_RAWFLT,        // Float display format
                       FALSE,                    // TRUE iff nDigits is # fractional digits
                       FALSE,                    // TRUE iff we're to substitute text for infinity
@@ -2380,7 +2380,7 @@ LPAPLCHAR FormatAplVfpFC
         lpaplChar =
           FormatAplIntFC (lpaplChar,                // Ptr to output save area
                           mpfr_get_prec (lpaplVfp), // The value to format
-                          UTF16_OVERBAR);           // Char to use as overbar
+                          NegSign);                 // Char to use as overbar
         // Append trailing marker overwriting the trailing space
         lpaplChar[-1] = L')';
     } // End IF
@@ -2775,7 +2775,7 @@ LPAPLCHAR FormatAplHC2I
     return
       FormatAplHC2IFC (lpaplChar,       // Ptr to output save area
                        lpaplHC2I,       // Ptr to the value to format
-                       UTF16_OVERBAR,   // Char to use as overbar
+                       NegSign,         // Char to use as overbar
                        GetHC2Sep ());   // Ptr to char(s) to use as separator
 } // End FormatAplHC2I
 
@@ -2804,15 +2804,15 @@ LPAPLCHAR FormatAplHC2IFC_Polar
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     return
-      FormatAplHC2FFC_Polar (lpaplChar,          // Ptr to output save area
-                            &atRes.aplHC2F,      // Ptr to the value to format
-                             0,                  // Raw or E-format:  # significant digits
-                                                 // F-format:  # digits to right of decimal sep
-                             UTF16_DOT,          // Char to use as decimal separator
-                             aplCharOverbar,     // Char to use as overbar
-                             GetHC2Sep (),       // Ptr to char(s) to use as separator
-                             FLTDISPFMT_RAWFLT,  // Float display format
-                             FALSE);             // TRUE iff we're to substitute text for infinity
+      FormatAplHC2FFC_Polar (lpaplChar,         // Ptr to output save area
+                            &atRes.aplHC2F,     // Ptr to the value to format
+                             GetQuadPP (),      // Raw or E-format:  # significant digits
+                                                // F-format:  # digits to right of decimal sep
+                             DecSep,            // Char to use as decimal separator
+                             aplCharOverbar,    // Char to use as overbar
+                             GetHC2Sep (),      // Ptr to char(s) to use as separator
+                             FLTDISPFMT_RAWFLT, // Float display format for Magnitude
+                             FALSE);            // TRUE iff we're to substitute text for infinity
 } // End FormatAplHC2IFC_Polar
 
 
@@ -2830,19 +2830,19 @@ LPAPLCHAR FormatAplHC2IFC
 
 {
     // Split cases based upon the Complex Number Display Separator
-    switch (OptionFlags.uCNDSEP)
+    switch (CndSep)
     {
-        case CNDSEP_i:
-        case CNDSEP_J:
+        case L'i':
+        case L'J':
             return
               FormatAplHC2IFC_Cart  (lpaplChar,         // Ptr to output save area
                                      lpaplHC2I,         // Ptr to the value to format
                                      aplCharOverbar,    // Char to use as overbar
                                      lpaplCharSep);     // Ptr to char(s) to use as separator
-        case CNDSEP_ad:
-        case CNDSEP_ah:
-        case CNDSEP_ar:
-        case CNDSEP_au:
+        case L'd':
+        case L'h':
+        case L'r':
+        case L'u':
             return
               FormatAplHC2IFC_Polar (lpaplChar,         // Ptr to output save area
                                      lpaplHC2I,         // Ptr to the value to format
@@ -2959,7 +2959,7 @@ LPAPLCHAR FormatAplHC4I
     return
       FormatAplHCxIFC (lpaplChar,       // Ptr to output save area
                        lpaplHC4I,       // Ptr to the value to format
-                       UTF16_OVERBAR,   // Char to use as overbar
+                       NegSign,         // Char to use as overbar
                        4);              // HC Dimension (1, 2, 4, 8)
 } // End FormatAplHC4I
 
@@ -2978,7 +2978,7 @@ LPAPLCHAR FormatAplHC8I
     return
       FormatAplHCxIFC (lpaplChar,       // Ptr to output save area
                        lpaplHC8I,       // Ptr to the value to format
-                       UTF16_OVERBAR,   // Char to use as overbar
+                       NegSign,         // Char to use as overbar
                        8);              // HC Dimension (1, 2, 4, 8)
 } // End FormatAplHC8I
 
@@ -3090,8 +3090,8 @@ LPAPLCHAR FormatAplHC2F
       FormatAplHC2FFC (lpaplChar,           // Ptr to output save area
                        lpaplHC2F,           // Ptr to the value to format
                        nDigits,             // # significant digits (0 = default)
-                       UTF16_DOT,           // Char to use as decimal separator
-                       UTF16_OVERBAR,       // Char to use as overbar
+                       DecSep,              // Char to use as decimal separator
+                       NegSign,             // Char to use as overbar
                        GetHC2Sep (),        // Ptr to char(s) to use as separator
                        FLTDISPFMT_RAWFLT,   // Float display format
                        FALSE);              // TRUE iff we're to substitute text for infinity
@@ -3112,13 +3112,18 @@ LPAPLCHAR FormatAplHC2FFC_Polar
      APLCHAR    aplCharDecimal,     // Char to use as decimal separator
      APLCHAR    aplCharOverbar,     // Char to use as overbar
      LPAPLCHAR  lpaplCharSep,       // Ptr to char(s) to use a separator
-     FLTDISPFMT fltDispFmt,         // Float display format (see FLTDISPFMT)
+     FLTDISPFMT fltDispFmtMag,      // Float display format for Magnitude (see FLTDISPFMT)
      UBOOL      bSubstInf)          // TRUE iff we're to substitute text for infinity
 
 {
-    APLHC2F aplRes;                 // The result
-    APLUINT uAnglePrec = DEF_ANGLEPREC_UNK; // Angle fractional precision
-    UBOOL   bAnglePrec = FALSE;     // TRUE iff we're displaying Polar form
+    APLHC2F    aplRes;                          // The result
+    APLUINT    uAnglePrec = DEF_ANGLEPREC_UNK;  // Angle fractional precision
+    UBOOL      bAnglePrec = FALSE;              // TRUE iff we're displaying Polar form
+    FLTDISPFMT fltDispFmtAng = fltDispFmtMag;   // Float display format for Angle
+    APLCHAR      aplCNDSEP;                         // Value of CndSep
+
+    // Get the current value of CNDSEP from []FC
+    aplCNDSEP = CndSep;
 
     // Convert the HC2F to Angle in Signed-Radians [-1p1, 1p1]
     aplRes.partsHi = atan2 (lpaplHC2F->partsHi, lpaplHC2F->partsLo);
@@ -3126,7 +3131,7 @@ LPAPLCHAR FormatAplHC2FFC_Polar
     // Ensure the Angle is in Radians [0, 2p1] unless we're using 'ah'
     //   in which case leave it in Signed-Radians [-1p1, 1p1]
     if (aplRes.partsHi < 0
-     && OptionFlags.uCNDSEP NE CNDSEP_ah)
+     && aplCNDSEP NE L'h')
         // Add in 2p1
         aplRes.partsHi += 2 * FloatPi;
 
@@ -3134,72 +3139,72 @@ LPAPLCHAR FormatAplHC2FFC_Polar
     aplRes.partsLo = MagHC2F (*lpaplHC2F);
 
     // Split cases based upon the Complex Number Display Separator
-    switch (OptionFlags.uCNDSEP)
+    switch (aplCNDSEP)
     {
-        case CNDSEP_ad:
+        case L'd':
             // Check for reduced angle fractional precision
             if (uAnglePrec EQ DEF_ANGLEPREC_UNK)
             {
-                uAnglePrec = DEF_ANGLEPREC_ad;
-                fltDispFmt = FLTDISPFMT_F;
-                bAnglePrec = TRUE;
+                uAnglePrec    = DEF_ANGLEPREC_ad;   // # digits to right of decimal sep
+                fltDispFmtAng = FLTDISPFMT_F;       // Float display format for Angle
+                bAnglePrec    = TRUE;
             } // End IF
 
-            // If entered at CNDSEP_ad,
+            // If entered at L'd',
             //      convert the Angle in Radians [0, 2p1] to Degree-Radians [0, 720p1]
             aplRes.partsHi *= 360;
 
             // Fall through to common code
 
-        case CNDSEP_ah:
+        case L'h':
             // Check for reduced angle fractional precision
             if (uAnglePrec EQ DEF_ANGLEPREC_UNK)
             {
-                uAnglePrec = DEF_ANGLEPREC_ah;
-                fltDispFmt = FLTDISPFMT_F;
-                bAnglePrec = TRUE;
+                uAnglePrec    = DEF_ANGLEPREC_ah;   // # digits to right of decimal sep
+                fltDispFmtAng = FLTDISPFMT_F;       // Float display format for Angle
+                bAnglePrec    = TRUE;
             } // End IF
 
             // Fall through to common code
 
-        case CNDSEP_au:
+        case L'u':
             // Check for reduced angle fractional precision
             if (uAnglePrec EQ DEF_ANGLEPREC_UNK)
             {
-                uAnglePrec = DEF_ANGLEPREC_au;
-                fltDispFmt = FLTDISPFMT_F;
-                bAnglePrec = TRUE;
+                uAnglePrec    = DEF_ANGLEPREC_au;   // # digits to right of decimal sep
+                fltDispFmtAng = FLTDISPFMT_F;       // Float display format for Angle
+                bAnglePrec    = TRUE;
             } // End IF
 
-            // If entered at CNDSEP_ah,
+            // If entered at L'h',
             //      convert the Angle in Signed-Radians [-1p1, 1p1] to Signed Unit Normalized [-0.5, 0.5]
-            // If entered at CNDSEP_ad,
+            // If entered at L'd',
             //      convert the Angle in Degree-Radians [0, 720p1] to Degrees [0, 360]
-            // If entered at CNDSEP_au,
+            // If entered at L'u',
             //      convert the Angle in Radians [0, 2p1] to the Unit Normalized [0, 1]
             aplRes.partsHi /= 2*FloatPi;
 
             // Fall through to common code
 
-        case CNDSEP_i:
-        case CNDSEP_J:
+        case L'i':
+        case L'J':
             // Check for reduced angle fractional precision
             if (uAnglePrec EQ DEF_ANGLEPREC_UNK)
             {
-                uAnglePrec = GetQuadPPV ();
-                fltDispFmt = FLTDISPFMT_F;
-                bAnglePrec = TRUE;
+                uAnglePrec    = GetQuadPPV ();      // # significant digits
+////////////////fltDispFmtMag = fltDispFmtMag;      // Float display format for Cartesian coordinates
+////////////////bAnglePrec    = FALSE;              // Already FALSE
             } // End IF
 
             // Fall through to common code
 
-        case CNDSEP_ar:
+        case L'r':
             // Check for reduced angle fractional precision
             if (uAnglePrec EQ DEF_ANGLEPREC_UNK)
             {
-                uAnglePrec = DEF_ANGLEPREC_ar;
-                fltDispFmt = FLTDISPFMT_F;
-                bAnglePrec = TRUE;
+                uAnglePrec    = DEF_ANGLEPREC_ar;   // # digits to right of decimal sep
+                fltDispFmtAng = FLTDISPFMT_F;       // Float display format for Angle
+                bAnglePrec    = TRUE;
             } // End IF
 
             return
@@ -3211,7 +3216,8 @@ LPAPLCHAR FormatAplHC2FFC_Polar
                                      aplCharDecimal,    // Char to use as decimal separator
                                      aplCharOverbar,    // Char to use as overbar
                                      lpaplCharSep,      // Ptr to char(s) to use a separator
-                                     fltDispFmt,        // Float display format (see FLTDISPFMT)
+                                     fltDispFmtMag,     // Float display format for Magnitude (see FLTDISPFMT)
+                                     fltDispFmtAng,     // ...                      Angle     ...
                                      bAnglePrec,        // TRUE iff we're displaying Polar form
                                      bSubstInf);        // TRUE iff we're to substitute text for infinity
         defstop
@@ -3234,15 +3240,15 @@ LPAPLCHAR FormatAplHC2FFC
      APLCHAR    aplCharDecimal,     // Char to use as decimal separator
      APLCHAR    aplCharOverbar,     // Char to use as overbar
      LPAPLCHAR  lpaplCharSep,       // Ptr to char(s) to use a separator
-     FLTDISPFMT fltDispFmt,         // Float display format (see FLTDISPFMT)
+     FLTDISPFMT fltDispFmtMag,      // Float display format (see FLTDISPFMT)
      UBOOL      bSubstInf)          // TRUE iff we're to substitute text for infinity
 
 {
     // Split cases based upon the Complex Number Display Separator
-    switch (OptionFlags.uCNDSEP)
+    switch (CndSep)
     {
-        case CNDSEP_i:
-        case CNDSEP_J:
+        case L'i':
+        case L'J':
             return
               FormatAplHC2FFC_Cart  (lpaplChar,         // Ptr to output save area
                                      lpaplHC2F,         // Ptr to the value to format
@@ -3252,13 +3258,14 @@ LPAPLCHAR FormatAplHC2FFC
                                      aplCharDecimal,    // Char to use as decimal separator
                                      aplCharOverbar,    // Char to use as overbar
                                      lpaplCharSep,      // Ptr to char(s) to use a separator
-                                     fltDispFmt,        // Float display format (see FLTDISPFMT)
+                                     fltDispFmtMag,     // Float display format for Magnitude (see FLTDISPFMT)
+                                     fltDispFmtMag,     // ...                      Angle     ...
                                      FALSE,             // TRUE iff we're displaying Polar form
                                      bSubstInf);        // TRUE iff we're to substitute text for infinity
-        case CNDSEP_ad:
-        case CNDSEP_ah:
-        case CNDSEP_ar:
-        case CNDSEP_au:
+        case L'd':
+        case L'h':
+        case L'r':
+        case L'u':
             return
               FormatAplHC2FFC_Polar (lpaplChar,         // Ptr to output save area
                                      lpaplHC2F,         // Ptr to the value to format
@@ -3267,7 +3274,7 @@ LPAPLCHAR FormatAplHC2FFC
                                      aplCharDecimal,    // Char to use as decimal separator
                                      aplCharOverbar,    // Char to use as overbar
                                      lpaplCharSep,      // Ptr to char(s) to use a separator
-                                     fltDispFmt,        // Float display format (see FLTDISPFMT)
+                                     fltDispFmtMag,     // Float display format for Magnitude (see FLTDISPFMT)
                                      bSubstInf);        // TRUE iff we're to substitute text for infinity
         defstop
             return NULL;
@@ -3290,7 +3297,8 @@ LPAPLCHAR FormatAplHC2FFC_Cart
      APLCHAR    aplCharDecimal,     // Char to use as decimal separator
      APLCHAR    aplCharOverbar,     // Char to use as overbar
      LPAPLCHAR  lpaplCharSep,       // Ptr to char(s) to use a separator
-     FLTDISPFMT fltDispFmt,         // Float display format (see FLTDISPFMT)
+     FLTDISPFMT fltDispFmtMag,      // Float display format for Magnitude (see FLTDISPFMT)
+     FLTDISPFMT fltDispFmtAng,      // ...                      Angle     ...
      UBOOL      bAnglePrec,         // TRUE iff we're displaying Polar form
      UBOOL      bSubstInf)          // TRUE iff we're to substitute text for infinity
 
@@ -3308,7 +3316,7 @@ LPAPLCHAR FormatAplHC2FFC_Cart
                                                 // F-format:  # digits to right of decimal sep
                           aplCharDecimal,       // Char to use as decimal separator
                           aplCharOverbar,       // Char to use as overbar
-                          fltDispFmt,           // Float display format (see FLTDISPFMT)
+                          fltDispFmtMag,        // Float display format for Magnitude (see FLTDISPFMT)
                           bSubstInf);           // TRUE iff we're to substitute text for infinity
     else
     {
@@ -3324,7 +3332,7 @@ LPAPLCHAR FormatAplHC2FFC_Cart
                                                     // F-format:  # digits to right of decimal sep
                               aplCharDecimal,       // Char to use as decimal separator
                               aplCharOverbar,       // Char to use as overbar
-                              fltDispFmt,           // Float display format (see FLTDISPFMT)
+                              fltDispFmtMag,        // Float display format for Magnitude (see FLTDISPFMT)
                               bSubstInf);           // TRUE iff we're to substitute text for infinity
             // If the imaginary part of the number is NOT all zero, ...
             if (OptionFlags.bDisp0Imag
@@ -3372,7 +3380,7 @@ LPAPLCHAR FormatAplHC2FFC_Cart
                                                 // F-format:  # digits to right of decimal sep
                           aplCharDecimal,       // Char to use as decimal separator
                           aplCharOverbar,       // Char to use as overbar
-                          fltDispFmt,           // Float display format (see FLTDISPFMT)
+                          fltDispFmtAng,        // Float display format for Angle (see FLTDISPFMT)
                           bSubstInf);           // TRUE iff we're to substitute text for infinity
         // If we are NOT displaying HC in infix form, ...
         if (!OptionFlags.bDispInfix)
@@ -3412,8 +3420,8 @@ LPAPLCHAR FormatAplHC4F
       FormatAplHCxFFC (lpaplChar,           // Ptr to output save area
                        lpaplHC4F,           // Ptr to the value to format
                        nDigits,             // # significant digits (0 = default)
-                       UTF16_DOT,           // Char to use as decimal separator
-                       UTF16_OVERBAR,       // Char to use as overbar
+                       DecSep,              // Char to use as decimal separator
+                       NegSign,             // Char to use as overbar
                        FLTDISPFMT_RAWFLT,   // Float display format
                        FALSE,               // TRUE iff we're to substitute text for infinity
                        4);                  // HC Dimension (1, 2, 4, 8)
@@ -3437,8 +3445,8 @@ LPAPLCHAR FormatAplHC8F
       FormatAplHCxFFC (lpaplChar,           // Ptr to output save area
                        lpaplHC8F,           // Ptr to the value to format
                        nDigits,             // # significant digits (0 = default)
-                       UTF16_DOT,           // Char to use as decimal separator
-                       UTF16_OVERBAR,       // Char to use as overbar
+                       DecSep,              // Char to use as decimal separator
+                       NegSign,             // Char to use as overbar
                        FLTDISPFMT_RAWFLT,   // Float display format
                        FALSE,               // TRUE iff we're to substitute text for infinity
                        8);                  // HC Dimension (1, 2, 4, 8)
@@ -3569,7 +3577,7 @@ LPAPLCHAR FormatAplHC2R
     return
       FormatAplHC2RFC (lpaplChar,       // Ptr to output save area
                        lpaplHC2R,       // Ptr to the value to format
-                       UTF16_OVERBAR,   // Char to use as overbar
+                       NegSign,         // Char to use as overbar
                        DEF_RATSEP,      // Char to use as RAT separator
                        GetHC2Sep (),    // Ptr to char(s) to use as separator
                        FALSE);          // TRUE iff we're to substitute text for infinity
@@ -3605,7 +3613,7 @@ LPAPLCHAR FormatAplHC2RFC_Polar
       FormatAplHC2VFC_Polar (lpaplChar,         // Ptr to output save area
                             &atRes.aplHC2V,     // Ptr to the value to format
                              GetQuadPPV (),     // Use this many significant digits for VFP
-                             UTF16_DOT,         // Char to use as decimal separator
+                             DecSep,            // Char to use as decimal separator
                              aplCharOverbar,    // Char to use as overbar
                              lpaplCharSep,      // Ptr to char(s) to use as separator
                              FLTDISPFMT_RAWFLT, // Float display format
@@ -3635,10 +3643,10 @@ LPAPLCHAR FormatAplHC2RFC
 
 {
     // Split cases based upon the Complex Number Display Separator
-    switch (OptionFlags.uCNDSEP)
+    switch (CndSep)
     {
-        case CNDSEP_i:
-        case CNDSEP_J:
+        case L'i':
+        case L'J':
             return
               FormatAplHC2RFC_Cart  (lpaplChar,          // Ptr to output save area
                                      lpaplHC2R,          // Ptr to the value to format
@@ -3647,10 +3655,10 @@ LPAPLCHAR FormatAplHC2RFC
                                      lpaplCharSep,       // Ptr to char(s) to use as separator
                                      bSubstInf);         // TRUE iff we're to substitute text for infinity
 
-        case CNDSEP_ad:
-        case CNDSEP_ah:
-        case CNDSEP_ar:
-        case CNDSEP_au:
+        case L'd':
+        case L'h':
+        case L'r':
+        case L'u':
             return
               FormatAplHC2RFC_Polar (lpaplChar,         // Ptr to output save area
                                      lpaplHC2R,         // Ptr to the value to format
@@ -3791,7 +3799,7 @@ LPAPLCHAR FormatAplHC4R
     return
       FormatAplHCxRFC (lpaplChar,       // Ptr to output save area
                        lpaplHC4R,       // Ptr to the value to format
-                       UTF16_OVERBAR,   // Char to use as overbar
+                       NegSign,         // Char to use as overbar
                        DEF_RATSEP,      // Char to use as RAT separator
                        FALSE,           // TRUE iff we're to substitute text for infinity
                        4);              // HC Dimension (1, 2, 4, 8)
@@ -3812,7 +3820,7 @@ LPAPLCHAR FormatAplHC8R
     return
       FormatAplHCxRFC (lpaplChar,       // Ptr to output save area
                        lpaplHC8R,       // Ptr to the value to format
-                       UTF16_OVERBAR,   // Char to use as overbar
+                       NegSign,         // Char to use as overbar
                        DEF_RATSEP,      // Char to use as RAT separator
                        FALSE,           // TRUE iff we're to substitute text for infinity
                        8);              // HC Dimension (1, 2, 4, 8)
@@ -3948,8 +3956,8 @@ LPAPLCHAR FormatAplHC2V
       FormatAplHC2VFC (lpaplChar,           // Ptr to output save area
                        lpaplHC2V,           // Ptr to the value to format
                        nDigits,             // # significant digits (0 = all)
-                       UTF16_DOT,           // Char to use as decimal separator
-                       UTF16_OVERBAR,       // Char to use as overbar
+                       DecSep,              // Char to use as decimal separator
+                       NegSign,             // Char to use as overbar
                        GetHC2Sep (),        // Ptr to char(s) to use as separator
                        FLTDISPFMT_RAWFLT,   // Float display format
                        FALSE,               // TRUE iff nDigits is # fractional digits
@@ -3973,7 +3981,7 @@ LPAPLCHAR FormatAplHC2VFC_Polar
      APLCHAR    aplCharDecimal,     // Char to use as decimal separator
      APLCHAR    aplCharOverbar,     // Char to use as overbar
      LPAPLCHAR  lpaplCharSep,       // Ptr to char(s) to use as separator
-     FLTDISPFMT fltDispFmt,         // Float display format (see FLTDISPFMT)
+     FLTDISPFMT fltDispFmtMag,      // Float display format for Magnitude (see FLTDISPFMT)
      UBOOL      bFractDigs,         // TRUE iff nDigits is # fractional digits
      UBOOL      bSubstInf,          // TRUE iff we're to substitute text for infinity
      UBOOL      bPrecFPC)           // TRUE iff we're to precede the display with (FPCnnn)
@@ -3983,8 +3991,11 @@ LPAPLCHAR FormatAplHC2VFC_Polar
     APLHC2V      aplRes = {0};                      // The result
     APLUINT      uAnglePrec = DEF_ANGLEPREC_UNK;    // Angle fractional precision
     UBOOL        bAnglePrec = FALSE;                // TRUE iff we're displaying Polar form
+    FLTDISPFMT   fltDispFmtAng = fltDispFmtMag;     // Float display format for Angle
+    APLCHAR      aplCNDSEP;                         // Value of CndSep
 
-    // Get the PerTabData
+    // Get the current value of CNDSEP from []FC
+    aplCNDSEP = CndSep;
 
     // Initialize the high part
     mpfr_init0 (&aplRes.partsHi);
@@ -3995,7 +4006,7 @@ LPAPLCHAR FormatAplHC2VFC_Polar
     // Ensure the Angle is in Radians [0, 2p1] unless we're using 'ah'
     //   in which case leave it in Signed-Radians [-1p1, 1p1]
     if (mpfr_sgn (&aplRes.partsHi) < 0
-     && OptionFlags.uCNDSEP NE CNDSEP_ah)
+     && aplCNDSEP NE L'h')
     {
         // Add in 2p1
         mpfr_add (&aplRes.partsHi, &aplRes.partsHi, &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
@@ -4006,68 +4017,73 @@ LPAPLCHAR FormatAplHC2VFC_Polar
     aplRes.partsLo = MagHC2V (*lpaplHC2V);
 
     // Split cases based upon the Complex Number Display Separator
-    switch (OptionFlags.uCNDSEP)
+    switch (aplCNDSEP)
     {
-        case CNDSEP_ad:
+        case L'd':
             // Check for reduced angle fractional precision
             if (uAnglePrec EQ DEF_ANGLEPREC_UNK)
             {
-                uAnglePrec = DEF_ANGLEPREC_ad;
-                bAnglePrec = TRUE;
+                uAnglePrec    = DEF_ANGLEPREC_ad;   // # digits to right of decimal sep
+                fltDispFmtAng = FLTDISPFMT_F;       // Float display format for Angle
+                bAnglePrec    = TRUE;
             };
 
-            // If entered at CNDSEP_ad,
+            // If entered at L'd',
             //      convert the Angle in Radians [0, 2p1] to Degree-Radians [0, 720p1]
             mpfr_mul_si (&aplRes.partsHi, &aplRes.partsHi, 360, MPFR_RNDN);
 
             // Fall through to common code
 
-        case CNDSEP_ah:
+        case L'h':
             // Check for reduced angle fractional precision
             if (uAnglePrec EQ DEF_ANGLEPREC_UNK)
             {
-                uAnglePrec = DEF_ANGLEPREC_ah;
-                bAnglePrec = TRUE;
+                uAnglePrec    = DEF_ANGLEPREC_ah;   // # digits to right of decimal sep
+                fltDispFmtAng = FLTDISPFMT_F;       // Float display format for Angle
+                bAnglePrec    = TRUE;
             };
 
             // Fall through to common code
 
-        case CNDSEP_au:
+        case L'u':
             // Check for reduced angle fractional precision
             if (uAnglePrec EQ DEF_ANGLEPREC_UNK)
             {
-                uAnglePrec = DEF_ANGLEPREC_au;
-                bAnglePrec = TRUE;
+                uAnglePrec    = DEF_ANGLEPREC_au;   // # digits to right of decimal sep
+                fltDispFmtAng = FLTDISPFMT_F;       // Float display format for Angle
+                bAnglePrec    = TRUE;
             };
 
-            // If entered at CNDSEP_ah,
+            // If entered at L'h',
             //      convert the Angle in Signed-Radians [-1p1, 1p1] to Signed Unit Normalized [-0.5, 0.5]
-            // If entered at CNDSEP_ad,
+            // If entered at L'd',
             //      convert the Angle in Degree-Radians [0, 720p1] to Degrees [0, 360]
-            // If entered at CNDSEP_au,
+            // If entered at L'u',
             //      convert the Angle in Radians [0, 2p1] to the Unit Normalized [0, 1]
             mpfr_div    (&aplRes.partsHi, &aplRes.partsHi, &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
             mpfr_div_si (&aplRes.partsHi, &aplRes.partsHi, 2                              , MPFR_RNDN);
 
             // Fall through to common code
 
-        case CNDSEP_i:
-        case CNDSEP_J:
+        case L'i':
+        case L'J':
             // Check for reduced angle fractional precision
             if (uAnglePrec EQ DEF_ANGLEPREC_UNK)
             {
-                uAnglePrec = nDigits;
-                bAnglePrec = TRUE;
+                uAnglePrec    = nDigits;            // # significant digits
+////////////////fltDispFmtAng = FltDispFmtMag;      // Float display format for Magnitude
+////////////////bAnglePrec    = FALSE;              // Already FALSE
             };
 
             // Fall through to common code
 
-        case CNDSEP_ar:
+        case L'r':
             // Check for reduced angle fractional precision
             if (uAnglePrec EQ DEF_ANGLEPREC_UNK)
             {
-                uAnglePrec = DEF_ANGLEPREC_ar;
-                bAnglePrec = TRUE;
+                uAnglePrec    = DEF_ANGLEPREC_ar;   // # digits to right of decimal sep
+                fltDispFmtAng = FLTDISPFMT_F;       // Float display format for Angle
+                bAnglePrec    = TRUE;
             };
 
             lpaplChar =
@@ -4080,7 +4096,8 @@ LPAPLCHAR FormatAplHC2VFC_Polar
                                      aplCharDecimal,    // Char to use as decimal separator
                                      aplCharOverbar,    // Char to use as overbar
                                      lpaplCharSep,      // Ptr to char(s) to use as separator
-                                     fltDispFmt,        // Float display format (see FLTDISPFMT)
+                                     fltDispFmtMag,     // Float display format for Magnitude (see FLTDISPFMT)
+                                     fltDispFmtAng,     // ...                      Angle     ...
                                      bFractDigs,        // TRUE iff nDigits is # fractional digits
                                      bAnglePrec,        // TRUE iff we're displaying Polar form
                                      bSubstInf,         // TRUE iff we're to substitute text for infinity
@@ -4111,17 +4128,17 @@ LPAPLCHAR FormatAplHC2VFC
      APLCHAR    aplCharDecimal,     // Char to use as decimal separator
      APLCHAR    aplCharOverbar,     // Char to use as overbar
      LPAPLCHAR  lpaplCharSep,       // Ptr to char(s) to use as separator
-     FLTDISPFMT fltDispFmt,         // Float display format (see FLTDISPFMT)
+     FLTDISPFMT fltDispFmtMag,      // Float display format for Magnitude (see FLTDISPFMT)
      UBOOL      bFractDigs,         // TRUE iff nDigits is # fractional digits
      UBOOL      bSubstInf,          // TRUE iff we're to substitute text for infinity
      UBOOL      bPrecFPC)           // TRUE iff we're to precede the display with (FPCnnn)
 
 {
     // Split cases based upon the Complex Number Display Separator
-    switch (OptionFlags.uCNDSEP)
+    switch (CndSep)
     {
-        case CNDSEP_i:
-        case CNDSEP_J:
+        case L'i':
+        case L'J':
             return
               FormatAplHC2VFC_Cart  (lpaplChar,         // Ptr to output save area
                                      lpaplHC2V,         // Ptr to the value to format
@@ -4132,15 +4149,16 @@ LPAPLCHAR FormatAplHC2VFC
                                      aplCharDecimal,    // Char to use as decimal separator
                                      aplCharOverbar,    // Char to use as overbar
                                      lpaplCharSep,      // Ptr to char(s) to use as separator
-                                     fltDispFmt,        // Float display format (see FLTDISPFMT)
+                                     fltDispFmtMag,     // Float display format for Magnitude (see FLTDISPFMT)
+                                     fltDispFmtMag,     // ...                      Angle     ...
                                      bFractDigs,        // TRUE iff nDigits is # fractional digits
                                      FALSE,             // TRUE iff we're displaying Polar form
                                      bSubstInf,         // TRUE iff we're to substitute text for infinity
                                      bPrecFPC);         // TRUE iff we're to precede the display with (FPCnnn)
-        case CNDSEP_ad:
-        case CNDSEP_ah:
-        case CNDSEP_ar:
-        case CNDSEP_au:
+        case L'd':
+        case L'h':
+        case L'r':
+        case L'u':
             return
               FormatAplHC2VFC_Polar (lpaplChar,         // Ptr to output save area
                                      lpaplHC2V,         // Ptr to the value to format
@@ -4150,7 +4168,7 @@ LPAPLCHAR FormatAplHC2VFC
                                      aplCharDecimal,    // Char to use as decimal separator
                                      aplCharOverbar,    // Char to use as overbar
                                      lpaplCharSep,      // Ptr to char(s) to use as separator
-                                     fltDispFmt,        // Float display format (see FLTDISPFMT)
+                                     fltDispFmtMag,     // Float display format for Magnitude (see FLTDISPFMT)
                                      bFractDigs,        // TRUE iff nDigits is # fractional digits
                                      bSubstInf,         // TRUE iff we're to substitute text for infinity
                                      bPrecFPC);         // TRUE iff we're to precede the display with (FPCnnn)
@@ -4176,7 +4194,8 @@ LPAPLCHAR FormatAplHC2VFC_Cart
      APLCHAR    aplCharDecimal,     // Char to use as decimal separator
      APLCHAR    aplCharOverbar,     // Char to use as overbar
      LPAPLCHAR  lpaplCharSep,       // Ptr to char(s) to use as separator
-     FLTDISPFMT fltDispFmt,         // Float display format (see FLTDISPFMT)
+     FLTDISPFMT fltDispFmtMag,      // Float display format for Magnitude (see FLTDISPFMT)
+     FLTDISPFMT fltDispFmtAng,      // ...                      Angle     ...
      UBOOL      bFractDigs,         // TRUE iff nDigits is # fractional digits
      UBOOL      bAnglePrec,         // TRUE iff we're displaying Polar form
      UBOOL      bSubstInf,          // TRUE iff we're to substitute text for infinity
@@ -4198,7 +4217,7 @@ LPAPLCHAR FormatAplHC2VFC_Cart
                           0,                    // Maximum width including sign & decpt (0 = none)
                           aplCharDecimal,       // Char to use as decimal separator
                           aplCharOverbar,       // Char to use as overbar
-                          fltDispFmt,           // Float display format (see FLTDISPFMT)
+                          fltDispFmtMag,        // Float display format for Magnitude (see FLTDISPFMT)
                           bFractDigs,           // TRUE iff nDigits is # fractional digits
                           bSubstInf,            // TRUE iff we're to substitute text for infinity
                           bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
@@ -4219,7 +4238,7 @@ LPAPLCHAR FormatAplHC2VFC_Cart
                               0,                    // Maximum width including sign & decpt (0 = none)
                               aplCharDecimal,       // Char to use as decimal separator
                               aplCharOverbar,       // Char to use as overbar
-                              fltDispFmt,           // Float display format (see FLTDISPFMT)
+                              fltDispFmtMag,        // Float display format for Magnitude (see FLTDISPFMT)
                               bFractDigs,           // TRUE iff nDigits is # fractional digits
                               bSubstInf,            // TRUE iff we're to substitute text for infinity
                               bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
@@ -4244,7 +4263,6 @@ LPAPLCHAR FormatAplHC2VFC_Cart
     {
         APLINT     nDigs;           // nDigits for Angle fractional precision
         UBOOL      bFDigs;          // bFractDigs for ...
-        FLTDISPFMT fltDFmt;         // Float display format (see FLTDISPFMT) for ...
 
         // If we are displaying HC in infix form, ...
         if (OptionFlags.bDispInfix)
@@ -4262,12 +4280,10 @@ LPAPLCHAR FormatAplHC2VFC_Cart
         {
             nDigs   = uAnglePrec;
             bFDigs  = TRUE;
-            fltDFmt = FLTDISPFMT_F;
         } else
         {
             nDigs   = nDigits;
             bFDigs  = bFractDigs;
-            fltDFmt = fltDispFmt;
         } // End IF/ELSE
 
         // Format the imaginary part
@@ -4280,7 +4296,7 @@ LPAPLCHAR FormatAplHC2VFC_Cart
                           0,                    // Maximum width including sign & decpt (0 = none)
                           aplCharDecimal,       // Char to use as decimal separator
                           aplCharOverbar,       // Char to use as overbar
-                          fltDFmt,              // Float display format (see FLTDISPFMT)
+                          fltDispFmtAng,        // Float display format for Angle (see FLTDISPFMT)
                           bFDigs,               // TRUE iff nDigits is # fractional digits
                           bSubstInf,            // TRUE iff we're to substitute text for infinity
                           bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
@@ -4321,8 +4337,8 @@ LPAPLCHAR FormatAplHC4V
       FormatAplHCxVFC (lpaplChar,           // Ptr to output save area
                        lpaplHC4V,           // Ptr to the value to format
                        nDigits,             // # significant digits (0 = all)
-                       UTF16_DOT,           // Char to use as decimal separator
-                       UTF16_OVERBAR,       // Char to use as overbar
+                       DecSep,              // Char to use as decimal separator
+                       NegSign,             // Char to use as overbar
                        FLTDISPFMT_RAWFLT,   // Float display format
                        FALSE,               // TRUE iff nDigits is # fractional digits
                        FALSE,               // TRUE iff we're to substitute text for infinity
@@ -4347,8 +4363,8 @@ LPAPLCHAR FormatAplHC8V
       FormatAplHCxVFC (lpaplChar,           // Ptr to output save area
                        lpaplHC8V,           // Ptr to the value to format
                        nDigits,             // # significant digits (0 = all)
-                       UTF16_DOT,           // Char to use as decimal separator
-                       UTF16_OVERBAR,       // Char to use as overbar
+                       DecSep,              // Char to use as decimal separator
+                       NegSign,             // Char to use as overbar
                        FLTDISPFMT_RAWFLT,   // Float display format
                        FALSE,               // TRUE iff nDigits is # fractional digits
                        FALSE,               // TRUE iff we're to substitute text for infinity
@@ -4619,7 +4635,7 @@ LPWCHAR DisplayTransferImm2
                         &lpSymEntry->stData.stLongest,      // Ptr to value to format
                          DEF_MAX_QUADPP_IEEE,               // # significant digits
                          UTF16_DOT,                         // Char to use as decimal separator
-                         UTF16_OVERBAR,                     // Char to use as overbar
+                         NegSign,                           // Char to use as overbar
                          FLTDISPFMT_RAWFLT,                 // Float display format
                          FALSE);                            // TRUE iff we're to substitute text for infinity
     return lpwszTemp;
@@ -4640,24 +4656,24 @@ LPWCHAR DisplayTransferGlb2
      UBOOL      bTopLevel)                  // TRUE iff this call is at the top level
 
 {
-    LPVARARRAY_HEADER lpMemHdrArg = NULL;   // Ptr to arg item global memory header
-    LPVOID            lpMemArg;             // Ptr to arg item global memory
-    APLSTYPE          aplTypeArg;           // Arg item storage type
-    APLNELM           aplNELMArg,           // Arg item NELM
-                      aplNELMNst;           // Arg item NELM if nested
-    APLRANK           aplRankArg;           // Arg item rank
-    APLUINT           uCnt;                 // Loop counter
-    UBOOL             bNeedParens = FALSE,  // TRUE iff this level needs surrounding parens
-                      bDispMPSuf,           // Save area for OptionFlags value
-                      bDisp0Imag,           // ...
-                      bDispInfix,           // ...
-                      bDispOctoDig;         // ...
-    UINT              uCNDSEP;              // ...
+    LPVARARRAY_HEADER lpMemHdrArg = NULL;       // Ptr to arg item global memory header
+    LPVOID            lpMemArg;                 // Ptr to arg item global memory
+    APLSTYPE          aplTypeArg;               // Arg item storage type
+    APLNELM           aplNELMArg,               // Arg item NELM
+                      aplNELMNst;               // Arg item NELM if nested
+    APLRANK           aplRankArg;               // Arg item rank
+    APLUINT           uCnt;                     // Loop counter
+    UBOOL             bNeedParens = FALSE,      // TRUE iff this level needs surrounding parens
+                      bDispMPSuf,               // Save area for OptionFlags value
+                      bDisp0Imag,               // ...
+                      bDispInfix,               // ...
+                      bDispOctoDig;             // ...
+    APLCHAR           lpwCopyFC[FCNDX_LENGTH];  // ...
 
     // Save OptionFlags for display to fixed
     //   values so we convert values on )LOAD,
     //   )SAVE, )COPY, )OUT, and []TF consistently.
-    SetOptionFlagsDisplay (&uCNDSEP, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
+    SetOptionFlagsDisplay (lpwCopyFC, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
 
     // Lock the memory to get a ptr to it
     lpMemHdrArg = MyGlobalLockVar (hGlbArg);
@@ -4703,7 +4719,7 @@ LPWCHAR DisplayTransferGlb2
             lpwszTemp =
               FormatAplIntFC (lpwszTemp,            // Ptr to output save area
                  *((LPAPLDIM) lpMemArg)++,          // The value to format
-                              UTF16_OVERBAR);       // Char to use as overbar
+                              NegSign);             // Char to use as overbar
         // lpMemArg now points to the data
 
         // If the array is not a scalar, ...
@@ -4728,7 +4744,7 @@ LPWCHAR DisplayTransferGlb2
                 lpwszTemp =
                   FormatAplIntFC (lpwszTemp,            // Ptr to output save area
                                   GetNextInteger (lpMemArg, aplTypeArg, uCnt),  // The value to format
-                                  UTF16_OVERBAR);       // Char to use as overbar
+                                  NegSign);             // Char to use as overbar
             break;
 
         case ARRAY_APA:
@@ -4748,7 +4764,7 @@ LPWCHAR DisplayTransferGlb2
                 lpwszTemp =
                   FormatAplIntFC (lpwszTemp,            // Ptr to output save area
                                   lpAPA->Off,           // The value to format
-                                  UTF16_OVERBAR);       // Char to use as overbar
+                                  NegSign);             // Char to use as overbar
                 // Append a minus sign, zapping the trailing blank
                 lpwszTemp[-1] = L'-';
 
@@ -4756,7 +4772,7 @@ LPWCHAR DisplayTransferGlb2
                 lpwszTemp =
                   FormatAplIntFC (lpwszTemp,            // Ptr to output save area
                                   lpAPA->Mul,           // The value to format
-                                  UTF16_OVERBAR);       // Char to use as overbar
+                                  NegSign);             // Char to use as overbar
 #undef  lpAPA
                 // Append {times}[]IO-{iota}, zapping the trailing blank
                 strcpyW (&lpwszTemp[-1], WS_UTF16_TIMES $QUAD_IO L"-" WS_UTF16_IOTA);
@@ -4766,7 +4782,7 @@ LPWCHAR DisplayTransferGlb2
                 lpwszTemp =
                   FormatAplIntFC (lpwszTemp,            // Ptr to output save area
                                   aplNELMArg,           // The value to format
-                                  UTF16_OVERBAR);       // Char to use as overbar
+                                  NegSign);             // Char to use as overbar
             } // End IF/ELSE
 
             break;
@@ -4778,8 +4794,8 @@ LPWCHAR DisplayTransferGlb2
                   FormatAplFltFC (lpwszTemp,            // Ptr to output save area
                    *((LPAPLFLOAT) lpMemArg)++,          // Ptr to float value
                                   DEF_MAX_QUADPP_IEEE,  // # significant digits
-                                  L'.',                 // Char to use as decimal separator
-                                  UTF16_OVERBAR,        // Char to use as overbar
+                                  DecSep,               // Char to use as decimal separator
+                                  NegSign,              // Char to use as overbar
                                   FLTDISPFMT_RAWFLT,    // Float display format
                                   FALSE);               // TRUE iff we're to substitute text for infinity
             break;
@@ -4837,7 +4853,7 @@ LPWCHAR DisplayTransferGlb2
                 lpwszTemp =
                   FormatAplHC2IFC (lpwszTemp,           // Ptr to output save area
                       ((LPAPLHC2I) lpMemArg)++,         // Ptr to float value
-                                   UTF16_OVERBAR,       // Char to use as overbar
+                                   NegSign,             // Char to use as overbar
                                    GetHC2Sep ());       // Ptr to char(s) to use as separator
             break;
 
@@ -4847,7 +4863,7 @@ LPWCHAR DisplayTransferGlb2
                 lpwszTemp =
                   FormatAplHCxIFC (lpwszTemp,           // Ptr to output save area
           (LPAPLHC8I) ((LPAPLHC4I) lpMemArg)++,         // Ptr to float value
-                                   UTF16_OVERBAR,       // Char to use as overbar
+                                   NegSign,             // Char to use as overbar
                                    4);                  // HC Dimension (1, 2, 4, 8)
             break;
 
@@ -4857,7 +4873,7 @@ LPWCHAR DisplayTransferGlb2
                 lpwszTemp =
                   FormatAplHCxIFC (lpwszTemp,           // Ptr to output save area
                       ((LPAPLHC8I) lpMemArg)++,         // Ptr to float value
-                                   UTF16_OVERBAR,       // Char to use as overbar
+                                   NegSign,             // Char to use as overbar
                                    8);                  // HC Dimension (1, 2, 4, 8)
             break;
 
@@ -4977,7 +4993,7 @@ LPWCHAR DisplayTransferGlb2
     MyGlobalUnlock (hGlbArg); lpMemHdrArg = NULL;
 
     // Restore the OptionFlags values
-    RestoreOptionFlagsDisplay (uCNDSEP, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
+    RestoreOptionFlagsDisplay (lpwCopyFC, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
 
     return lpwszTemp;
 } // End DisplayTansferGlb2
@@ -5109,7 +5125,7 @@ LPWCHAR DisplayTransferFcn2
 //***************************************************************************
 
 APLCHAR GetQuadFCValue
-    (UINT uIndex)
+    (FC_INDICES uIndex)                         // The index into []FC
 
 {
     LPPERTABDATA      lpMemPTD;                 // Ptr to PerTabData global memory
@@ -5142,7 +5158,7 @@ APLCHAR GetQuadFCValue
 
     // Check for short []FC
     if (uIndex >= aplNELMQuadFC)
-        aplCharQuadFC = (DEF_QUADFC_CWS)[uIndex];
+        aplCharQuadFC = aplDefaultFC[uIndex];
     else
         aplCharQuadFC = lpMemQuadFC[uIndex];
 
@@ -5151,6 +5167,58 @@ APLCHAR GetQuadFCValue
 
     return aplCharQuadFC;
 } // End GetQuadFCValue
+
+
+//***************************************************************************
+//  $SetQuadFCValue
+//
+//  Set a specified value into []FC
+//***************************************************************************
+
+UBOOL SetQuadFCValue
+    (FC_INDICES uIndex,                         // The index into []FC
+     APLCHAR    aplCharQuadFC)                  // The new value for []FC[uIndex]
+
+{
+    LPPERTABDATA      lpMemPTD;                 // Ptr to PerTabData global memory
+    HGLOBAL           hGlbQuadFC;               // []FC global memory handle
+    LPVARARRAY_HEADER lpMemHdrQuadFC = NULL;    // Ptr to []FC global memory header
+    LPAPLCHAR         lpMemQuadFC;              // Ptr to []FC global memory
+    APLNELM           aplNELMQuadFC;            // []FC NELM
+    APLRANK           aplRankQuadFC;            // []FC rank
+    UBOOL             bRet = TRUE;              // TRUE iff the result is valid
+
+    Assert (uIndex < FCNDX_LENGTH);
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    // Get the []FC global memory handle
+    hGlbQuadFC = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FC]->stData.stGlbData;
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrQuadFC = MyGlobalLockVar (hGlbQuadFC);
+
+#define lpHeader        lpMemHdrQuadFC
+    // Get the array NELM and rank
+    aplNELMQuadFC = lpHeader->NELM;
+    aplRankQuadFC = lpHeader->Rank;
+#undef  lpHeader
+
+    // Skip over the header and dimensions to the data
+    lpMemQuadFC = VarArrayDataFmBase (lpMemHdrQuadFC);
+
+    // Check for short []FC
+    if (uIndex >= aplNELMQuadFC)
+        bRet = FALSE;
+    else
+        lpMemQuadFC[uIndex] = aplCharQuadFC;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbQuadFC); lpMemHdrQuadFC = NULL;
+
+    return bRet;
+} // End SetQuadFCValue
 
 
 //***************************************************************************
@@ -5169,7 +5237,6 @@ APLINT GetQuadICValue
     LPAPLINT          lpMemQuadIC;              // Ptr to []IC global memory
     APLSTYPE          aplTypeQuadIC;            // []IC storage type
     APLNELM           aplNELMQuadIC;            // []IC NELM
-    APLRANK           aplRankQuadIC;            // []IC rank
     APLINT            aplIntQuadIC;             // []IC[uIndex]
 
     Assert (icIndex < ICNDX_LENGTH);
@@ -5184,10 +5251,9 @@ APLINT GetQuadICValue
     lpMemHdrQuadIC = MyGlobalLockVar (hGlbQuadIC);
 
 #define lpHeader        lpMemHdrQuadIC
-    // Get the array Type, NELM, and rank
+    // Get the array Type and NELM
     aplTypeQuadIC = lpHeader->ArrType;
     aplNELMQuadIC = lpHeader->NELM;
-    aplRankQuadIC = lpHeader->Rank;
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data

@@ -117,7 +117,7 @@ typedef enum tagIC_INDICES
 //   <icIndexNames> in <customize.c>.
 
 EXTERN
-APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
+APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC default values
 #ifdef DEFINE_VALUES
  = {ICVAL_POS_INFINITY ,    // 00:  DIV0          {div} 0 and L {div} 0 for L != 0
     ICVAL_NEG_INFINITY ,    // 01:  LOG0          {log} 0
@@ -154,7 +154,79 @@ APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
 
 
 //***************************************************************************
-// Feature Control Values
+// []FC Control Values
+//***************************************************************************
+
+typedef enum tagFC_INDICES
+{
+    FCNDX_DECIMAL_SEP    ,          // 00:  Decimal separator (L'.')
+    FCNDX_THOUSANDS_SEP  ,          // 01:  Thousands separator (L',')
+    FCNDX_FBE_8_FILL     ,          // 02:  Format-by-example '8' fill (L'*')
+    FCNDX_OVERFLOW_FILL  ,          // 03:  Format-by-example overflow fill (L'0')
+    FCNDX_BLANK_FILL     ,          // 04:  Blank fill (L'_') (cannot be L",.0123456789")
+    FCNDX_NEGATIVE       ,          // 05:  Negative Sign (UTF16_OVERBAR)
+    FCNDX_CNDSEP         ,          // 06:  Complex Number Display Separator (L'J')
+    FCNDX_LENGTH                    // 07:  # entries in this enum
+} FC_INDICES;
+
+// N.B.:  Whenever changing the above enum (FC_INDICES),
+//   be sure to make a corresponding change to
+//   <DEF_QUADFC_xxx>, <aplDefaultFC>, and <FCNames>
+//   all in <externs.h>
+
+#define DEF_QUADFC_WS_DECIMAL_SEP   L"."
+#define DEF_QUADFC_WS_THOUSANDS_SEP L","
+#define DEF_QUADFC_WS_FBE_8_FILL    L"*"
+#define DEF_QUADFC_WS_OVERFLOW_FILL L"0"
+#define DEF_QUADFC_WS_BLANK_FILL    L"_"
+#define DEF_QUADFC_WS_NEGATIVE      WS_UTF16_OVERBAR
+#define DEF_QUADFC_WS_CNDSEP        L"J"
+
+#define DEF_QUADFC_DECIMAL_SEP      L'.'            // Decimal separator (L'.')
+#define DEF_QUADFC_THOUSANDS_SEP    L','            // Thousands separator (L',')
+#define DEF_QUADFC_FBE_8_FILL       L'*'            // Format-by-example '8' fill (L'*')
+#define DEF_QUADFC_OVERFLOW_FILL    L'0'            // Format-by-example overflow fill (L'0')
+#define DEF_QUADFC_BLANK_FILL       L'_'            // Blank fill (L'_') (cannot be in FC_NOBLANKFILL_WS)
+#define DEF_QUADFC_NEGATIVE         UTF16_OVERBAR   // Negative Sign (UTF16_OVERBAR)
+#define DEF_QUADFC_CNDSEP           L'J'            // Complex Number Display Separator (L'J')
+
+typedef struct tagFC_NAMES
+{
+    FC_INDICES eFC;                 // 00:  FC enum index
+    LPWCHAR    lpwszFCName;         // 04:  Ptr to FC name
+} FC_NAMES, *LPFC_NAMES;
+
+EXTERN
+APLCHAR aplDefaultFC[FCNDX_LENGTH]  // []FC default values
+#ifdef DEFINE_VALUES
+ = {DEF_QUADFC_DECIMAL_SEP   ,      // 00:  Decimal separator (L'.')
+    DEF_QUADFC_THOUSANDS_SEP ,      // 02:  Thousands separator (L',')
+    DEF_QUADFC_FBE_8_FILL    ,      // 04:  Format-by-example '8' fill (L'*')
+    DEF_QUADFC_OVERFLOW_FILL ,      // 06:  Format-by-example overflow fill (L'0')
+    DEF_QUADFC_BLANK_FILL    ,      // 08:  Blank fill (L'_') (cannot be in FC_NOBLANKFILL_WS)
+    DEF_QUADFC_NEGATIVE      ,      // 0A:  Negative Sign (WS_UTF16_OVERBAR)
+    DEF_QUADFC_CNDSEP        ,      // 0B:  Complex Number Display Separator (L'J')
+   }
+#endif
+;
+
+EXTERN
+FC_NAMES FCNames[FCNDX_LENGTH]
+#ifdef DEFINE_VALUES
+ = {{FCNDX_DECIMAL_SEP   , L"1: Decimal separator"                                  },
+    {FCNDX_THOUSANDS_SEP , L"2: Thousands separator"                                },
+    {FCNDX_FBE_8_FILL    , L"3: Format-by-example '8' fill"                         },
+    {FCNDX_OVERFLOW_FILL , L"4: Format-by-example overflow fill"                    },
+    {FCNDX_BLANK_FILL    , L"5: Blank fill (not \"" FC_NOBLANKFILL_WS L"\")"        },
+    {FCNDX_NEGATIVE      , L"6: Negative Sign"                                      },
+    {FCNDX_CNDSEP        , L"7: Complex # Separator (only \"" FC_CNDSEP_WS L"\")"   },
+   }
+#endif
+;
+
+
+//***************************************************************************
+// []FEATURE Control Values
 //***************************************************************************
 
 typedef enum tagFEATURE_VALUES
@@ -224,10 +296,10 @@ FEATURE_NAMES featNames[FEATURENDX_LENGTH]
 EXTERN
 HGLOBAL  hGlbQuadALX_CWS     ,          // []ALX     ([]dm)
          hGlbQuadELX_CWS     ,          // []ELX     ([]dm)
-         hGlbQuadFC_SYS      ,          // []FC      (L".,*0_" WS_UTF16_OVERBAR)
+         hGlbQuadFC_SYS      ,          // []FC      (aplDefaultFC)
+         hGlbQuadFC_CWS      ,          // []FC      hGlbQuadFC_SYS or from )LOAD
          hGlbQuadFEATURE_SYS ,          // []FEATURE aplDefaultFEATURE
          hGlbQuadFEATURE_CWS ,          // []FEATURE hGlbQuadFEATURE_SYS or from )LOAD
-         hGlbQuadFC_CWS      ,          // []FC      hGlbQuadFC_SYS or from )LOAD
          hGlbQuadIC_SYS      ,          // []IC      (aplDefaultIC)
          hGlbQuadIC_CWS      ,          // []IC      hGlbQuadIC_SYS or from )LOAD
          hGlbQuadLX_CWS      ,          // []LX      (L"")
@@ -1737,12 +1809,11 @@ typedef struct tagOPTIONFLAGS
          bDefDispFcnLineNums :1,    // 00400000:  ...      Display function line #s
          bDispMPSuf:1,       :1,    // 00800000:  ...      Display multi-precision numbers with suffix 'x' or 'v'
          bOutputDebug:1,     :1,    // 01000000:  ...      Output Debugging is enabled
-         uCNDSEP             :3,    // 0E000000:  ...      Use CNDSEP_xx as Complex Number Display Separator
-         bDisp0Imag          :1,    // 10000000:  ...      Display all imaginary parts
-         bDispInfix          :1,    // 20000000:  ...      Display CHO numbers using infix notation
-         bDispOctoDig        :1,    // 40000000:  ...      Display Octonions using Digraphs
-         bShowNetErrs:1,     :1,    // 80000000:  ...      Show Network Errors is enabled
-                             :0;    // 00000000:  Available bits
+         bDisp0Imag          :1,    // 02000000:  ...      Display all imaginary parts
+         bDispInfix          :1,    // 04000000:  ...      Display CHO numbers using infix notation
+         bDispOctoDig        :1,    // 08000000:  ...      Display Octonions using Digraphs
+         bShowNetErrs:1,     :1,    // 10000000:  ...      Show Network Errors is enabled
+                             :3;    // E00000000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1771,7 +1842,6 @@ OPTIONFLAGS OptionFlags
     DEF_DISPFCNLINENUMS,
     DEF_DISPMPSUF,
     DEF_OUTPUTDEBUG,
-    DEF_CNDSEP,
     DEF_DISP0IMAG,
     DEF_DISPINFIX,
     DEF_DISPOCTODIG,

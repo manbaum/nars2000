@@ -593,9 +593,11 @@ UINT SaveText
             goto FORMAT_EXIT;
 
         // Fill in the default values for Symbol Substitution
+        // Because []FMT has its own mechanism for Symbol Substitution,
+        //   we don't use anything from []FC
 ////////wSymSub[SYMSUB_OVERFLOW_FILL]  = L'*';              // Already set by = STDSYMSUB
-        wSymSub[SYMSUB_DECIMAL_SEP]    = GetQuadFCValue (FCNDX_DECIMAL_SEP);
-        wSymSub[SYMSUB_THOUSANDS_SEP]  = GetQuadFCValue (FCNDX_THOUSANDS_SEP);
+////////wSymSub[SYMSUB_DECIMAL_SEP]    = L'.';              // Already set by = STDSYMSUB
+////////wSymSub[SYMSUB_THOUSANDS_SEP]  = L',';              // Already set by = STDSYMSUB
 ////////wSymSub[SYMSUB_ZERO_FILL]      = L'0';              // Already set by = STDSYMSUB
 ////////wSymSub[SYMSUB_PRECISION_LOSS] = DEF_UNDERFLOW      // Already set by = STDSYMSUB
 ////////wSymSub[SYMSUB_Z_CHAR]         = L'Z';              // Already set by = STDSYMSUB

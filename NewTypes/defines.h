@@ -204,7 +204,6 @@
 
 
 // Global Options for HC Preferences
-#define DEF_CNDSEP                  CNDSEP_J
 #define DEF_DISP0IMAG               TRUE
 #define DEF_DISPINFIX               TRUE
 #define DEF_DISPOCTODIG             FALSE

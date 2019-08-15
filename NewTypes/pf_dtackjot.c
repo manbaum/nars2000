@@ -27,10 +27,10 @@
 
 typedef struct tagWID_PRC
 {
-    APLUINT uWid;                   // 00:  Actual width (if Auto, then this field is initially 0)
+    APLUINT uWid;                   // 00:  Actual width (if bAuto, then this field is initially 0)
     APLINT  iPrc;                   // 04:  Actual precision (0 = none, >0 = decimal notation, <0 = E-notation)
     UINT    uMaxExp:30,             // 08:  3FFFFFFF:  If iPrc < 0, length of longest exponent including the E and {neg} (if any)
-            Auto:1,                 //      40000000:  TRUE iff this width is automatic
+            bAuto:1,                //      40000000:  TRUE iff this width is automatic
             bAllChar:1;             //      80000000:  TRUE iff the column is all character
                                     // 0C:  Length
 } WIDPRC, *LPWIDPRC;
@@ -184,7 +184,7 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     // Get right arg's global ptrs
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-    if (lpMemRht)
+    if (lpMemRht NE NULL)
         // Skip over the header to the dimensions
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
@@ -204,7 +204,7 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     } // End IF/ELSE
 
     // Skip over the header and dimensions to the data
-    if (lpMemRht)
+    if (lpMemRht NE NULL)
         lpMemRht = VarArrayDataFmBase (lpMemRht);
 
 RESTART_FORMAT:
@@ -446,13 +446,13 @@ __try
             // Attempt to allocate more space in global memory rather than using lpMemPTD->lpwszFormat
             hGlbFormat2 =
               DbgGlobalAlloc (GHND, 2 * uNewSize);
-            if (hGlbFormat2)
+            if (hGlbFormat2 NE NULL)
             {
                 // Lock the memory to get a ptr to it
                 lpwszFormat2 = MyGlobalLock000 (hGlbFormat2);
 
                 // If there's an old save area, ...
-                if (hGlbFormat)
+                if (hGlbFormat NE NULL)
                 {
 ////////////////////// Lock the memory to get a ptr to it
 ////////////////////lpwszFormat = MyGlobalLock (hGlbFormat);
@@ -830,7 +830,7 @@ LPAPLCHAR CompileArrBool
         lpFmtColStr[aplDimCol].uIntWid = lpFmtColStr[aplDimCol].uInts;
 
     // Mark as last row struc
-    if (lpFmtRowLcl)
+    if (lpFmtRowLcl NE NULL)
         lpFmtRowLcl->lpFmtRowNxt = NULL;
 
     // Propagate the row & col count up the line
@@ -951,7 +951,7 @@ LPAPLCHAR CompileArrChar
     lpFmtColStr[0].uIntWid = lpFmtColStr[0].uChrs;
 
     // Mark as last row struc
-    if (lpFmtRowLcl)
+    if (lpFmtRowLcl NE NULL)
         lpFmtRowLcl->lpFmtRowNxt = NULL;
 
     // Propagate the row & col count up the line
@@ -1085,7 +1085,7 @@ LPAPLCHAR CompileArrHetero
 
             // Check for decimal point, unless char
             if (!IsImmChr (immTypeCur)
-             && (lpwsz = strchrW (lpwszOut, L'.')))
+             && (lpwsz = strchrW (lpwszOut, DecSep)))
             {
                 // Calculate the length of the integer part
                 uLen = (UINT) (lpwsz - lpwszOut);
@@ -1161,7 +1161,7 @@ LPAPLCHAR CompileArrHetero
                                               lpFmtColStr[aplDimCol].uChrs)
                                        + lpFmtColStr[aplDimCol].uFrcs;
     // Mark as last row struc
-    if (lpFmtRowLcl)
+    if (lpFmtRowLcl NE NULL)
         lpFmtRowLcl->lpFmtRowNxt = NULL;
 
     // Propagate the row & col count up the line
@@ -1215,7 +1215,7 @@ LPAPLCHAR CompileArrNested
     lpFmtHeader->uMatRes |= IsRank2P (aplRank);
 
     // If there are any cols, ...
-    if (aplDimNCols)
+    if (aplDimNCols NE 0)
     {
         // Nested arrays always include one leading blank
         lpFmtColStr[0              ].uLdBlNst++;
@@ -1359,7 +1359,7 @@ LPAPLCHAR CompileArrNested
     } // End FOR
 
     // Mark as last row struc
-    if (lpFmtRowLcl)
+    if (lpFmtRowLcl NE NULL)
         lpFmtRowLcl->lpFmtRowNxt = NULL;
 
     // Propagate the row & col count up the line
@@ -1953,7 +1953,7 @@ LPAPLCHAR CompileArrHCxI
                 lpaplChar =
                   FormatAplIntFC (lpwszOut = lpaplChar,         // Ptr to output save area
                                   apaOff + apaMul * apaAcc,     // The value to format
-                                  UTF16_OVERBAR);               // Char to use as overbar
+                                  NegSign);                     // Char to use as overbar
             } else
             {
                 // Format the HCxI
@@ -1980,7 +1980,7 @@ LPAPLCHAR CompileArrHCxI
             lpwsz = strpbrkW (lpwszOut, lpwcSep);
             if (lpwsz NE NULL)
                 lpwsz2 = SkipPastStrW (lpwsz, lpwcSep);
-            if (lpwsz && (IsDigitW (lpwsz2[0]) || lpwsz2[0] EQ UTF16_OVERBAR))
+            if (lpwsz && (IsDigitW (lpwsz2[0]) || lpwsz2[0] EQ NegSign))
             {
                 // Calculate the length of the real part
                 uLen = (UINT) (lpwsz - lpwszOut);
@@ -2048,7 +2048,7 @@ LPAPLCHAR CompileArrHCxI
                                        + lpFmtColStr[aplDimCol].uFrcs;
 
     // Mark as last row struc
-    if (lpFmtRowLcl)
+    if (lpFmtRowLcl NE NULL)
         lpFmtRowLcl->lpFmtRowNxt = NULL;
 
     // Propagate the row & col count up the line
@@ -2164,7 +2164,7 @@ LPAPLCHAR CompileArrHCxF
             lpwsz = strpbrkW (lpwszOut, lpwcSep);
             if (lpwsz NE NULL)
                 lpwsz2 = SkipPastStrW (lpwsz, lpwcSep);
-            if (lpwsz && (IsDigitW (lpwsz2[0]) || lpwsz2[0] EQ UTF16_OVERBAR))
+            if (lpwsz && (IsDigitW (lpwsz2[0]) || lpwsz2[0] EQ NegSign))
             {
                 // Calculate the length of the real part
                 uLen = (UINT) (lpwsz - lpwszOut);
@@ -2231,7 +2231,7 @@ LPAPLCHAR CompileArrHCxF
         lpFmtColStr[aplDimCol].uIntWid = lpFmtColStr[aplDimCol].uInts
                                        + lpFmtColStr[aplDimCol].uFrcs;
     // Mark as last row struc
-    if (lpFmtRowLcl)
+    if (lpFmtRowLcl NE NULL)
         lpFmtRowLcl->lpFmtRowNxt = NULL;
 
     // Propagate the row & col count up the line
@@ -2342,7 +2342,7 @@ LPAPLCHAR CompileArrHCxR
             lpwsz = strpbrkW (lpwszOut, lpwcSep);
             if (lpwsz NE NULL)
                 lpwsz2 = SkipPastStrW (lpwsz, lpwcSep);
-            if (lpwsz && (IsDigitW (lpwsz2[0]) || lpwsz2[0] EQ UTF16_OVERBAR))
+            if (lpwsz && (IsDigitW (lpwsz2[0]) || lpwsz2[0] EQ NegSign))
             {
                 // Calculate the length of the real part
                 uLen = (UINT) (lpwsz - lpwszOut);
@@ -2409,7 +2409,7 @@ LPAPLCHAR CompileArrHCxR
         lpFmtColStr[aplDimCol].uIntWid = lpFmtColStr[aplDimCol].uInts
                                        + lpFmtColStr[aplDimCol].uFrcs;
     // Mark as last row struc
-    if (lpFmtRowLcl)
+    if (lpFmtRowLcl NE NULL)
         lpFmtRowLcl->lpFmtRowNxt = NULL;
 
     // Propagate the row & col count up the line
@@ -2525,7 +2525,7 @@ LPAPLCHAR CompileArrHCxV
             lpwsz = strpbrkW (lpwszOut, lpwcSep);
             if (lpwsz NE NULL)
                 lpwsz2 = SkipPastStrW (lpwsz, lpwcSep);
-            if (lpwsz && (IsDigitW (lpwsz2[0]) || lpwsz2[0] EQ UTF16_OVERBAR))
+            if (lpwsz && (IsDigitW (lpwsz2[0]) || lpwsz2[0] EQ NegSign))
             {
                 // Calculate the length of the real part
                 uLen = (UINT) (lpwsz - lpwszOut);
@@ -2592,7 +2592,7 @@ LPAPLCHAR CompileArrHCxV
         lpFmtColStr[aplDimCol].uIntWid = lpFmtColStr[aplDimCol].uInts
                                        + lpFmtColStr[aplDimCol].uFrcs;
     // Mark as last row struc
-    if (lpFmtRowLcl)
+    if (lpFmtRowLcl NE NULL)
         lpFmtRowLcl->lpFmtRowNxt = NULL;
 
     // Propagate the row & col count up the line
@@ -3138,7 +3138,7 @@ LPAPLCHAR FormatArrSimple
                     if (GetHetChar (lpaplChar, aplType) NE WC_EOS)
                     {
                         // If this row's col offset is non-zero, ...
-                        if (uColOff)
+                        if (uColOff NE 0)
                             // Fill with leading blanks
                             lpwszOut = FillMemoryW (lpwszOut, (APLU3264) uColOff, L' ');
 
@@ -3655,7 +3655,7 @@ LPAPLCHAR FormatArrNestedCon
         Assert (uActLen <= uCmpWid);
 
         // Get length of integer part
-        uTmp = (UINT) (SkipToCharW (lpaplChar2, L'.') - lpaplChar2);
+        uTmp = (UINT) (SkipToCharW (lpaplChar2, DecSep) - lpaplChar2);
 
         // Add in length of longest fraction in this
         //   column (including decimal point)
@@ -3911,14 +3911,14 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     IMM_TYPES    immTypeRht;        // Right arg element immediate type
     APLCHAR      aplCharDecimal,    // []FC[FCNDX_DECIMAL_SEP]
                  aplCharOverflow,   // []FC[FCNDX_OVERFLOW_FILL]
-                 aplCharOverbar;    // []FC[FCNDX_OVERBAR]
+                 aplCharOverbar;    // []FC[FCNDX_NEGATIVE]
     UINT         uBitMask,          // Bit mask for looping through Booleans
                  uMaxExp,           // Width of the maximum exponent (including the 'E')
                  uOldMaxExp,        // Old ...
                  uLen;              // Length of formatted number
     UBOOL        bRet = TRUE,       // TRUE iff result is valid
                  bAllChar,          // TRUE iff this column is all character
-                 Auto;              // TRUE iff the col is automatic width
+                 bAuto;             // TRUE iff the col is automatic width
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPWCHAR      lpwszFormat;       // Ptr to formatting save area
@@ -3979,7 +3979,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     // Lock the memory to get a ptr to it
     lpMemWidPrc = MyGlobalLock000 (hGlbWidPrc);
 
-    if (hGlbLft)
+    if (hGlbLft NE NULL)
         // Skip over the header to the data
         lpMemLft = VarArrayDataFmBase (lpMemLft);
 
@@ -4035,7 +4035,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
 
         // Save as actual precision
         lpMemWidPrc[0].iPrc = aplLongestLft;
-        lpMemWidPrc[0].Auto = TRUE;
+        lpMemWidPrc[0].bAuto = TRUE;
     } else
     // Ensure that the first value in each pair is non-negative
     // Split cases based upon the left arg's storage type
@@ -4356,11 +4356,11 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
         } // End FOR
     } // End IF
 
-    // Set the Auto bit if the width is zero
+    // Set the bAuto bit if the width is zero
     for (uRht = 0; uRht < aplColsRht; uRht++)
-        lpMemWidPrc[uRht].Auto = (lpMemWidPrc[uRht].uWid EQ 0);
+        lpMemWidPrc[uRht].bAuto = (lpMemWidPrc[uRht].uWid EQ 0);
 
-    if (lpMemRht)
+    if (lpMemRht NE NULL)
         // Skip over the header to the dimensions
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
@@ -4379,7 +4379,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
             aplDimNRows = aplNELMRht / aplDimNCols;
     } // End IF/ELSE
 
-    if (lpMemRht)
+    if (lpMemRht NE NULL)
         // Skip over the header and dimensions to the data
         lpMemRht = VarArrayDataFmBase (lpMemRht);
 
@@ -4490,9 +4490,9 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     lpaplChar = lpwszFormat;
 
     // Get the []FC values we need
-    aplCharDecimal  = GetQuadFCValue (FCNDX_DECIMAL_SEP);
-    aplCharOverflow = GetQuadFCValue (FCNDX_OVERFLOW_FILL);
-    aplCharOverbar  = GetQuadFCValue (FCNDX_OVERBAR);
+    aplCharDecimal  = DecSep;
+    aplCharOverflow = OverFill;
+    aplCharOverbar  = NegSign;
 
 __try
 {
@@ -4513,7 +4513,7 @@ __try
             for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
             {
                 // Get the corresponding attributes for this col
-                Auto     = (BOOL) lpMemWidPrc[aplDimCol].Auto;
+                bAuto    = (BOOL) lpMemWidPrc[aplDimCol].bAuto;
                 uWid     =        lpMemWidPrc[aplDimCol].uWid;
                 iPrc     =        lpMemWidPrc[aplDimCol].iPrc;
                 bAllChar = TRUE;
@@ -4525,7 +4525,7 @@ __try
                     lpaplCharIni = lpaplChar;
 
                     // Get the next value from the right arg
-                    if (lpMemRht)
+                    if (lpMemRht NE NULL)
                         GetNextValueMem (lpMemRht,                              // Ptr to right arg global memory data
                                          aplTypeRht,                            // Right arg  storage type
                                          aplNELMRht,                            // Right arg  NELM
@@ -4588,7 +4588,7 @@ __try
                         lpaplChar[-1] = WC_EOS;
                     } else
                     // If the item is an HGLOBAL, ...
-                    if (hGlbItmRht)
+                    if (hGlbItmRht NE NULL)
                     {
                         LPAPLCHAR lpMemItmRht;
                         APLNELM   aplNELMItmRht;
@@ -4638,7 +4638,7 @@ __try
                                 // Zap the trailing blank
                                 lpaplChar[-1] = WC_EOS;
 
-                                if (iPrc)
+                                if (iPrc NE 0)
                                 {
                                     // Append decimal separator followed by iPrc 0s
                                     lpaplChar[-1] = aplCharDecimal;
@@ -4734,14 +4734,14 @@ __try
                     } // End IF
 
                     // Check for automatic width
-                    if (Auto)
+                    if (bAuto)
                         lpMemWidPrc[aplDimCol].uWid = uWid = max (uWid, uLen);
                     else
                     // Check for width overflow
                     if (uWid < uLen)
                     {
                         // If the overflow char is the default, ...
-                        if (aplCharOverflow EQ DEF_QUADFC_OVERFLOW)
+                        if (aplCharOverflow EQ DEF_QUADFC_OVERFLOW_FILL)
                             goto DOMAIN_EXIT;
 
                         // Restore the previous max exponent field as this
@@ -4787,7 +4787,7 @@ __try
 
     // Calculate the total width, including extra column for auto width
     for (uRht = uTotWid = 0; uRht < aplColsRht; uRht++)
-        uTotWid += lpMemWidPrc[uRht].Auto + lpMemWidPrc[uRht].uWid;
+        uTotWid += lpMemWidPrc[uRht].bAuto + lpMemWidPrc[uRht].uWid;
 
     // Calculate the result NELM
     aplNELMRes = aplDimNRows * uTotWid;
@@ -4837,10 +4837,10 @@ __try
     FillMemoryW (lpMemRes, (APLU3264) aplNELMRes, L' ');
 
     // Loop through the formatted data and copy it to the result
-    for (aplDimCol = uAccWid = 0; aplDimCol < aplDimNCols; aplDimCol++, uAccWid += Auto + uWid)
+    for (aplDimCol = uAccWid = 0; aplDimCol < aplDimNCols; aplDimCol++, uAccWid += bAuto + uWid)
     {
         // Get the corresponding attributes for this col
-        Auto     = (BOOL) lpMemWidPrc[aplDimCol].Auto;
+        bAuto    = (BOOL) lpMemWidPrc[aplDimCol].bAuto;
         uWid     =        lpMemWidPrc[aplDimCol].uWid;
         iPrc     =        lpMemWidPrc[aplDimCol].iPrc;
         bAllChar =        lpMemWidPrc[aplDimCol].bAllChar;
@@ -4878,7 +4878,7 @@ __try
 
             // Copy the next formatted value to the result,
             //   right-justifying it in the process
-            CopyMemoryW (&lpMemRes[aplDimRow * uTotWid + uAccWid + Auto + (uWid - uLen) - uMaxExp],
+            CopyMemoryW (&lpMemRes[aplDimRow * uTotWid + uAccWid + bAuto + (uWid - uLen) - uMaxExp],
                           lpaplChar,
                           uLen);
             // Skip over the formatted value and the trailing zero

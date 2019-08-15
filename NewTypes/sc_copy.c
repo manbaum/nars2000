@@ -57,7 +57,7 @@ UBOOL CmdCopy_EM
                  bDisp0Imag,                // ...
                  bDispInfix,                // ...
                  bDispOctoDig;              // ...
-    UINT         uCNDSEP;                   // ...
+    APLCHAR      lpwCopyFC[FCNDX_LENGTH];   // ...
     FILE        *fStream;                   // Ptr to file stream for the plain text workspace file
     HWND         hWndEC;                    // Edit Ctrl window handle
     LPSYMENTRY   lpSymLink = NULL;          // Anchor of SYMENTRY links for [Globals] values
@@ -67,7 +67,7 @@ UBOOL CmdCopy_EM
     // Save OptionFlags for display to fixed
     //   values so we convert values on )LOAD,
     //   )SAVE, )COPY, )OUT, and []TF consistently.
-    SetOptionFlagsDisplay (&uCNDSEP, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
+    SetOptionFlagsDisplay (lpwCopyFC, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -366,7 +366,7 @@ NORMAL_EXIT:
     } // End IF
 
     // Restore the OptionFlags values
-    RestoreOptionFlagsDisplay (uCNDSEP, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
+    RestoreOptionFlagsDisplay (lpwCopyFC, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
 
     return bRet;
 } // End CmdCopy_EM

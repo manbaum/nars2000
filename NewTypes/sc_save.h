@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@ typedef struct tagSAVEDWSVAR_CB
     LPDICTIONARY lpDict;        // Ptr to workspace dictionary
     int          iMaxLength,    // Maximum length, although it may be exceeded by a bit
                  iIndex;        // Index of key in lpDict->key (-1 = not saved)
+    LPWCHAR      lpwCopyFC;     // Ptr to []FC pre-)SAVE
 } SAVEDWSVAR_CB, *LPSAVEDWSVAR_CB;
 
 

@@ -34,15 +34,14 @@
 #define DEF_QUADDT_CWS      L"r"
 #define DEF_QUADDT_ALLOW    L"rgp"
 #define DEF_QUADDT_NAMES    L"Rectangular", L"Gaussian", L"Poisson"
-#define DEF_QUADFC_CWS      L".,*0_" WS_UTF16_OVERBAR
-#define DEF_QUADFC_CWS_BR   L".,*0_{overbar}"       // The braces form of DEF_QUAD_FC_CWS
-#define DEF_QUADFC_CWS_LEN  ((sizeof (DEF_QUADFC_CWS) / sizeof (DEF_QUADFC_CWS[0])) - 1)
-#define DEF_QUADFC_OVERFLOW L'0'
+#define DEF_QUADFC_CWS      aplDefaultFC
+#define DEF_QUADFC_CWS_LEN  FCNDX_LENGTH
 #define DEF_QUADFC_GLB      hGlbQuadFC_SYS
 #define DEF_QUADFEATURE_CWS aplDefaultFEATURE
 #define DEF_QUADFEATURE_GLB hGlbQuadFEATURE_SYS
 #define DEF_QUADFPC_CWS     128
 #define DEF_QUADIC_CWS      aplDefaultIC
+#define DEF_QUADIC_CWS_LEN  ICNDX_LENGTH
 #define DEF_QUADIC_GLB      hGlbQuadIC_SYS
 #define DEF_QUADIO_CWS          1
 #define DEF_QUADMF_CWS      TIMERSOURCE_PC2MS
@@ -60,6 +59,14 @@
 #define DEF_QUADELX_CWS_BR  L"{quad}DM"         // ...                        ELX
 #define DEF_QUADALX_GLB     hGlbQuadxLX
 #define DEF_QUADELX_GLB     hGlbQuadxLX
+
+// Characters to use as various separators and fills from []FC
+#define DecSep      (GetQuadFCValue (FCNDX_DECIMAL_SEP))
+#define ThouSep     (GetQuadFCValue (FCNDX_THOUSANDS_SEP))
+#define OverFill    (GetQuadFCValue (FCNDX_OVERFLOW_FILL))
+#define BlankFill   (GetQuadFCValue (FCNDX_BLANK_FILL))
+#define NegSign     (GetQuadFCValue (FCNDX_NEGATIVE))
+#define CndSep      (GetQuadFCValue (FCNDX_CNDSEP))
 
 #define QUADRL_MODULUS      0x1FFFFFFFFFFFFFFF  // -1+2*61 is a prime
 
@@ -117,19 +124,6 @@ typedef enum tagSA_VALUES
     SAVAL_Off               // 04:  "OFF"
                             // 05-07:  Available entries (3 bits)
 } SA_VALUES;
-
-
-// Format Control
-typedef enum tagFC_INDICES
-{
-    FCNDX_DECIMAL_SEP,      // 00:  Decimal separator (L'.')
-    FCNDX_THOUSANDS_SEP,    // 01:  Thousands separator (L',')
-    FCNDX_FBE_8_FILL,       // 02:  Format-by-example '8' fill (L'*')
-    FCNDX_OVERFLOW_FILL,    // 03:  Format-by-example overflow fill (L'0')
-    FCNDX_BLANK_FILL,       // 04:  Blank fill (L'_') (cannot be L",.0123456789")
-    FCNDX_OVERBAR,          // 05:  Overbar (WS_UTF16_OVERBAR)
-    FCNDX_LENGTH,           // 06:  # entries in this enum
-} FC_INDICES;
 
 
 typedef enum tagSYS_VARS

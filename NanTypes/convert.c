@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2301,13 +2301,14 @@ APLMPI ConvertToMPI_SCT
 APLFLOAT ConvertToFloat
     (APLSTYPE   aplTypeArg,             // Argument storage type
      LPVOID     lpSymGlbArg,            // ...      global memory handle
+     APLUINT    uArg,                   // Index into <lpSymGlbArg>
      LPUBOOL    lpbRet)                 // Ptr to TRUE iff the result is valid
 
 {
     ALLTYPES atArg = {0};
 
     // Attempt to convert the value in <lpSymGlbArg> to a FLT
-    (*aTypeActConvert[aplTypeArg][ARRAY_FLOAT]) (lpSymGlbArg, 0, &atArg, lpbRet);
+    (*aTypeActConvert[aplTypeArg][ARRAY_FLOAT]) (lpSymGlbArg, uArg, &atArg, lpbRet);
 
     return atArg.aplFloat;
 } // End ConvertToFloat

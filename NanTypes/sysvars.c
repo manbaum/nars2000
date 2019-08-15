@@ -1671,9 +1671,10 @@ UBOOL ValidateFloatTest
 //***************************************************************************
 
 UBOOL ValidateCharVector_EM
-    (LPTOKEN  lptkNamArg,           // Ptr to name token
+    (LPTOKEN  lptkNamArg,           // Ptr to name token (may be NULL if just checking lpToken)
      LPTOKEN  lpToken,              // Ptr to value token
-     UBOOL    bWSID)                // TRUE iff this is []WSID
+     UBOOL    bWSID,                // TRUE iff this is []WSID
+     UBOOL    bFC)                  // TRUE iff this is []FC
 
 {
     HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
@@ -1687,7 +1688,8 @@ UBOOL ValidateCharVector_EM
     APLCHAR           aplChar;              // Right arg first char
     APLSTYPE          aplTypeRht;           // Right arg storage type
     APLNELM           aplNELMRht,           // Right arg NELM
-                      aplNELMRes;           // Result    ...
+                      aplNELMRes,           // Result    ...
+                      uCnt;                 // Loop counter
     APLRANK           aplRankRht;           // Right arg rank
     APLUINT           ByteRes;              // # bytes in the result
     WCHAR             wszTemp[_MAX_PATH];   // Temporary storage for canonical workspace ID
@@ -1856,7 +1858,24 @@ UBOOL ValidateCharVector_EM
 
             goto NORMAL_EXIT;
         } // End IF/ELSE
-    } // End IF
+    } else
+    // If the []var is []FC, validate the items
+    if (bFC)
+    {
+        APLNELM aplNELMMin = min (aplNELMRht, FCNDX_LENGTH);
+
+        // Loop through the individual values
+        //   no more than we know how to validate
+        for (uCnt = 0; uCnt < aplNELMMin; uCnt++)
+        // If it's not valid, ...
+        if (!ValidNdxFC (uCnt,                          // The origin-0 index value (in case the position is important)
+                         ARRAY_CHAR,                    // Right arg storage type
+         (LPAPLLONGEST) &((LPAPLCHAR) lpMemRht)[uCnt],  // Ptr to the right arg value
+                         NULL,                          // Ptr to right arg immediate type (may be NULL)
+                         NULL,                          // Ptr to right arg global value
+                         lpToken))                      // Ptr to function token
+            goto DOMAIN_EXIT;
+    } // End IF/ELSE/...
 
     // Copy the right arg global as the result
     hGlbRes = CopySymGlbDirAsGlb (hGlbRht);
@@ -1878,6 +1897,18 @@ MAKE_VECTOR:
 
         // Get length of the name as the NELM
         aplNELMRes = lstrlenW (lpwszTemp);
+    } else
+    // If the []var is []FC, ...
+    if (bFC)
+    {
+        // If it's not valid, ...
+        if (!ValidNdxFC (0,             // The origin-0 index value (in case the position is important)
+                         ARRAY_CHAR,    // Right arg storage type
+         (LPAPLLONGEST) &aplChar,       // Ptr to the right arg value
+                         NULL,          // Ptr to right arg immediate type (may be NULL)
+                         NULL,          // Ptr to right arg global value
+                         lpToken))      // Ptr to function token
+            goto DOMAIN_EXIT;
     } else
         aplNELMRes = 1;
 ALLOC_VECTOR:
@@ -1914,17 +1945,32 @@ ALLOC_VECTOR:
     if (bWSID)
         MyCopyMemoryW (lpMemRes, lpwszTemp, (APLU3264) aplNELMRes, countof (wszTemp));
     else
+    // If the []var is []FC, ...
+    if (bFC)
+    {
+        // If it's not valid, ...
+        if (!ValidNdxFC (0,             // The origin-0 index value (in case the position is important)
+                         ARRAY_CHAR,    // Right arg storage type
+         (LPAPLLONGEST) &aplChar,       // Ptr to the right arg value
+                         NULL,          // Ptr to right arg immediate type (may be NULL)
+                         NULL,          // Ptr to right arg global value
+                         lpToken))      // Ptr to function token
+            goto DOMAIN_EXIT;
+    } else
         *((LPAPLCHAR) lpMemRes) = aplChar;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 NORMAL_EXIT:
-    // Free the old value
-    FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
+    if (lptkNamArg NE NULL)
+    {
+        // Free the old value
+        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
 
-    // Save as new value
-    lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
-    lptkNamArg->tkFlags.NoDisplay = TRUE;
+        // Save as new value
+        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
+        lptkNamArg->tkFlags.NoDisplay = TRUE;
+    } // End IF
 
     // Mark as successful
     bRet = TRUE;
@@ -2531,7 +2577,7 @@ UBOOL ValidSetALX_EM
 {
     // Ensure the argument is either a character scalar (promoted to a vector)
     //   or a character vector.
-    return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE);
+    return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE, FALSE);
 } // End ValidSetALX_EM
 
 
@@ -2793,6 +2839,65 @@ UBOOL ValidNdxDT
 
 
 //***************************************************************************
+//  $ValidNdxFC
+//
+//  Validate a single value before assigning it to a position in []FC.
+//
+//  We allow the characters dependent on their index,
+//***************************************************************************
+
+UBOOL ValidNdxFC
+    (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
+     APLSTYPE     aplTypeRht,               // Right arg storage type
+     LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
+     LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     HGLOBAL      lpSymGlbRht,              // Ptr to right arg global value
+     LPTOKEN      lptkFunc)                 // Ptr to function token
+
+{
+    APLCHAR aplChar;                // The value to validate
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_APA:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            return FALSE;
+
+        case ARRAY_CHAR:
+            aplChar = (APLCHAR) *lpaplLongestRht;
+
+            // Split cases based upon the index
+            switch (aplIntegerLst)
+            {
+                case FCNDX_DECIMAL_SEP:     // Anything allowed
+                case FCNDX_THOUSANDS_SEP:   // ...
+                case FCNDX_FBE_8_FILL:      // ...
+                case FCNDX_OVERFLOW_FILL:   // ...
+                case FCNDX_NEGATIVE:        // ...
+                    return TRUE;
+
+                case FCNDX_BLANK_FILL:      // Cannot be in FC_NOBLANKFILL_WS
+                    return (strchrW (FC_NOBLANKFILL_WS, aplChar) EQ NULL);
+
+                case FCNDX_CNDSEP:          // Must be in FC_CNDSEP_WS
+                    return (strchrW (FC_CNDSEP_WS, aplChar) NE NULL);
+
+                defstop
+                    return FALSE;
+            } // End SWITCH
+
+        defstop
+            return FALSE;
+    } // End SWITCH
+} // End ValidNdxFC
+
+
+//***************************************************************************
 //  $ValidSetLR_EM
 //
 //  Validate a value before assigning it to []DT
@@ -2849,7 +2954,7 @@ UBOOL ValidSetELX_EM
 {
     // Ensure the argument is either a character scalar (promoted to a vector)
     //   or a character vector.
-    return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE);
+    return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE, FALSE);
 } // End ValidSetELX_EM
 
 
@@ -2893,7 +2998,7 @@ UBOOL ValidSetFC_EM
 
     // Ensure the argument is either a character scalar (promoted to a vector)
     //   or a character vector.
-    return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE);
+    return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE, TRUE);
 } // End ValidSetFC_EM
 
 
@@ -3522,7 +3627,7 @@ UBOOL ValidSetLX_EM
 {
     // Ensure the argument is either a character scalar (promoted to a vector)
     //   or a character vector.
-    return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE);
+    return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE, FALSE);
 } // End ValidSetLX_EM
 
 
@@ -4206,7 +4311,7 @@ UBOOL ValidSetWSID_EM
 {
     // Ensure the argument is either a character scalar (promoted to a vector)
     //   or a character vector.
-    return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, TRUE);
+    return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, TRUE, FALSE);
 } // End ValidSetWSID_EM
 
 
@@ -4222,15 +4327,17 @@ void ValidPostWSID
 {
     LPAPLCHAR lpMemHdrWSID;
 
+    Assert (GetPtrTypeDir (lptkNamArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
     // Lock the memory to get a ptr to it
-    lpMemHdrWSID = MyGlobalLockVar (lptkNamArg->tkData.tkGlbData);
+    lpMemHdrWSID = MyGlobalLockVar (lptkNamArg->tkData.tkSym->stData.stGlbData);
 
     // Skip over the header and dimensions to the data
     // Tell the Tab Ctrl about the new workspace name
     NewTabName (VarArrayDataFmBase (lpMemHdrWSID));
 
     // We no longer need this ptr
-    MyGlobalUnlock (lptkNamArg->tkData.tkGlbData); lpMemHdrWSID = NULL;
+    MyGlobalUnlock (lptkNamArg->tkData.tkSym->stData.stGlbData); lpMemHdrWSID = NULL;
 } // End ValidPostWSID_EM
 
 
@@ -4510,7 +4617,7 @@ void InitSysVars
     aSysVarValidNdx[SYSVAR_LR      ] = ValidNdxLR          ;
     aSysVarValidNdx[SYSVAR_DT      ] = ValidNdxDT          ;
     aSysVarValidNdx[SYSVAR_ELX     ] = ValidNdxChar        ;
-    aSysVarValidNdx[SYSVAR_FC      ] = ValidNdxChar        ;
+    aSysVarValidNdx[SYSVAR_FC      ] = ValidNdxFC          ;
     aSysVarValidNdx[SYSVAR_FEATURE ] = ValidNdxFEATURE     ;
     aSysVarValidNdx[SYSVAR_FPC     ] = ValidNdxFPC         ;
     aSysVarValidNdx[SYSVAR_IC      ] = ValidNdxIC          ;

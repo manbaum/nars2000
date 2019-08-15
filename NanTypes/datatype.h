@@ -104,8 +104,9 @@ typedef enum tagSTRAND_TYPES
  STRAND_BA1F    = STRAND_ARB   ,        // ...
 } STRAND_TYPES;
 
-// Whenever changing this <enum>, be sure to make a
-//   corresponding change to <tabConvert> in <strand.c>
+// N.B.:  Whenever changing this <enum>,
+//   be sure to make a corresponding change to
+//   <tabConvert> in <strand.c>
 
 
 typedef struct tagALLTYPES
@@ -197,8 +198,9 @@ typedef enum tagARRAY_TYPES
  ARRAY_BA1F     = ARRAY_ARB     ,       // ...
 } ARRAY_TYPES;
 
-// Whenever changing this <enum>, be sure to make a
-//   corresponding change to <StorageType> in <primfns.c>,
+// N.B.:  Whenever changing this <enum>,
+//   be sure to make a corresponding change to
+//   <StorageType> in <primfns.c>,
 //   <TypeDemote> in <typemote.c>,
 //   <aTypePromote> in <typemote.h>,
 //   <uTypeMap> in <externs.h>,
@@ -220,8 +222,8 @@ typedef enum tagARRAY_TYPES
 //    SO YOU HAD BETTER KNOW WHAT YOU ARE DOING***
 #define defArrayTypeAsChar  L"BIFCHNLARVifrvjgswkhtxMOPQ"
 
-// Whenever changing the above <#define>, be sure to make a
-//   corresponding change to
+// N.B.:  Whenever changing the above <#define>,
+//   be sure to make a corresponding change to
 //   <TranslateCharToArrayType> in <translate.c>.
 
 // Bits per element vector
@@ -377,6 +379,10 @@ typedef struct tagVARARRAY_HEADER
                                         //      followed by the dimensions
                                         // 1C:  Length
 } VARARRAY_HEADER, *LPVARARRAY_HEADER;
+
+// N.B.:  Whenever changing this <struct>,
+//   be sure to make a corresponding change to
+//   <varArrHdrFC> in <sc_save.c>
 
 // Note that a permuation vector is a vector whose elements when placed in
 //   ascending order are identical to an APV starting at 0 or 1 with a step of 1

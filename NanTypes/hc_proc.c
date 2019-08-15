@@ -2297,36 +2297,36 @@ UBOOL HasFractionality
 
 
 //***************************************************************************
-//  $GetHC2Sep       L"i" L"J" L"ad" L"ah" L"ar" L"au" [OptionFlags.uCNDSEP]
+//  $GetHC2Sep       L"i" L"J" L"ad" L"ah" L"ar" L"au" [CndSep]
 //***************************************************************************
 
 LPWCHAR GetHC2Sep
     (void)
 
 {
-    // Split case based upon the OptionFlag.uCNDSEP
-    switch (OptionFlags.uCNDSEP)
+    // Split case based upon the the current value of []FC[FCNDX_CNDSEP]
+    switch (CndSep)
     {
-        case CNDSEP_i :
+        case L'i':
             return L"i";
 
-        case CNDSEP_J :
+        case L'J':
             return L"J";
 
-        case CNDSEP_ad:
+        case L'd':
             return L"ad";
 
-        case CNDSEP_ah:
+        case L'h':
             return L"ah";
 
-        case CNDSEP_ar:
+        case L'r':
             return L"ar";
 
-        case CNDSEP_au:
+        case L'u':
             return L"au";
 
         defstop
-            return L"";
+            return L"???";
     } // End SWITCH
 } // End GetHC2Sep
 

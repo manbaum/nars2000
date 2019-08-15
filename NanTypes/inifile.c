@@ -112,7 +112,6 @@
 #define KEYNAME_REVDBLCLK               L"RevDblClk"
 #define KEYNAME_VIEWSTATUSBAR           L"ViewStatusBar"
 #define KEYNAME_DEFDISPFCNLINENUMS      L"DefDispFcnLineNums"
-#define KEYNAME_CNDSEP                  L"CNDSEP"
 #define KEYNAME_DISP0IMAG               L"Display0ImaginaryParts"
 #define KEYNAME_DISPINFIX               L"DisplayHCAsInfix"
 #define KEYNAME_DISPOCTODIG             L"DisplayHCAsOctoDig"
@@ -490,18 +489,21 @@ UBOOL ReadIniFileGlb
     (void)
 
 {
-    WCHAR         wszTemp[1024],                    // Temporary storage for string results
-                  wszKey[8 + 1],                    // Room for a keyname
-                 *lpwszTemp;                        // Temporary ptr into wszTemp
-    UINT          uCnt,                             // Loop counter
-                  uCnt2,                            // ...
-                  uCol,                             // ...
-                  uKST;                             // ...
-    WCHAR       (*lpwszRecentFiles)[][_MAX_PATH];   // Ptr to list of recent files
-    LPKEYBLAYOUTS lpKeybLayouts;                    // Ptr to keyboard layouts global memory
-    LPWSZLIBDIRS  lpwszLibDirs;                     // Ptr to LibDirs
-    LANGID        langId;                           // Default keyboard layout language ID
-    LPWCHAR       lpKeybLayout;                     // Ptr to default keyboard layout name
+    WCHAR             wszTemp[1024],                    // Temporary storage for string results
+                      wszKey[8 + 1],                    // Room for a keyname
+                     *lpwszTemp;                        // Temporary ptr into wszTemp
+    UINT              uCnt,                             // Loop counter
+                      uCnt2,                            // ...
+                      uCol,                             // ...
+                      uKST;                             // ...
+    WCHAR           (*lpwszRecentFiles)[][_MAX_PATH];   // Ptr to list of recent files
+    LPKEYBLAYOUTS     lpKeybLayouts;                    // Ptr to keyboard layouts global memory
+    LPWSZLIBDIRS      lpwszLibDirs;                     // Ptr to LibDirs
+    LANGID            langId;                           // Default keyboard layout language ID
+    LPWCHAR           lpKeybLayout;                     // Ptr to default keyboard layout name
+    LPVARARRAY_HEADER lpMemHdrChr = NULL;               // Ptr to global memory header
+    LPWCHAR           lpMemChr;                         // Ptr to global memory data
+    APLNELM           aplNELMMin;                       // Smaller of two NELMs
 
 #define TEMPBUFLEN      countof (wszTemp)
 
@@ -716,12 +718,6 @@ UBOOL ReadIniFileGlb
                              KEYNAME_SHOWNETERRS,   // Ptr to the key name
                              DEF_SHOWNETERRS,       // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-    // Read in uCNDSEP
-    OptionFlags.uCNDSEP =
-      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
-                             KEYNAME_CNDSEP,        // Ptr to the key name
-                             DEF_CNDSEP,            // Default value if not found
-                             lpwszIniFile);         // Ptr to the file name
     // Read in bDisp0Imag
     OptionFlags.bDisp0Imag =
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
@@ -811,6 +807,30 @@ UBOOL ReadIniFileGlb
                                  DEF_QUADFC_CWS,    // Ptr to default value
                                  DEF_QUADFC_GLB,    // HGLOBAL of the default value
                                  lpwszIniFile);     // Ptr to the file name
+    // Lock the memory to get a ptr to it
+    lpMemHdrChr = MyGlobalLockVar (hGlbQuadFC_CWS);
+
+    // Skip over the header and dimensions
+    lpMemChr = VarArrayDataFmBase (lpMemHdrChr);
+
+    // Use the smaller length
+    aplNELMMin = min (lpMemHdrChr->NELM, FCNDX_LENGTH);
+
+    // Loop through the items of hGlbQuadFC_CWS
+    for (uCnt = 0; uCnt < aplNELMMin; uCnt++)
+    // If it's not valid, ...
+    if (!ValidNdxFC (uCnt,              // The origin-0 index value (in case the position is important)
+                     ARRAY_CHAR,        // Right arg storage type
+     (LPAPLLONGEST) &lpMemChr[uCnt],    // Ptr to the right arg value
+                     NULL,              // Ptr to right arg immediate type (may be NULL)
+                     NULL,              // Ptr to right arg global value
+                     NULL))             // Ptr to function token
+        // Replace with a valid value
+        lpMemChr[uCnt] = aplDefaultFC[uCnt];
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbQuadFC_CWS); lpMemHdrChr = NULL;
+
     // Loop through the items of aplDefaultFEATURE
     for (uCnt = 0, lpwszTemp = wszTemp; uCnt < FEATURENDX_LENGTH; uCnt++)
         // Make the default wide-string form of aplDefaultFEATURE
@@ -1721,6 +1741,10 @@ HGLOBAL GetPrivateProfileGlbComW
           || lstrcmpW (wszTemp, L"3 4 2 2 2 1 2 2 1 2 2 2 2 1") EQ 0))
             // Use the new default value
             strcpyW (wszTemp, L"3 4 2 2 2 1 2 2 2 2 1 2 2 2 2 1");
+        // Catch values of []FC with a Brace-name
+        if (lstrcmpW (lpwKeyName, KEYNAME_QUADFC) EQ 0)
+            ConvertNameInPlace (wszTemp);
+
         // Use the given (or substituted value)
         lpMemInp = wszTemp;
     } else
@@ -1833,7 +1857,9 @@ void CopyConvertDataOfType
     switch (aplTypeRes)
     {
         case ARRAY_INT:
-            lpaplInteger = (LPAPLINT) lpwszTemp;
+            // Skip to the current item
+            lpaplInteger = &((LPAPLINT) lpwszTemp)[aplNELMIni];
+            lpwszTemp    = (LPAPLCHAR) lpaplInteger;
 
             // Loop through the result elements
             for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
@@ -1859,6 +1885,9 @@ void CopyConvertDataOfType
             break;
 
         case ARRAY_CHAR:
+            // Skip to the current item
+            lpwszTemp = &lpwszTemp[aplNELMIni];
+
             // Loop through the result elements
             for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
             {
@@ -2486,16 +2515,6 @@ void SaveIniFile
     // Write out bShowNetErrs
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
                                 KEYNAME_SHOWNETERRS,        // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //******************* uCNDSEP *****************************
-    // Format uCNDSEP
-    wszTemp[0] = L'0' + OptionFlags.uCNDSEP;
-    wszTemp[1] = WC_EOS;
-
-    // Write out uCNDSEP
-    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
-                                KEYNAME_CNDSEP,             // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bDisp0Imag **************************

@@ -1,6 +1,95 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2182 -- Version 0.6.0.xx
+-------------------------------
+
+* Implement []FC[7] For Complex Number Display Separator
+* Make Numeric Display More Sensitive To []FC
+
+Directory branches/bsmith/NanTypes:
+
+CONVERT.C:
+  In <ConvertToFloat>, include parameter of index into the argument.
+
+CUSTOMIZE.C:
+  Change []FC display from Radio Buttons to ComboBox and Edit Ctrl.
+
+DATATYPE.H:
+  Note that changes to <VARARRAY_HEADER> need to be reflected elsewhere.
+
+DEFINES.H:
+  Delete enum as means of specifying the default value for []FC[7].
+
+DISPDBG.C:
+  Change default Decimal Separator, Negative Sign, and Overflow Fill to the appropriate value from []FC.
+
+DISPLAY.C:
+  Change default Decimal Separator, Negative Sign, and Overflow Fill to the appropriate value from []FC.
+  Change enum for Complex Number Display Separator to actual WCHARs.
+  Use separate flag for Magnitude and Angle parts of Polar display form.
+  Save and restore entire []FC around )SAVE, )COPY, )LOAD, and []TF so those conversions always use the defaults.
+
+ENUMS.H:
+  Change enum for Complex Number Display Separator to actual WCHARs.
+
+EXECMFN.H:
+  Define short name for long form []FC.
+
+EXTERNS.H:
+  Improve comments.
+  Define more []FC attributes.
+  Change []FC display from Radio Buttons to ComboBox and Edit Ctrl.
+
+FMTSPEC.C:
+  Explain why []FMT isn't sensitive to []FC.
+
+GETFNS.C:
+  In <ConvertToFloat>, include parameter of index into the argument.
+
+HC_PROC.C:
+  Change enum for Complex Number Display Separator to actual WCHARs.
+
+INIFILE.C:
+MAIN.RC:
+  Change []FC display from Radio Buttons to ComboBox and Edit Ctrl.
+
+PF_DTACKJOT.C:
+  Rename <Auto> to <bAuto> to reflect its datatype.
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Change default Decimal Separator, Negative Sign, and Overflow Fill to the appropriate value from []FC.
+
+PN_PARSE.H:
+  Define various constants w.r.t. []FC.
+
+QF_TF.C:
+  Save and restore entire []FC around )SAVE, )COPY, )LOAD, and []TF so those conversions always use the defaults.
+  Change default Decimal Separator, Negative Sign, and Overflow Fill to the appropriate value from []FC.
+
+RESOURCE.H:
+  Change []FC display from Radio Buttons to ComboBox and Edit Ctrl.
+
+SC_COPY.C:
+SC_LOAD.C:
+SC_SAVE.H:
+  Save and restore entire []FC around )SAVE, )COPY, )LOAD, and []TF so those conversions always use the defaults.
+
+SC_SAVE.C:
+  Save and restore entire []FC around )SAVE, )COPY, )LOAD, and []TF so those conversions always use the defaults.
+  )SAVE the original value of []FC.
+  Change default Decimal Separator, Negative Sign, and Overflow Fill to the appropriate value from []FC.
+
+SYSVARS.C:
+  In <ValidateCharVector_EM>, handle []FC specially.
+  Define <ValidNdxFC> to validate changes to []FC.
+
+SYSVARS.H:
+  Define individual names for []FC items.
+
+TYPEMOTE.C:
+  Handle conversions from HETERO/NESTED to BOOL, INT, and FLT for Global Numerics.
+
+
 Build #2180 -- Version 0.6.0.xx
 -------------------------------
 

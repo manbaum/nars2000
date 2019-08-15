@@ -527,7 +527,7 @@ APLFLOAT GetNextFloatToken
                 case ARRAY_BA4F:
                 case ARRAY_BA8F:
                     // Attempt to convert the item to a float
-                    aplFloatRes = ConvertToFloat (aplTypeItm, hGlbItm, lpbRet);
+                    aplFloatRes = ConvertToFloat (aplTypeItm, hGlbItm, 0, lpbRet);
 
                     goto NORMAL_EXIT;
 
@@ -562,7 +562,7 @@ APLFLOAT GetNextFloatToken
         case ARRAY_BA4F:
         case ARRAY_BA8F:
             // Attempt to convert the item to a float
-            aplFloatRes = ConvertToFloat (aplTypeArg, lpMemArg, lpbRet);
+            aplFloatRes = ConvertToFloat (aplTypeArg, lpMemArg, 0, lpbRet);
 
             break;
 

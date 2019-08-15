@@ -185,8 +185,8 @@
 #define IDC_CLEARWS_DT_CB                        824
 #define IDC_CLEARWS_ELX_EC                       825
 #define IDC_CLEARWS_ELX_LEN                      826
-#define IDC_CLEARWS_FC_EC                        827
-#define IDC_CLEARWS_FC_LEN                       828
+#define IDC_CLEARWS_FC_CB                        827
+#define IDC_CLEARWS_FC_EC                        828
 #define IDC_CLEARWS_FEATURE_CB1                  829
 #define IDC_CLEARWS_FEATURE_CB2                  830
 #define IDC_CLEARWS_FPC_EC                       831
@@ -338,16 +338,9 @@
 #define IDC_USER_PREFS_RB_DEC                   1122
 #define IDC_USER_PREFS_RB_HEX                   1123
 
-#define IDC_HC_PREFS_RB_CNDSEP1                 1200
-#define IDC_HC_PREFS_RB_CNDSEP2                 1201
-#define IDC_HC_PREFS_RB_CNDSEP3                 1202
-#define IDC_HC_PREFS_RB_CNDSEP4                 1203
-#define IDC_HC_PREFS_RB_CNDSEP5                 1204
-#define IDC_HC_PREFS_RB_CNDSEP6                 1205
-
-#define IDC_HC_PREFS_XB_DISP0IMAG               1210
-#define IDC_HC_PREFS_XB_DISPINFIX               1211
-#define IDC_HC_PREFS_XB_DISPOCTODIG             1212
+#define IDC_HC_PREFS_XB_DISP0IMAG               1200
+#define IDC_HC_PREFS_XB_DISPINFIX               1201
+#define IDC_HC_PREFS_XB_DISPOCTODIG             1202
 
 #define IDC_SYNTCLR_LT1                         1400    // 00:  Global Name
 #define IDC_SYNTCLR_LT2                         1401    // 01:  Local  ...

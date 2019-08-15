@@ -2669,7 +2669,7 @@ LPWCHAR DisplayVarSub
                         lpaplChar =
                           FormatAplIntFC (lpaplChar,                                    // Ptr to output save area
                                           GetNextInteger (lpMemData, aplType, uCnt),    // The value to format
-                                          UTF16_OVERBAR);                               // Char to use as overbar
+                                          NegSign);                                     // Char to use as overbar
                     break;
 
                 case ARRAY_FLOAT:
@@ -2680,8 +2680,8 @@ LPWCHAR DisplayVarSub
                           FormatAplFltFC (lpaplChar,                                // Ptr to output savea area
                                           GetNextFloat (lpMemData, aplType, uCnt),  // The value to format
                                           0,                                        // Use default significant digits
-                                          L'.',                                     // Char to use as decimal separator
-                                          UTF16_OVERBAR,                            // Char to use as overbar
+                                          DecSep,                                   // Char to use as decimal separator
+                                          NegSign,                                  // Char to use as overbar
                                           FLTDISPFMT_RAWFLT,                        // Float display format
                                           FALSE);                                   // TRUE iff we're to substitute text for infinity
                     break;

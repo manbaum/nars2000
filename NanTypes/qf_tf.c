@@ -81,29 +81,39 @@ LPPL_YYSTYPE SysFnMonTF_EM_YY
 //***************************************************************************
 
 LPPL_YYSTYPE SysFnDydTF_EM_YY
-    (LPTOKEN lptkLftArg,                // Ptr to left arg token
-     LPTOKEN lptkFunc,                  // Ptr to function token
-     LPTOKEN lptkRhtArg,                // Ptr to right arg token
-     LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,                        // Ptr to left arg token
+     LPTOKEN lptkFunc,                          // Ptr to function token
+     LPTOKEN lptkRhtArg,                        // Ptr to right arg token
+     LPTOKEN lptkAxis)                          // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE          aplTypeLft;       // Left arg storage type
-    APLNELM           aplNELMLft;       // Left arg NELM
-    APLRANK           aplRankLft;       // Left arg rank
-    HGLOBAL           hGlbLft = NULL;   // Left arg global memory handle
-    APLLONGEST        aplLongestLft;    // Left arg immediate value
-    UBOOL             bRet = TRUE;      // TRUE iff result is valid
-    LPPERTABDATA      lpMemPTD;         // Ptr to PerTabData global memory
-    HGLOBAL           hGlbRht = NULL;   // Right arg global memory handle
-    LPAPLCHAR         lpMemRht = NULL;  // Ptr to right arg global memory
-    APLSTYPE          aplTypeRht;       // Right arg storage type
-    APLNELM           aplNELMRht;       // Right arg NELM
-    APLRANK           aplRankRht;       // Right arg rank
-    APLLONGEST        aplLongestRht,    // First value from right arg
-                      aplLongestTmp;    // First value temporary
-    LPWCHAR           lpwszTemp;        // Ptr to temporary storage
-    LPPL_YYSTYPE      lpYYRes = NULL;   // Ptr to the result
+    APLSTYPE          aplTypeLft;               // Left arg storage type
+    APLNELM           aplNELMLft;               // Left arg NELM
+    APLRANK           aplRankLft;               // Left arg rank
+    HGLOBAL           hGlbLft = NULL;           // Left arg global memory handle
+    APLLONGEST        aplLongestLft;            // Left arg immediate value
+    UBOOL             bRet = TRUE;              // TRUE iff result is valid
+    LPPERTABDATA      lpMemPTD;                 // Ptr to PerTabData global memory
+    HGLOBAL           hGlbRht = NULL;           // Right arg global memory handle
+    LPAPLCHAR         lpMemRht = NULL;          // Ptr to right arg global memory
+    APLSTYPE          aplTypeRht;               // Right arg storage type
+    APLNELM           aplNELMRht;               // Right arg NELM
+    APLRANK           aplRankRht;               // Right arg rank
+    APLLONGEST        aplLongestRht,            // First value from right arg
+                      aplLongestTmp;            // First value temporary
+    LPWCHAR           lpwszTemp;                // Ptr to temporary storage
+    LPPL_YYSTYPE      lpYYRes = NULL;           // Ptr to the result
+    UBOOL             bDispMPSuf,               // Save area for OptionFlags value
+                      bDisp0Imag,               // ...
+                      bDispInfix,               // ...
+                      bDispOctoDig;             // ...
+    APLCHAR           lpwCopyFC[FCNDX_LENGTH];  // Save area for FC values
     VARS_TEMP_OPEN
+
+    // Save OptionFlags for display to fixed
+    //   values so we convert values on )LOAD,
+    //   )SAVE, )COPY, )OUT, and []TF consistently.
+    SetOptionFlagsDisplay (lpwCopyFC, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left arg
@@ -266,6 +276,9 @@ RIGHT_DOMAIN_EXIT:
 ERROR_EXIT:
 NORMAL_EXIT:
     EXIT_TEMP_OPEN
+
+    // Restore the OptionFlags values
+    RestoreOptionFlagsDisplay (lpwCopyFC, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
 
     return lpYYRes;
 } // End SysFnDydTF_EM_YY
@@ -503,14 +516,14 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                 lpwszTemp =
                                   FormatAplIntFC (lpwszTemp,                    // Ptr to output save area
                                                   lpSymEntry->stData.stLongest, // The value to format
-                                                  UTF16_OVERBAR);               // Char to use as overbar
+                                                  NegSign);                     // Char to use as overbar
                             else
                                 lpwszTemp =
                                   FormatAplFltFC (lpwszTemp,                    // Ptr to output save area
                                                   lpSymEntry->stData.stFloat,   // The value to format
                                                   DEF_MAX_QUADPP_IEEE,          // Precision to use
-                                                  L'.',                         // Char to use as decimal separator
-                                                  UTF16_OVERBAR,                // Char to use as overbar
+                                                  DecSep,                       // Char to use as decimal separator
+                                                  NegSign,                      // Char to use as overbar
                                                   FLTDISPFMT_RAWFLT,            // Float display format
                                                   FALSE);                       // TRUE iff we're to substitute text for infinity
                         } else
@@ -519,13 +532,13 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                             lpwszTemp =
                               FormatAplIntFC (lpwszTemp,                        // Ptr to output save area
                                               aplRankItm,                       // The value to format
-                                              UTF16_OVERBAR);                   // Char to use as overbar
+                                              NegSign);                         // Char to use as overbar
                             // Format & save the shape
                             for (uCnt = 0; uCnt < aplRankItm; uCnt++)
                                 lpwszTemp =
                                   FormatAplIntFC (lpwszTemp,                    // Ptr to output save area
                                                   *((LPAPLDIM) lpMemItm)++,     // The value to format
-                                                  UTF16_OVERBAR);               // Char to use as overbar
+                                                  NegSign);                     // Char to use as overbar
                             // Loop through the elements formatting and saving them
                             for (uCnt = 0; uCnt < aplNELMItm; uCnt++)
                             {
@@ -538,16 +551,16 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                                  NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                                 if (IsRealBIA (aplTypeItm))
                                     lpwszTemp =
-                                      FormatAplIntFC (lpwszTemp,                // Ptr to output save area
-                                                      aplLongestItm,            // The value to format
-                                                      UTF16_OVERBAR);           // Char to use as overbar
+                                      FormatAplIntFC (lpwszTemp,        // Ptr to output save area
+                                                      aplLongestItm,    // The value to format
+                                                      NegSign);         // Char to use as overbar
                                 else
                                     lpwszTemp =
                                       FormatAplFltFC (lpwszTemp,                    // Ptr to output save area
                                                      *(LPAPLFLOAT) &aplLongestItm,  // The value to format
                                                       DEF_MAX_QUADPP_IEEE,          // Precision to use
-                                                      L'.',                         // Char to use as decimal separator
-                                                      UTF16_OVERBAR,                // Char to use as overbar
+                                                      DecSep,                       // Char to use as decimal separator
+                                                      NegSign,                      // Char to use as overbar
                                                       FLTDISPFMT_RAWFLT,            // Float display format
                                                       FALSE);                       // TRUE iff we're to substitute text for infinity
                             } // End FOR
@@ -584,13 +597,13 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                             lpwszTemp =
                               FormatAplIntFC (lpwszTemp,                        // Ptr to output save area
                                               aplRankItm,                       // The value to format
-                                              UTF16_OVERBAR);                   // Char to use as overbar
+                                              NegSign);                         // Char to use as overbar
                             // Format & save the shape
                             for (uCnt = 0; uCnt < aplRankItm; uCnt++)
                                 lpwszTemp =
                                   FormatAplIntFC (lpwszTemp,                    // Ptr to output save area
                                                   *((LPAPLDIM) lpMemItm)++,     // The value to format
-                                                  UTF16_OVERBAR);               // Char to use as overbar
+                                                  NegSign);                     // Char to use as overbar
                             // Copy the values to temp storage
                             CopyMemoryW (lpwszTemp, lpMemItm, (APLU3264) aplNELMItm);
 
@@ -693,12 +706,12 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                 lpwszTemp =
                   FormatAplIntFC (lpwszTemp,                                    // Ptr to output save area
                                   uNumLines + 1,                                // The value to format
-                                  UTF16_OVERBAR);                               // Char to use as overbar
+                                  NegSign);                                     // Char to use as overbar
                 // Format & save the # cols
                 lpwszTemp =
                   FormatAplIntFC (lpwszTemp,                                    // Ptr to output save area
                                   uMaxLineLen,                                  // The value to format
-                                  UTF16_OVERBAR);                               // Char to use as overbar
+                                  NegSign);                                     // Char to use as overbar
                 // Copy the header to the result as either a row or as an allocated HGLOBAL
                 lpwszTemp = SysFnCR_Copy_EM (2, lpwszTemp, lpMemDfnHdr->hGlbTxtHdr, uMaxLineLen, lptkFunc);
                 if (lpwszTemp EQ NULL)

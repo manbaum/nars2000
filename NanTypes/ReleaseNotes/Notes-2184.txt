@@ -1,0 +1,10 @@
+Build #2184 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In []DFT When Reusing HC2I as HC2F
+
+Directory branches/bsmith/NanTypes:
+
+QF_DFT.C:
+  Improve comments.
+  Save the new result storage type if reusing HC2I as HC2F.

@@ -262,7 +262,7 @@ LPPL_YYSTYPE SysFnDFTCom_EM_YY
         } // End IF/ELSE
     } // End IF
 
-    // If we're not re-using, ...
+    // If we've not allocated as yet, ...
     if (hGlbRes EQ NULL)
     {
         // Allocate space for that many HC2Fs/HC2Vs
@@ -275,6 +275,9 @@ LPPL_YYSTYPE SysFnDFTCom_EM_YY
 
     // Lock the memory to get a ptr to it
     lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+
+    // Set the new storage type in case we're reusing (e.g., HC2I as HC2F)
+    lpMemHdrRes->ArrType = aplTypeRes;
 
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayDataFmBase (lpMemHdrRes);

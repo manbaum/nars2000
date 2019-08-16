@@ -1,6 +1,17 @@
 Version 0.5.12.xx consists of the following Builds:
 
 
+Build #2187 -- Version 0.5.12.xx
+--------------------------------
+
+* Pickup More Cases For Modified Assignment
+
+Directory branches/bsmith/NewTypes:
+
+TOKENIZE.C:
+  In <fnAsnDone>, continue searching for the target name(s) after encountering functions or operators.
+
+
 Build #2185 -- Version 0.5.12.xx
 --------------------------------
 

@@ -1,0 +1,15 @@
+Build #2186 -- Version 0.6.0.xx
+-------------------------------
+
+* Pickup More Cases For Modified Indexed Assignment
+
+Directory branches/bsmith/NanTypes:
+
+PARSELINE.C:
+  After PARSELINE_SCAN, if the Syntax Objects are "IDX F [MOP|DOP]" and the
+    binding strength of (IDX, F) < (F, MOP) so that the above sequence
+    evaluates "F MOP" first.
+
+PARSELINE.H:
+  Change the binding strength between NAM and HY so that (NAM, HY) < (HY, MOP)
+    so that "NAM HY MOP" evaluates "HY MOP" first.

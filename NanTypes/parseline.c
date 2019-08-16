@@ -4500,6 +4500,13 @@ PARSELINE_SCAN1:
 
                 goto LEFTSHIFT;
             } else
+            if (lftSynObj EQ soIDX
+             && curSynObj EQ soF
+             && (rhtSynObj EQ soMOP
+              || rhtSynObj EQ soDOP)
+             && lftBndStr < rhtBndStr)      // LBIND < RBIND
+                goto PARSELINE_REDUCE;
+            else
             // If lftSynObj is neither soIDX nor soSRBK, ...
             if (lftSynObj NE soIDX          // LFTSYNOBJ NE IDX
              && lftSynObj NE soSRBK         // LFTSYNOBJ NE SRBK
@@ -7107,7 +7114,7 @@ void FillInDel
     (LPSIS_HEADER lpSISCur,     // Ptr to current SIS layer
      LPPL_YYSTYPE lpplYYLval,   // Ptr to YYSTYPE to fill in
      LPPERTABDATA lpMemPTD,     // Ptr to PerTabData global memory
-     UBOOL        bIncrRefCnt)  // TRUE iff we shoudl increment the RefCnt
+     UBOOL        bIncrRefCnt)  // TRUE iff we should increment the RefCnt
 
 {
     // If the ptr is valid, ...
@@ -7215,7 +7222,7 @@ void FillInDelDel
     (LPSIS_HEADER lpSISCur,     // Ptr to current SIS layer
      LPPL_YYSTYPE lpplYYLval,   // Ptr to YYSTYPE to fill in
      LPPERTABDATA lpMemPTD,     // Ptr to PerTabData global memory
-     UBOOL        bIncrRefCnt)  // TRUE iff we shoudl increment the RefCnt
+     UBOOL        bIncrRefCnt)  // TRUE iff we should increment the RefCnt
 
 {
     // If the ptr is valid, ...

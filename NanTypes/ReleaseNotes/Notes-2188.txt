@@ -1,0 +1,9 @@
+Build #2188 -- Version 0.6.0.xx
+-------------------------------
+
+* Pickup More Cases For Modified Assignment
+
+Directory branches/bsmith/NanTypes:
+
+TOKENIZE.C:
+  In <fnAsnDone>, continue searching for the target name(s) after encountering functions or operators.

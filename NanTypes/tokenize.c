@@ -1861,7 +1861,7 @@ UBOOL fnAsnDone
     {
         LPTOKEN lptkCur;            // Loop counter
         UBOOL   bInStrand = FALSE,  // TRUE iff inside a strand of names, e.g. (A B C){is}...
-                b1stName  = TRUE;   // TRUE iff the first name
+                b1stName  = TRUE;   // TRUE iff waiting for the first name
 
         // Loop backwards through the tokens
         for (lptkCur = &lptkLocalVars->lptkNext[-1];
@@ -1871,7 +1871,7 @@ UBOOL fnAsnDone
         if (IsTknNamed (lptkCur)
          && lptkCur->tkSynObj NE soVALR)
         {
-            // If not the first name and not in a strand of names, ...
+            // If not waiting for the first name and not in a strand of names, ...
             if (!b1stName
              && !bInStrand)
                 break;
@@ -1964,21 +1964,43 @@ UBOOL fnAsnDone
                 MyGlobalUnlock (hGlbName); lpwszName = NULL;
             } // End IF
 
-            // Mark as no longer the first name
+            // Mark as no longer waiting for the first name
             b1stName = FALSE;
+
+            continue;
         } else
         if (lptkCur->tkFlags.TknType EQ TKT_RIGHTPAREN
-         && !bInStrand)
+         && !bInStrand
+         && b1stName)
         {
             // Mark as inside a strand of names (or selective assignment???)
             bInStrand = TRUE;
 
             // ***FIXME*** -- Should we localize a name in selective assignment???
+            continue;
         } else
         if (lptkCur->tkFlags.TknType EQ TKT_RIGHTBRACKET
          && !bInStrand)
+        {
             // Skip to the matching left bracket
             lptkCur = &lptkLocalVars->lptkStart[lptkCur->tkData.tkIndex];
+
+            continue;
+        } else
+////////// If we're waiting for the first name,
+//////////   AND it's an unnamed var preceded by a DOP, ...
+////////if (b1stName
+//////// && IsTknTypeVar (lptkCur->tkFlags.TknType)
+//////// && !IsTknNamed  (lptkCur)
+//////// && (IsTknOp1   (&lptkCur[1])
+////////  || IsTknOp2   (&lptkCur[1])))
+////////    continue;
+////////else
+        // If we're waiting for the first name,
+        //   AND  it's a function/operator, ...
+        if (b1stName
+         && IsTknFcnOpr (lptkCur))
+            continue;
         else
             break;
     } // End IF

@@ -234,8 +234,8 @@ LPPL_YYSTYPE PrimFnMonEqual_EM_YY
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, NULL, NULL);
 
-    // If the right arg is HETERO or NESTED, ...
-    if (IsPtrArray (aplTypeRht))
+    // If the right arg is not Numeric, ...
+    if (!IsNumeric (aplTypeRht))
         goto DOMAIN_EXIT;
 
     // Get the HC dimension (1, 2, 4, 8)

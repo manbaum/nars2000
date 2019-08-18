@@ -1,0 +1,9 @@
+Build #2190 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In Monadic Equal (Dimension Function) On Character Arguments
+
+Directory branches/bsmith/NanTypes:
+
+PF_EQUAL.C:
+  Fix bug in Monadic Equal (Dimension function) where it allows character arguments, but should signal a DOMAIN ERROR.

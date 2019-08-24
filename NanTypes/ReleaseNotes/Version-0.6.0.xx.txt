@@ -1,6 +1,20 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2192 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In Variant Operator With Pochhammer k-Symbol
+
+Directory branches/bsmith/NanTypes:
+
+PO_VARIANT.C:
+  Fix bug in Variant operator with Pochhammer k-Symbol (Rising and Falling Factorials).
+
+PO_VARIANT.H:
+  Upgrade Variant code to allow it to apply to a derived function by recognizing the derived function's principal operator.
+
+
 Build #2190 -- Version 0.6.0.xx
 -------------------------------
 

@@ -96,53 +96,53 @@ APLSTYPE varOprType[ENUM_VARIANT_LENGTH] =
 LPVARIANT_STR varOprTab[PRIMTAB_LEN];   // The jump table for all Variant operator possibilities
 
 VARIANT_STR varOprStr[] =
-//                                ========Monadic=======|========Dyadic=========
+//                                ========Monadic=======|========Dyadic=========|==xxxTrans==
   {                         //    N1    N2    C1    C2    N1    N2    C1     C2
-   VAR_MAC (CIRCLE              , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // CIRCLE
-   VAR_MAC (CIRCLESLOPE         , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK ), // CIRCLESLOPE
-   VAR_MAC (COLONBAR            , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // COLONBAR
-   VAR_MAC (DELSTILE            , IO  , UNK , GALL, UNK , IO  , UNK , UNK  , UNK ), // DELSTILE
-   VAR_MAC (DELTASTILE          , IO  , UNK , GALL, UNK , IO  , UNK , UNK  , UNK ), // DELTASTILE
-   VAR_MAC (DOMINO              , EIG , UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // DOMINO
-   VAR_MAC (DOT                 , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // DOT
-   VAR_MAC (DOUBLESHRIEK        , IO  , UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // DOUBLESHRIEK
-   VAR_MAC (DOWNCARET           , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // DOWNCARET
-   VAR_MAC (DOWNSHOE            , CT  , UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // DOWNSHOE
-   VAR_MAC (DOWNSTILE           , CT  , UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // DOWNSTILE
-   VAR_MAC (DOWNTACK            , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // DOWNTACK
-   VAR_MAC (DOWNTACKJOT         , PP  , UNK , UNK , UNK , PP  , UNK , UNK  , UNK ), // DOWNTACKJOT
-   VAR_MAC (EPSILON             , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // EPSILON
-   VAR_MAC (EPSILONUNDERBAR     , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // EPSILONUNDERBAR
-   VAR_MAC (EQUAL               , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // EQUAL
-   VAR_MAC (EQUALUNDERBAR       , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // EQUALUNDERBAR
-   VAR_MAC (IOTA                , IO  , UNK , UNK , UNK , IO  , CT  , SUB  , UNK ), // IOTA
-   VAR_MAC (IOTAUNDERBAR        , IO  , UNK , UNK , UNK , IO  , CT  , UNK  , UNK ), // IOTAUNDERBAR
-   VAR_MAC (LEFTCARET           , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // LEFTCARET
-   VAR_MAC (LEFTCARETUNDERBAR   , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // LEFTCARETUNDERBAR
-   VAR_MAC (LEFTCARETUNDERBAR2  , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // LEFTCARETUNDERBAR2
-   VAR_MAC (LEFTSHOE            , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK ), // LEFTSHOE
-   VAR_MAC (LEFTSHOEUNDERBAR    , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // LEFTSHOEUNDERBAR
-   VAR_MAC (NOTEQUAL            , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // NOTEQUAL
-   VAR_MAC (NOTEQUALUNDERBAR    , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // NOTEQUALUNDERBAR
-   VAR_MAC (PI                  , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK ), // PI
-   VAR_MAC (QUADJOT             , CT  , UNK , LR  , UNK , CT  , UNK , LR   , UNK ), // QUADJOT
-   VAR_MAC (QUERY               , IO  , RL  , DT  , UNK , IO  , RL  , DT   , UNK ), // QUERY
-   VAR_MAC (QUOTEDOT            , POCH, UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // QUOTEDOT
-   VAR_MAC (RIGHTCARET          , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // RIGHTCARET
-   VAR_MAC (RIGHTCARETUNDERBAR  , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // RIGHTCARETUNDERBAR
-   VAR_MAC (RIGHTCARETUNDERBAR2 , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // RIGHTCARETUNDERBAR2
-   VAR_MAC (RIGHTSHOEUNDERBAR   , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // RIGHTSHOEUNDERBAR
-   VAR_MAC (SECTION             , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // SECTION
-   VAR_MAC (SQUAD               , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK ), // SQUAD
-   VAR_MAC (STILE               , UNK , UNK , UNK , UNK , CT  , UNK , LR   , UNK ), // STILE
-   VAR_MAC (STILE2              , UNK , UNK , UNK , UNK , CT  , UNK , LR   , UNK ), // STILE2
-   VAR_MAC (TILDE               , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // TILDE
-   VAR_MAC (TILDE2              , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // TILDE2
-   VAR_MAC (TIMES               , UNK , UNK , UNK , UNK , UNK , UNK , HCM  , UNK ), // TIMES
-   VAR_MAC (UPCARET             , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // UPCARET
-   VAR_MAC (UPSHOE              , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // UPSHOE
-   VAR_MAC (UPSTILE             , CT  , UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // UPSTILE
-   VAR_MAC (UPTACKJOT           , FPC , UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // UPTACKJOT
+   VAR_MAC (CIRCLE              , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK , FcnTrans),   // CIRCLE
+   VAR_MAC (CIRCLESLOPE         , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK , FcnTrans),   // CIRCLESLOPE
+   VAR_MAC (COLONBAR            , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK , OprTrans),   // COLONBAR
+   VAR_MAC (DELSTILE            , IO  , UNK , GALL, UNK , IO  , UNK , UNK  , UNK , FcnTrans),   // DELSTILE
+   VAR_MAC (DELTASTILE          , IO  , UNK , GALL, UNK , IO  , UNK , UNK  , UNK , FcnTrans),   // DELTASTILE
+   VAR_MAC (DOMINO              , EIG , UNK , UNK , UNK , UNK , UNK , UNK  , UNK , FcnTrans),   // DOMINO
+   VAR_MAC (DOT                 , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK , OprTrans),   // DOT
+   VAR_MAC (DOUBLESHRIEK        , IO  , UNK , UNK , UNK , UNK , UNK , UNK  , UNK , OprTrans),   // DOUBLESHRIEK
+   VAR_MAC (DOWNCARET           , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK , FcnTrans),   // DOWNCARET
+   VAR_MAC (DOWNSHOE            , CT  , UNK , UNK , UNK , UNK , UNK , UNK  , UNK , FcnTrans),   // DOWNSHOE
+   VAR_MAC (DOWNSTILE           , CT  , UNK , UNK , UNK , UNK , UNK , UNK  , UNK , FcnTrans),   // DOWNSTILE
+   VAR_MAC (DOWNTACK            , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK , FcnTrans),   // DOWNTACK
+   VAR_MAC (DOWNTACKJOT         , PP  , UNK , UNK , UNK , PP  , UNK , UNK  , UNK , FcnTrans),   // DOWNTACKJOT
+   VAR_MAC (EPSILON             , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // EPSILON
+   VAR_MAC (EPSILONUNDERBAR     , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // EPSILONUNDERBAR
+   VAR_MAC (EQUAL               , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // EQUAL
+   VAR_MAC (EQUALUNDERBAR       , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // EQUALUNDERBAR
+   VAR_MAC (IOTA                , IO  , UNK , UNK , UNK , IO  , CT  , SUB  , UNK , FcnTrans),   // IOTA
+   VAR_MAC (IOTAUNDERBAR        , IO  , UNK , UNK , UNK , IO  , CT  , UNK  , UNK , FcnTrans),   // IOTAUNDERBAR
+   VAR_MAC (LEFTCARET           , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // LEFTCARET
+   VAR_MAC (LEFTCARETUNDERBAR   , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // LEFTCARETUNDERBAR
+   VAR_MAC (LEFTCARETUNDERBAR2  , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // LEFTCARETUNDERBAR2
+   VAR_MAC (LEFTSHOE            , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK , FcnTrans),   // LEFTSHOE
+   VAR_MAC (LEFTSHOEUNDERBAR    , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // LEFTSHOEUNDERBAR
+   VAR_MAC (NOTEQUAL            , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // NOTEQUAL
+   VAR_MAC (NOTEQUALUNDERBAR    , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // NOTEQUALUNDERBAR
+   VAR_MAC (PI                  , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK , FcnTrans),   // PI
+   VAR_MAC (QUADJOT             , CT  , UNK , LR  , UNK , CT  , UNK , LR   , UNK , OprTrans),   // QUADJOT
+   VAR_MAC (QUERY               , IO  , RL  , DT  , UNK , IO  , RL  , DT   , UNK , FcnTrans),   // QUERY
+   VAR_MAC (QUOTEDOT            , POCH, POCH, UNK , UNK , UNK , UNK , UNK  , UNK , OprTrans),   // QUOTEDOT
+   VAR_MAC (RIGHTCARET          , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // RIGHTCARET
+   VAR_MAC (RIGHTCARETUNDERBAR  , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // RIGHTCARETUNDERBAR
+   VAR_MAC (RIGHTCARETUNDERBAR2 , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // RIGHTCARETUNDERBAR2
+   VAR_MAC (RIGHTSHOEUNDERBAR   , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // RIGHTSHOEUNDERBAR
+   VAR_MAC (SECTION             , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // SECTION
+   VAR_MAC (SQUAD               , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK , FcnTrans),   // SQUAD
+   VAR_MAC (STILE               , UNK , UNK , UNK , UNK , CT  , UNK , LR   , UNK , FcnTrans),   // STILE
+   VAR_MAC (STILE2              , UNK , UNK , UNK , UNK , CT  , UNK , LR   , UNK , FcnTrans),   // STILE2
+   VAR_MAC (TILDE               , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // TILDE
+   VAR_MAC (TILDE2              , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // TILDE2
+   VAR_MAC (TIMES               , UNK , UNK , UNK , UNK , UNK , UNK , HCM  , UNK , FcnTrans),   // TIMES
+   VAR_MAC (UPCARET             , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK , FcnTrans),   // UPCARET
+   VAR_MAC (UPSHOE              , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // UPSHOE
+   VAR_MAC (UPSTILE             , CT  , UNK , UNK , UNK , UNK , UNK , UNK  , UNK , FcnTrans),   // UPSTILE
+   VAR_MAC (UPTACKJOT           , FPC , UNK , UNK , UNK , UNK , UNK , UNK  , UNK , FcnTrans),   // UPTACKJOT
   };
 
 #define MAX_VAR_NUMLEN  2                                   // Maximum # numerics allowed in the right operand

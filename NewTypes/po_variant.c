@@ -127,7 +127,7 @@ VARIANT_STR varOprStr[] =
    VAR_MAC (PI                  , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK , FcnTrans),   // PI
    VAR_MAC (QUADJOT             , CT  , UNK , LR  , UNK , CT  , UNK , LR   , UNK , OprTrans),   // QUADJOT
    VAR_MAC (QUERY               , IO  , RL  , DT  , UNK , IO  , RL  , DT   , UNK , FcnTrans),   // QUERY
-   VAR_MAC (QUOTEDOT            , POCH, UNK , UNK , UNK , UNK , UNK , UNK  , UNK , OprTrans),   // QUOTEDOT
+   VAR_MAC (QUOTEDOT            , POCH, POCH, UNK , UNK , UNK , UNK , UNK  , UNK , OprTrans),   // QUOTEDOT
    VAR_MAC (RIGHTCARET          , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // RIGHTCARET
    VAR_MAC (RIGHTCARETUNDERBAR  , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // RIGHTCARETUNDERBAR
    VAR_MAC (RIGHTCARETUNDERBAR2 , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK , FcnTrans),   // RIGHTCARETUNDERBAR2

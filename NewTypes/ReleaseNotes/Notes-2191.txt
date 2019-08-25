@@ -5,5 +5,5 @@ Build #2191 -- Version 0.5.12.xx
 
 Directory branches/bsmith/NewTypes:
 
-PF_VARIANT.C:
-  Fix bug in Variant operator with Pochhammer k-Symbol (Rising and Falling Factorials)
+PO_VARIANT.C:
+  Fix bug in Variant operator with Pochhammer k-Symbol (Rising and Falling Factorials).

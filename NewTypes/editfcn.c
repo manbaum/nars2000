@@ -1282,11 +1282,14 @@ UBOOL SyntaxColor
                  scAction2_EM;      // ...    2nd ...
     TKLOCALVARS  tkLocalVars = {0}; // Local vars
     WCHAR        wchOrig;           // The original char
-    TKCOLINDICES tkColInd;          // The TKCOL_* of the translated char
+    TKCOLINDICES colIndex;          // The TKCOL_* of the translated char
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     HGLOBAL      hSyntClr = NULL;   // Syntax Color global memory handle
     LPSCINDICES  lpSyntClr = NULL;  // Ptr to Syntax Color entries
     SF_FCNS      SF_Fcns = {0};     // Temp value in case lpSF_Fcns is null
+#ifdef DEBUG
+    UINT         uClrNxt;
+#endif
 
 ////LCLODS ("Entering <SyntaxColor>\r\n");
 
@@ -1383,22 +1386,45 @@ UBOOL SyntaxColor
         if (uChar EQ uLen)
         {
             wchOrig = WC_EOS;
-            tkColInd = TKCOL_EOL;
+            colIndex = TKCOL_EOL;
         } else
         {
             wchOrig = lpwszLine[uChar];
-            tkColInd = CharTransTK (wchOrig, &tkLocalVars);
+            colIndex = CharTransTK (wchOrig, &tkLocalVars);
         } // End IF/ELSE
 
         // Save the TKCOL_xxx value
-        tkLocalVars.colIndex = tkColInd;
+        tkLocalVars.colIndex = colIndex;
         if (uChar < uLen)
-            tkLocalVars.lpMemClrNxt->colIndex = tkColInd;
+            tkLocalVars.lpMemClrNxt->colIndex = colIndex;
+
+#ifdef DEBUG
+        uClrNxt   = (UINT) (tkLocalVars.lpMemClrNxt - lpMemClr);
+
+        if (bDebugExecTrace)
+        {
+            WCHAR wszTemp[1024];
+
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"wchO = %c (%04X), wchT = %-12s (%04X), CS = %-12s, NS = %-12s, ClrNxt=%d, Act1 = %p, Act2 = %p",
+                        wchOrig ? wchOrig : UTF16_HORIZELLIPSIS,
+                        wchOrig,
+                        GetColName (colIndex),
+                        colIndex,
+                        GetRowName (tkLocalVars.State[0]),
+                        GetRowName (fsaActTableTK[tkLocalVars.State[0]][colIndex].iNewState),
+                        uClrNxt,
+                        fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction1,
+                        fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction2);
+            DbgMsgW (wszTemp);
+        } // End IF
+#endif
 
         // Get primary action and new state
-        scAction1_EM = fsaActTableTK[tkLocalVars.State[0]][tkColInd].scAction1;
-        scAction2_EM = fsaActTableTK[tkLocalVars.State[0]][tkColInd].scAction2;
-        SetTokenStatesTK (&tkLocalVars, fsaActTableTK[tkLocalVars.State[0]][tkColInd].iNewState);
+        scAction1_EM = fsaActTableTK[tkLocalVars.State[0]][colIndex].scAction1;
+        scAction2_EM = fsaActTableTK[tkLocalVars.State[0]][colIndex].scAction2;
+        SetTokenStatesTK (&tkLocalVars, fsaActTableTK[tkLocalVars.State[0]][colIndex].iNewState);
 
         // Check for primary action
         if (scAction1_EM NE NULL

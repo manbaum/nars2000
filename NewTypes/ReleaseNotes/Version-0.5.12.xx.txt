@@ -1,6 +1,20 @@
 Version 0.5.12.xx consists of the following Builds:
 
 
+Build #2193 -- Version 0.5.12.xx
+--------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NewTypes:
+
+DEBUG.C:
+  Remove scrollbars from outer DEBUG window.
+
+EDITFCN.C:
+  DEBUG changes in <SyntaxColor>.
+
+
 Build #2191 -- Version 0.5.12.xx
 --------------------------------
 
@@ -8,8 +22,8 @@ Build #2191 -- Version 0.5.12.xx
 
 Directory branches/bsmith/NewTypes:
 
-PF_VARIANT.C:
-  Fix bug in Variant operator with Pochhammer k-Symbol (Rising and Falling Factorials)
+PO_VARIANT.C:
+  Fix bug in Variant operator with Pochhammer k-Symbol (Rising and Falling Factorials).
 
 
 Build #2189 -- Version 0.5.12.xx

@@ -23,7 +23,7 @@
 
 #define ARB_INTER_MAC(N)                                                        \
     APLBA##N##F aplRes = {0};       /* The result                             */\
-    int     iRes,                   /* The resul from arb_intersection        */\
+    int     iRes,                   /* The result from arb_intersection       */\
             i,                      /* Loop counter                           */\
             iHCDimLft,              /* Left arg HC Dimension (1, 2, 4, 8)     */\
             iHCDimRht,              /* Right ...                              */\
@@ -54,7 +54,7 @@
         /* If the result is invalid, ...                                      */\
         if (iRes EQ 0)                                                          \
             /* Set the result to NaN                                          */\
-            arf_nan (arb_midref (&aplRes.parts[i]));                            \
+            arb_set_nan (&aplRes.parts[i]);                                     \
     } /* End FOR                                                                \
                                                                                 \
     /* Loop through the remaining parts                                       */\

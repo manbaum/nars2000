@@ -802,6 +802,19 @@ void InitPrimProtoFns
     InitPrimProtoOp (UTF16_OPSLOPE             , &PrimProtoOpSlope_EM_YY              );    //         - ...      Operator
     InitPrimProtoOp (UTF16_DOT                 , &PrimProtoOpDot_EM_YY                );    //         - dot (inner product)
     InitPrimProtoOp (UTF16_OPJOTDOT            , &PrimProtoOpJotDot_EM_YY             );    //         - jotdot (outer product)
+
+    InitPrimProtoFn (INDEX_DOUBLETILDE_INTER   , &PrimProtoFnDoubleTilde_EM_YY        );    //         - (doubletilde-inter)
+    InitPrimProtoFn (INDEX_DOUBLETILDE_UNION   , &PrimProtoFnDoubleTilde_EM_YY        );    //         - (doubletilde-union)
+    InitPrimProtoFn (INDEX_DOUBLETILDE_LT      , &PrimProtoFnDoubleTilde_EM_YY        );    //         - (doubletilde-lt)
+    InitPrimProtoFn (INDEX_DOUBLETILDE_LE      , &PrimProtoFnDoubleTilde_EM_YY        );    //         - (doubletilde-le)
+    InitPrimProtoFn (INDEX_DOUBLETILDE_EQ      , &PrimProtoFnDoubleTilde_EM_YY        );    //         - (doubletilde-eq)
+    InitPrimProtoFn (INDEX_DOUBLETILDE_GE      , &PrimProtoFnDoubleTilde_EM_YY        );    //         - (doubletilde-ge)
+    InitPrimProtoFn (INDEX_DOUBLETILDE_GT      , &PrimProtoFnDoubleTilde_EM_YY        );    //         - (doubletilde-gt)
+    InitPrimProtoFn (INDEX_DOUBLETILDE_NE      , &PrimProtoFnDoubleTilde_EM_YY        );    //         - (doubletilde-ne)
+    InitPrimProtoFn (INDEX_DOUBLETILDE_LS      , &PrimProtoFnDoubleTilde_EM_YY        );    //         - (doubletilde-ls)
+    InitPrimProtoFn (INDEX_DOUBLETILDE_RS      , &PrimProtoFnDoubleTilde_EM_YY        );    //         - (doubletilde-rs)
+    InitPrimProtoFn (INDEX_DOUBLETILDE_JOT     , &PrimProtoFnDoubleTilde_EM_YY        );    //         - (doubletilde-jot)
+
     InitPrimProtoOp (INDEX_DOUBLETILDE_INTER   , &PrimProtoOpDoubleTilde_EM_YY        );    //         - (doubletilde-inter)
     InitPrimProtoOp (INDEX_DOUBLETILDE_UNION   , &PrimProtoOpDoubleTilde_EM_YY        );    //         - (doubletilde-union)
     InitPrimProtoOp (INDEX_DOUBLETILDE_LT      , &PrimProtoOpDoubleTilde_EM_YY        );    //         - (doubletilde-lt)

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -235,8 +235,9 @@ typedef union tagTOKEN_DATA
               *tkSym;               // 00:  Data is an LPSYMENTRY
     HGLOBAL    tkGlbData;           // 00:  ...     an HGLOBAL
     struct {
-      UINT         tkIndex;         // 00:  ...     an index
-      DFN_TYPES    tkDfnType;       // 04:  ...     a DFNTYPE_xxx
+      UINT         tkIndex,         // 00:  ...     an index
+                   tkMatch;         // 04:  ...     offset of matching grouping symbol
+      DFN_TYPES    tkDfnType;       // 08:  ...     a DFNTYPE_xxx
            };
     APLBOOL    tkBoolean;           // 00:  ...     an APLBOOL
     APLINT     tkInteger;           // 00:  ...     an APLINT

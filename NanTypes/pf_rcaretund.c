@@ -560,8 +560,9 @@ void RightCaretUnd_Inner
             ((LPAPLFLOAT) lpMemRes)[uRes0] = aplFltRht;
 
             // If the argument is inexact, ...
-             if (fabs (aplFltRht) >= Float2Pow53         // Floats at or above 2*53 are by definition non-integral
-              || (aplFloatUnion.aplFloatStr.uMantissa & 0xFF) NE 0)
+             if (_finite (aplFltRht)
+              && (fabs (aplFltRht) >= Float2Pow53           // Floats at or above 2*53 are by definition non-integral
+               || (aplFloatUnion.aplFloatStr.uMantissa & 0xFF) NE 0))
                 // Save the result's Radius
                 ((LPAPLFLOAT) lpMemRes)[uRes1] = 1 / Float2Pow53;
 ////////////else

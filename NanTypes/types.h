@@ -242,6 +242,8 @@ typedef          ATISATVAT *LPATISATVAT;
 // These #defines are used for Ball Arithmetic
 typedef arb_struct    APLARB ,    APLBA1F,
                    *LPAPLARB , *LPAPLBA1F;
+typedef acb_struct    APLACB ,    APLBC1F,
+                   *LPAPLACB , *LPAPLBC1F;
 
 typedef union tagBA2F       // Ball Arithmetic Real Complex
 {

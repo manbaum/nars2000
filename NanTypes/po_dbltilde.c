@@ -438,13 +438,13 @@ PRIMSPEC PrimSpecDoubleTildeLt =
     NULL,   // &PrimFnDydDoubleTildeLtAPA_EM,
 
     // Dyadic Boolean result functions
-    NULL,   // &PrimFnDydDoubleTildeLtBisBvB, -- Can't happen w/DoubleTildeLt
-    NULL,   // &PrimFnDydDoubleTildeLtBisIvI, -- Can't happen w/DoubleTildeLt
-    NULL,   // &PrimFnDydDoubleTildeLtBisFvF, -- Can't happen w/DoubleTildeLt
+    &PrimFnDydLeftCaretBisBvB,
+    &PrimFnDydLeftCaretBisIvI,
+    &PrimFnDydLeftCaretBisFvF,
     NULL,   // &PrimFnDydDoubleTildeLtBisCvC, -- Can't happen w/DoubleTildeLt
     NULL,   // &PrimFnDydDoubleTildeLtBisHvH, -- Can't happen w/DoubleTildeLt
-    NULL,   // &PrimFnDydDoubleTildeLtBisRvR, -- Can't happen w/DoubleTildeLt
-    NULL,   // &PrimFnDydDoubleTildeLtBisVvV, -- Can't happen w/DoubleTildeLt
+    &PrimFnDydLeftCaretBisRvR,
+    &PrimFnDydLeftCaretBisVvV,
 
     NULL,   // &PrimFnDydDoubleTildeLtBisHC2IvHC2I, -- Can't happen w/DoubleTildeLt
     NULL,   // &PrimFnDydDoubleTildeLtBisHC2FvHC2F, -- Can't happen w/DoubleTildeLt
@@ -605,13 +605,13 @@ PRIMSPEC PrimSpecDoubleTildeLe =
     NULL,   // &PrimFnDydDoubleTildeLeAPA_EM,
 
     // Dyadic Boolean result functions
-    NULL,   // &PrimFnDydDoubleTildeLeBisBvB, -- Can't happen w/DoubleTildeLe
-    NULL,   // &PrimFnDydDoubleTildeLeBisIvI, -- Can't happen w/DoubleTildeLe
-    NULL,   // &PrimFnDydDoubleTildeLeBisFvF, -- Can't happen w/DoubleTildeLe
+    &PrimFnDydLeftCaretUnderbarBisBvB,
+    &PrimFnDydLeftCaretUnderbarBisIvI,
+    &PrimFnDydLeftCaretUnderbarBisFvF,
     NULL,   // &PrimFnDydDoubleTildeLeBisCvC, -- Can't happen w/DoubleTildeLe
     NULL,   // &PrimFnDydDoubleTildeLeBisHvH, -- Can't happen w/DoubleTildeLe
-    NULL,   // &PrimFnDydDoubleTildeLeBisRvR, -- Can't happen w/DoubleTildeLe
-    NULL,   // &PrimFnDydDoubleTildeLeBisVvV, -- Can't happen w/DoubleTildeLe
+    &PrimFnDydLeftCaretUnderbarBisRvR,
+    &PrimFnDydLeftCaretUnderbarBisVvV,
 
     NULL,   // &PrimFnDydDoubleTildeLeBisHC2IvHC2I, -- Can't happen w/DoubleTildeLe
     NULL,   // &PrimFnDydDoubleTildeLeBisHC2FvHC2F, -- Can't happen w/DoubleTildeLe
@@ -772,28 +772,28 @@ PRIMSPEC PrimSpecDoubleTildeEq =
     NULL,   // &PrimFnDydDoubleTildeEqAPA_EM,
 
     // Dyadic Boolean result functions
-    NULL,   // &PrimFnDydDoubleTildeEqBisBvB, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisIvI, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisFvF, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisCvC, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisHvH, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisRvR, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisVvV, -- Can't happen w/DoubleTildeEq
+    &PrimFnDydEqualBisBvB,
+    &PrimFnDydEqualBisIvI,
+    &PrimFnDydEqualBisFvF,
+    &PrimFnDydEqualBisCvC,
+    &PrimFnDydEqualBisHvH,
+    &PrimFnDydEqualBisRvR,
+    &PrimFnDydEqualBisVvV,
 
-    NULL,   // &PrimFnDydDoubleTildeEqBisHC2IvHC2I, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisHC2FvHC2F, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisHC2RvHC2R, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisHC2VvHC2V, -- Can't happen w/DoubleTildeEq
+    &PrimFnDydEqualBisHC2IvHC2I,
+    &PrimFnDydEqualBisHC2FvHC2F,
+    &PrimFnDydEqualBisHC2RvHC2R,
+    &PrimFnDydEqualBisHC2VvHC2V,
 
-    NULL,   // &PrimFnDydDoubleTildeEqBisHC4IvHC4I, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisHC4FvHC4F, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisHC4RvHC4R, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisHC4VvHC4V, -- Can't happen w/DoubleTildeEq
+    &PrimFnDydEqualBisHC4IvHC4I,
+    &PrimFnDydEqualBisHC4FvHC4F,
+    &PrimFnDydEqualBisHC4RvHC4R,
+    &PrimFnDydEqualBisHC4VvHC4V,
 
-    NULL,   // &PrimFnDydDoubleTildeEqBisHC8IvHC8I, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisHC8FvHC8F, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisHC8RvHC8R, -- Can't happen w/DoubleTildeEq
-    NULL,   // &PrimFnDydDoubleTildeEqBisHC8VvHC8V, -- Can't happen w/DoubleTildeEq
+    &PrimFnDydEqualBisHC8IvHC8I,
+    &PrimFnDydEqualBisHC8FvHC8F,
+    &PrimFnDydEqualBisHC8RvHC8R,
+    &PrimFnDydEqualBisHC8VvHC8V,
 
     // Dyadic Boolean result functions with ARBs (indexable)
     &PrimFnDydDoubleTildeEqBisBA1FvBA1F,
@@ -939,13 +939,13 @@ PRIMSPEC PrimSpecDoubleTildeGe =
     NULL,   // &PrimFnDydDoubleTildeGeAPA_EM,
 
     // Dyadic Boolean result functions
-    NULL,   // &PrimFnDydDoubleTildeGeBisBvB, -- Can't happen w/DoubleTildeGe
-    NULL,   // &PrimFnDydDoubleTildeGeBisIvI, -- Can't happen w/DoubleTildeGe
-    NULL,   // &PrimFnDydDoubleTildeGeBisFvF, -- Can't happen w/DoubleTildeGe
+    &PrimFnDydRightCaretUnderbarBisBvB,
+    &PrimFnDydRightCaretUnderbarBisIvI,
+    &PrimFnDydRightCaretUnderbarBisFvF,
     NULL,   // &PrimFnDydDoubleTildeGeBisCvC, -- Can't happen w/DoubleTildeGe
     NULL,   // &PrimFnDydDoubleTildeGeBisHvH, -- Can't happen w/DoubleTildeGe
-    NULL,   // &PrimFnDydDoubleTildeGeBisRvR, -- Can't happen w/DoubleTildeGe
-    NULL,   // &PrimFnDydDoubleTildeGeBisVvV, -- Can't happen w/DoubleTildeGe
+    &PrimFnDydRightCaretUnderbarBisRvR,
+    &PrimFnDydRightCaretUnderbarBisVvV,
 
     NULL,   // &PrimFnDydDoubleTildeGeBisHC2IvHC2I, -- Can't happen w/DoubleTildeGe
     NULL,   // &PrimFnDydDoubleTildeGeBisHC2FvHC2F, -- Can't happen w/DoubleTildeGe
@@ -1106,13 +1106,13 @@ PRIMSPEC PrimSpecDoubleTildeGt =
     NULL,   // &PrimFnDydDoubleTildeGtAPA_EM,
 
     // Dyadic Boolean result functions
-    NULL,   // &PrimFnDydDoubleTildeGtBisBvB, -- Can't happen w/DoubleTildeGt
-    NULL,   // &PrimFnDydDoubleTildeGtBisIvI, -- Can't happen w/DoubleTildeGt
-    NULL,   // &PrimFnDydDoubleTildeGtBisFvF, -- Can't happen w/DoubleTildeGt
+    &PrimFnDydRightCaretBisBvB,
+    &PrimFnDydRightCaretBisIvI,
+    &PrimFnDydRightCaretBisFvF,
     NULL,   // &PrimFnDydDoubleTildeGtBisCvC, -- Can't happen w/DoubleTildeGt
     NULL,   // &PrimFnDydDoubleTildeGtBisHvH, -- Can't happen w/DoubleTildeGt
-    NULL,   // &PrimFnDydDoubleTildeGtBisRvR, -- Can't happen w/DoubleTildeGt
-    NULL,   // &PrimFnDydDoubleTildeGtBisVvV, -- Can't happen w/DoubleTildeGt
+    &PrimFnDydRightCaretBisRvR,
+    &PrimFnDydRightCaretBisVvV,
 
     NULL,   // &PrimFnDydDoubleTildeGtBisHC2IvHC2I, -- Can't happen w/DoubleTildeGt
     NULL,   // &PrimFnDydDoubleTildeGtBisHC2FvHC2F, -- Can't happen w/DoubleTildeGt
@@ -1273,28 +1273,28 @@ PRIMSPEC PrimSpecDoubleTildeNe =
     NULL,   // &PrimFnDydDoubleTildeNeAPA_EM,
 
     // Dyadic Boolean result functions
-    NULL,   // &PrimFnDydDoubleTildeNeBisBvB, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisIvI, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisFvF, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisCvC, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisHvH, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisRvR, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisVvV, -- Can't happen w/DoubleTildeNe
+    &PrimFnDydNotEqualBisBvB,
+    &PrimFnDydNotEqualBisIvI,
+    &PrimFnDydNotEqualBisFvF,
+    &PrimFnDydNotEqualBisCvC,
+    &PrimFnDydNotEqualBisHvH,
+    &PrimFnDydNotEqualBisRvR,
+    &PrimFnDydNotEqualBisVvV,
 
-    NULL,   // &PrimFnDydDoubleTildeNeBisHC2IvHC2I, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisHC2FvHC2F, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisHC2RvHC2R, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisHC2VvHC2V, -- Can't happen w/DoubleTildeNe
+    &PrimFnDydNotEqualBisHC2IvHC2I,
+    &PrimFnDydNotEqualBisHC2FvHC2F,
+    &PrimFnDydNotEqualBisHC2RvHC2R,
+    &PrimFnDydNotEqualBisHC2VvHC2V,
 
-    NULL,   // &PrimFnDydDoubleTildeNeBisHC4IvHC4I, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisHC4FvHC4F, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisHC4RvHC4R, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisHC4VvHC4V, -- Can't happen w/DoubleTildeNe
+    &PrimFnDydNotEqualBisHC4IvHC4I,
+    &PrimFnDydNotEqualBisHC4FvHC4F,
+    &PrimFnDydNotEqualBisHC4RvHC4R,
+    &PrimFnDydNotEqualBisHC4VvHC4V,
 
-    NULL,   // &PrimFnDydDoubleTildeNeBisHC8IvHC8I, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisHC8FvHC8F, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisHC8RvHC8R, -- Can't happen w/DoubleTildeNe
-    NULL,   // &PrimFnDydDoubleTildeNeBisHC8VvHC8V, -- Can't happen w/DoubleTildeNe
+    &PrimFnDydNotEqualBisHC8IvHC8I,
+    &PrimFnDydNotEqualBisHC8FvHC8F,
+    &PrimFnDydNotEqualBisHC8RvHC8R,
+    &PrimFnDydNotEqualBisHC8VvHC8V,
 
     // Dyadic Boolean result functions with ARBs (indexable)
     &PrimFnDydDoubleTildeNeBisBA1FvBA1F,
@@ -1440,28 +1440,28 @@ PRIMSPEC PrimSpecDoubleTildeLs =
     NULL,   // &PrimFnDydDoubleTildeLsAPA_EM,
 
     // Dyadic Boolean result functions
-    NULL,   // &PrimFnDydDoubleTildeLsBisBvB, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisIvI, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisFvF, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisCvC, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisHvH, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisRvR, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisVvV, -- Can't happen w/DoubleTildeLs
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
 
-    NULL,   // &PrimFnDydDoubleTildeLsBisHC2IvHC2I, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisHC2FvHC2F, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisHC2RvHC2R, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisHC2VvHC2V, -- Can't happen w/DoubleTildeLs
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
 
-    NULL,   // &PrimFnDydDoubleTildeLsBisHC4IvHC4I, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisHC4FvHC4F, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisHC4RvHC4R, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisHC4VvHC4V, -- Can't happen w/DoubleTildeLs
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
 
-    NULL,   // &PrimFnDydDoubleTildeLsBisHC8IvHC8I, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisHC8FvHC8F, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisHC8RvHC8R, -- Can't happen w/DoubleTildeLs
-    NULL,   // &PrimFnDydDoubleTildeLsBisHC8VvHC8V, -- Can't happen w/DoubleTildeLs
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
 
     // Dyadic Boolean result functions with ARBs (indexable)
     &PrimFnDydDoubleTildeLsBisBA1FvBA1F,
@@ -1607,28 +1607,28 @@ PRIMSPEC PrimSpecDoubleTildeRs =
     NULL,   // &PrimFnDydDoubleTildeRsAPA_EM,
 
     // Dyadic Boolean result functions
-    NULL,   // &PrimFnDydDoubleTildeRsBisBvB, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisIvI, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisFvF, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisCvC, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisHvH, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisRvR, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisVvV, -- Can't happen w/DoubleTildeRs
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
 
-    NULL,   // &PrimFnDydDoubleTildeRsBisHC2IvHC2I, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisHC2FvHC2F, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisHC2RvHC2R, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisHC2VvHC2V, -- Can't happen w/DoubleTildeRs
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
 
-    NULL,   // &PrimFnDydDoubleTildeRsBisHC4IvHC4I, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisHC4FvHC4F, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisHC4RvHC4R, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisHC4VvHC4V, -- Can't happen w/DoubleTildeRs
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
 
-    NULL,   // &PrimFnDydDoubleTildeRsBisHC8IvHC8I, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisHC8FvHC8F, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisHC8RvHC8R, -- Can't happen w/DoubleTildeRs
-    NULL,   // &PrimFnDydDoubleTildeRsBisHC8VvHC8V, -- Can't happen w/DoubleTildeRs
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
+    &PrimFnDydDoubleTildeLsRsFALSE,
 
     // Dyadic Boolean result functions with ARBs (indexable)
     &PrimFnDydDoubleTildeRsBisBA1FvBA1F,
@@ -1909,17 +1909,17 @@ LPPL_YYSTYPE PrimFnDoubleTildeUnion_EM_YY
 
 
 //***************************************************************************
-//  $PrimProtoFnDoubleTilde_EM_YY
+//  $PrimProtoOpDoubleTilde_EM_YY
 //
 //  Generate a prototype for the derived functions from
 //    monadic operator DoubleTilde
 //***************************************************************************
 
-LPPL_YYSTYPE PrimProtoFnDoubleTilde_EM_YY
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+LPPL_YYSTYPE PrimProtoOpDoubleTilde_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkAxis)             // Ptr to axis token (may be NULL)
 
 {
     Assert (lptkAxis EQ NULL);
@@ -1930,7 +1930,35 @@ LPPL_YYSTYPE PrimProtoFnDoubleTilde_EM_YY
 
     return
       PrimOpDydDoubleTilde_EM_YY (lptkLftArg,           // Ptr to left arg token
-                   (LPPL_YYSTYPE) lptkFunc,             // lpYYFcnStrOpr,     // Ptr to operator function strand
+                                  lpYYFcnStrOpr,        // Ptr to operator function strand
+                                  lptkRhtArg,           // Ptr to right arg token
+                                  TRUE);                // TRUE iff prototyping
+} // End PrimProtoOpDoubleTilde_EM_YY
+
+
+//***************************************************************************
+//  $PrimProtoFnDoubleTilde_EM_YY
+//
+//  Generate a prototype for the derived functions from
+//    monadic operator DoubleTilde
+//***************************************************************************
+
+LPPL_YYSTYPE PrimProtoFnDoubleTilde_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN      lptkFunc,             // Ptr to function token
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkAxis)             // Ptr to axis token (may be NULL)
+
+{
+    Assert (lptkAxis EQ NULL);
+
+    //***************************************************************
+    // Called dyadically only
+    //***************************************************************
+
+    return
+      PrimOpDydDoubleTilde_EM_YY (lptkLftArg,           // Ptr to left arg token
+                   (LPPL_YYSTYPE) lptkFunc,             // Ptr to operator function strand
                                   lptkRhtArg,           // Ptr to right arg token
                                   TRUE);                // TRUE iff prototyping
 } // End PrimProtoFnDoubleTilde_EM_YY
@@ -2095,14 +2123,19 @@ APLBA1F ArbInterBA1F_RE
 
 {
     APLBA1F aplRes = {0};           // The result
-    int     iRes;                   // The resul from arb_intersection
+    int     iRes;                   // The result from arb_intersection
     mp_limb_signed_t prec = ARB_PREC_FPC;
 
-    Assert (lpPrimSpec->iHCDimIndexLft EQ 0);
-    Assert (lpPrimSpec->iHCDimIndexRht EQ 0);
+    Assert (lpPrimSpec->iHCDimIndexLft EQ ENUM_HCFI1);
+    Assert (lpPrimSpec->iHCDimIndexRht EQ ENUM_HCFI1);
 
     // Initialize the result to 0/0
     Myarb_init (&aplRes);
+
+#if (defined DEBUG) && FALSE
+    ArbOut (L"Lft = ", &aplLft);
+    ArbOut (L"Rht = ", &aplRht);
+#endif
 
     // Calculate the intersection
     iRes =
@@ -2113,7 +2146,7 @@ APLBA1F ArbInterBA1F_RE
     // If the result is invalid, ...
     if (iRes EQ 0)
         // Set the result to NaN
-        arf_nan (arb_midref (&aplRes));
+        arb_set_nan (&aplRes);
 
     return aplRes;
 } // End ArbInterBA1F_RE
@@ -2314,8 +2347,8 @@ APLBA1F ArbUnionBA1F_RE
     APLBA1F aplRes = {0};           // The result
     mp_limb_signed_t prec = ARB_PREC_FPC;
 
-    Assert (lpPrimSpec->iHCDimIndexLft EQ 0);
-    Assert (lpPrimSpec->iHCDimIndexRht EQ 0);
+    Assert (lpPrimSpec->iHCDimIndexLft EQ ENUM_HCFI1);
+    Assert (lpPrimSpec->iHCDimIndexRht EQ ENUM_HCFI1);
 
     // Initialize the result to 0/0
     Myarb_init (&aplRes);
@@ -3729,9 +3762,9 @@ void PrimFnDydDoubleTildeNeBisBAxFvBAxF
 
     __try
     {
-#ifdef DEBUG
-////    ArbOut (L"Lft = ", &lpatLft->aplBA8F.parts[0]);
-////    ArbOut (L"Rht = ", &lpatRht->aplBA8F.parts[0]);
+#if (defined DEBUG) && FALSE
+        ArbOut (L"Lft = ", &lpatLft->aplBA8F.parts[0]);
+        ArbOut (L"Rht = ", &lpatRht->aplBA8F.parts[0]);
 #endif
         // Loop through all of the parts
         for (i = 0; i < iHCDimRes; i++)
@@ -3949,9 +3982,8 @@ LPPL_YYSTYPE PrimIdentOpDoubleTildeLsRs_EM_YY
     Assert (lpYYFcnStrOpr NE NULL);
     Assert (lptkRhtArg    NE NULL);
 
-    DbgStop ();
-
-    // The (left) identity function for dyadic DoubleTilde is
+    // The (right) identity function for dyadic DoubleTilde LeftShoe and
+    // the (left)  identity function for dyadic DoubleTilde RightShoe are both
     //   0±{infinity}
 
     // Set ptr to left operand skipping over the operator and axis token (if present)
@@ -4025,6 +4057,25 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End PrimIdentOpDoubleTildeLsRs_EM_YY
+
+
+//***************************************************************************
+//  $PrimFnDydDoubleTildeLsRsFALSE
+//
+//  Primitive scalar function dyadic DoubleTildeLs:  B {is} BIFRV fn BIFRV
+//***************************************************************************
+
+void PrimFnDydDoubleTildeLsRsFALSE
+    (LPAPLBOOL  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // A BIFRV can never contain or be contained in another BIFRV
+    lpMemRes[uRes >> LOG2NBIB] &= BIT0 << (MASKLOG2NBIB & (UINT) uRes);
+} // End PrimFnDydDoubleTildeLsRsFALSE
 
 
 //***************************************************************************
@@ -4383,9 +4434,10 @@ APLARB ArbJotBA1F_RE
     // -6:  L0 > R1
     if (mpfr_cmp (L0, R1) > 0)
         iRes = -6;
+#ifdef DEBUG
     else
-        DbgStop ();
-
+        DbgStop ();         // #ifdef DEBUUG
+#endif
     // We no longer need this storage
     mpfr_clears (L0, L1, R0, R1, NULL);
 

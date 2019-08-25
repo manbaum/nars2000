@@ -1,6 +1,35 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2200 -- Version 0.6.0.xx
+-------------------------------
+
+* Miscellaneous ARB Changes
+
+Directory branches/bsmith/NanTypes:
+
+INITDATA.C:
+  Define entries for DoubleTilde function prototypes.
+
+PF_RCARETUND.C:
+  In <RightCaretUnd_Inner>/ARRAY_FLOAT, ensure the right arg is finite before saving the result's radius.
+
+PF_STAR.C:
+  In <ExpArb_RE>, check against a number smaller than COEFF_MAX as ARB fails on that number in a 64-bit ABI.
+
+PO_DBLTILDE.C:
+  Define entry points for dyadic LeftCaret, LeftCaretUnderbar, Equal, RighCaretUnderbar, RightCaret, NotEqual, LsRs, on Balls.
+
+PO_DBLTILDE.MAC:
+  Use new function <arf_set_nan> to set a NaN.
+
+TOKENS.H:
+  Include file omitted from previous build for <tkMatch>.
+
+TYPES.H:
+  Define <acb_struct> for Complex Balls.
+
+
 Build #2198 -- Version 0.6.0.xx
 -------------------------------
 

@@ -638,14 +638,14 @@ APLARB ExpArb_RE
         // Calculate the function
         arb_exp  (&arbRes, &aplArbRht, prec);
 
-        double dblMag;
+        double dblMag, COEFF_MAX2 = 0x3FFFFFFF;
 
         // Get the approximate log2 of the Radius
         dblMag = mag_get_d_log2_approx (arb_radref (&arbRes));
 
         // Test for special cases because <arb_exp> doesn't handle them
-        if (dblMag EQ COEFF_MAX)
-        {
+        if (dblMag >= COEFF_MAX2)       // ***FIXME*** s.b. EQ COEFF_MAX but in 64-bits
+        {                               //   later on ARB fails
             // Set the Midpoint to +Infinity
             arf_pos_inf (arb_midref (&arbRes));
 

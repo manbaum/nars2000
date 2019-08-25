@@ -1,0 +1,36 @@
+Build #2195 -- Version 0.5.12.xx
+--------------------------------
+
+* Define Copy Command To Use LF As Line Ending Instead Of CR/LF
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  Include "LF as EOL" in  table of Copy command menu items.
+  Fix bugs in <UniTransStr> table.
+
+EDIT.RCH:
+  Include "LF as EOL" in  table of Copy command menu items.
+
+EDITFCN.C:
+  Handle new "LF as EOL" menu Copy command menu item selection.
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  In <CopyAPLChars_EM>, enforce "LF as EOL" by deleting the CR before a LF.
+
+MAIN.C:
+  Include menu item "LF as EOL" in Copy command.
+  Handle new "LF as EOL" menu Copy command menu item selection.
+
+RESOURCE.H:
+  Define resource ID for new menu item.
+
+UNITRANSHDR.H
+  Include new translation choice for Copy.
+
+UNITRANSTAB.H
+  Include new column in <uniTransTab> for new menu choice.
+
+Directory branches/bsmith/NewTypes/WineHQ:
+
+EDITCTRL.C:
+  Handle new "LF as EOL" menu Copy command menu item selection.

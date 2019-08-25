@@ -135,6 +135,7 @@
 #define IDM_COPY_ISO                             714
 #define IDM_COPY_PC3270                          715
 #define IDM_COPY_BRACES                          716
+#define IDM_COPY_LFEOL                           717
 
 #define IDM_PASTE                                720
 #define IDM_PASTE_APLWIN                         721

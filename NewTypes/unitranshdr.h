@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,15 +24,16 @@
 typedef enum tagUNI_TRANS
 {
     UNITRANS_APLWIN = 0,    // 00:  APL+Win 3.6 (and maybe later)
-    UNITRANS_ISO,           // 01:  ISO Standard (What Typeface is this???)
-    UNITRANS_APL2,          // 02:  APL2 ???     ***FINISHME***
-    UNITRANS_DYALOG,        // 03:  Dyalog ???   ***FINISHME***
-    UNITRANS_PC3270,        // 04:  PC3270
-    UNITRANS_NORMAL,        // 05:  Normal paste translation (from Ctrl-v)
-    UNITRANS_NARS,          // 06:  NARS2000
-    UNITRANS_LENGTH,        // 07:  Length of the enum *MUST* be last active value
-    UNITRANS_BRACES,        // 08:  {braces} handled outside uniTransTab
-                            // 09-0F:  Available entries (4 bits)
+    UNITRANS_ISO       ,    // 01:  ISO Standard (What Typeface is this???)
+    UNITRANS_APL2      ,    // 02:  APL2 ???     ***FINISHME***
+    UNITRANS_DYALOG    ,    // 03:  Dyalog ???   ***FINISHME***
+    UNITRANS_PC3270    ,    // 04:  PC3270
+    UNITRANS_NORMAL    ,    // 05:  Normal paste translation (from Ctrl-v)
+    UNITRANS_NARS      ,    // 06:  NARS2000
+    UNITRANS_LFEOL     ,    // 07:  LF as EOL
+    UNITRANS_LENGTH    ,    // 08:  Length of the enum *MUST* be last active value
+    UNITRANS_BRACES    ,    // 09:  {braces} handled outside uniTransTab
+                            // 0A-0F:  Available entries (4 bits)
 } UNI_TRANS;
 
 // N.B.:  Whenever changing the above enum (UNI_TRANS),

@@ -516,17 +516,23 @@ INT_PTR CALLBACK CustomizeDlgProc
                 OutTransPaste;      // ...                      Paste
     } UNITRANS_STR;
 
+#define U   -1      // Unknown entry
+
     // The following var must be in the same order as UNITRANS_xxx
-    static UNITRANS_STR unitransStr[] = {{L"APL+Win",             TRUE,   TRUE , 0, 0, 0, 0},
-                                         {L"ISO Standard PDF",    TRUE,   TRUE , 1, 1, 1, 1},
-                                         {L"APL2",                TRUE,   TRUE , 2, 2, 2, 2},
-                                         {L"Dyalog",              TRUE,   TRUE , 3, 3, 3, 3},
-                                         {L"PC/3270",             TRUE,   TRUE , 4, 4, 4, 4},
-                                         {L"Normal (Unicode)",    FALSE,  TRUE , 0, 5, 6, 5},
-                                         {L"NARS (Unicode)",      TRUE,   FALSE, 5, 0, 0, 0},
-                                         {L"{braces}",            TRUE,   TRUE , 6, 6, 7, 7},
+    static UNITRANS_STR unitransStr[] = {   //                        Valid      I  I  O  O
+                                            //                    Copy    Paste  C  P  C  P
+                                         {L"APL+Win",             TRUE,   TRUE , 0, 0, 0, 0},   // 0
+                                         {L"ISO Standard PDF",    TRUE,   TRUE , 1, 1, 1, 1},   // 1
+                                         {L"APL2",                TRUE,   TRUE , 2, 2, 2, 2},   // 2
+                                         {L"Dyalog",              TRUE,   TRUE , 3, 3, 3, 3},   // 3
+                                         {L"PC/3270",             TRUE,   TRUE , 4, 4, 4, 4},   // 4
+                                         {L"Normal (Unicode)",    FALSE,  TRUE , U, 5, 6, 5},   // 5
+                                         {L"NARS (Unicode)",      TRUE,   FALSE, 5, U, 7, 7},   // 6
+                                         {L"{braces}",            TRUE,   TRUE , 6, 6, 8, U},   // 7
+                                         {L"LF as EOL",           TRUE,   FALSE, 7, U, U, U},   // 8
                                         };
 #define UNITRANS_STR_LENGTH      countof (unitransStr)
+#undef  U
 
     // The following text is too long for a resource file (limit 256 chars), so we define it here
     //   and save it into the dialog upon initialization of the appropriate Property Page

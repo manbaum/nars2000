@@ -143,8 +143,6 @@ UBOOL WINAPI CreateDebuggerInThread
                            wszDBTitle,              // Window title
                            0
                          | WS_OVERLAPPEDWINDOW
-                         | WS_VSCROLL
-                         | WS_HSCROLL
                            ,                        // Styles
                            CW_USEDEFAULT,           // X-pos
                            CW_USEDEFAULT,           // Y-pos

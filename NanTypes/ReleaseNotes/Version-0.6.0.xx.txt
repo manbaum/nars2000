@@ -1,6 +1,20 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2194 -- Version 0.6.0.xx
+-------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NanTypes:
+
+DEBUG.C:
+  Remove scrollbars from outer DEBUG window.
+
+EDITFCN.C:
+  DEBUG changes in <SyntaxColor>.
+
+
 Build #2192 -- Version 0.6.0.xx
 -------------------------------
 

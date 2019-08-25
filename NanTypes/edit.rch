@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
             MENUITEM "&ISO",                    IDM_COPY_ISO
             MENUITEM "&PC3270"                  IDM_COPY_PC3270
             MENUITEM "&Braces"                  IDM_COPY_BRACES
+            MENUITEM "&LF as EOL",              IDM_COPY_LFEOL
         END
         MENUITEM "&Paste\tShift-Ins",           IDM_PASTE
         POPUP "Past&e from ..."

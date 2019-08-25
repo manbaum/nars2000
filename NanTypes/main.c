@@ -1890,6 +1890,10 @@ LRESULT APIENTRY MFWndProc
                                                  mfState,               // Flags
                                                  IDM_COPY_BRACES,       // ID
                                                  L"Copy &Braces");      // Text
+                                    AppendMenuW (hMenu,                 // Handle
+                                                 mfState,               // Flags
+                                                 IDM_COPY_LFEOL,        // ID
+                                                 L"Copy LF as EOL");    // Text
                                     break;
 
                                 case IDM_PASTE:
@@ -2296,6 +2300,11 @@ LRESULT APIENTRY MFWndProc
 
                 case IDM_COPY_BRACES:
                     SendMessageW (hWndActive, MYWM_COPY_APL, UNITRANS_BRACES, 0);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_COPY_LFEOL:
+                    SendMessageW (hWndActive, MYWM_COPY_APL, UNITRANS_LFEOL, 0);
 
                     return FALSE;       // We handled the msg
 

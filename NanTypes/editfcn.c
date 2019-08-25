@@ -4058,6 +4058,11 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                     return FALSE;   // We handled the msg
 
+                case IDM_COPY_LFEOL:
+                    SendMessageW (hWnd, MYWM_COPY_APL, UNITRANS_LFEOL, 0);
+
+                    return FALSE;   // We handled the msg
+
                 case IDM_PASTE:
                     SendMessageW (hWnd, WM_PASTE, FALSE, 0);
 
@@ -4520,7 +4525,8 @@ void CopyAPLChars_EM
         GlobalUnlock (hGlbClip); lpMemClip = NULL;
 
         // In case the last char is WC_EOS, ...
-        while (numChars && lpwszGlbTemp[numChars - 1] EQ WC_EOS)
+        while (numChars NE 0
+            && lpwszGlbTemp[numChars - 1] EQ WC_EOS)
             numChars--;
 
         // Format the text as an ASCII string with non-ASCII chars
@@ -4588,10 +4594,21 @@ void CopyAPLChars_EM
 
         // Translate the NARS charset to the other APL charset
         for (uText = 0; uText < numChars; uText++, lpMemText++)
-        if (*lpMemText)
+        if (uIndex EQ UNITRANS_LFEOL
+         && lpMemText[0] EQ WC_CR
+         && lpMemText[1] EQ WC_LF)
+        {
+            // Copy the tail (including the terminating zero)
+            //   down over the CR thus deleting it
+            CopyMemoryW (&lpMemText[0], &lpMemText[1], numChars - uText - 1);
+
+            // Reduce the count
+            numChars--;
+        } else
+        if (lpMemText[0] NE WC_EOS)
         {
             for (uTran = 0; uTran < UNITRANS_NROWS; uTran++)
-            if (*lpMemText EQ uniTransTab[uTran][UNITRANS_NARS])
+            if (lpMemText[0] EQ uniTransTab[uTran][UNITRANS_NARS])
             {
                 WCHAR wcTmp;
 
@@ -4600,7 +4617,7 @@ void CopyAPLChars_EM
 
                 // If the translated char is not the same as the original, ...
                 if (wcTmp NE SAME)
-                    *lpMemText = wcTmp;
+                    lpMemText[0] = wcTmp;
 
                 break;      // out of the innermost FOR loop
             } // End FOR/IF/...
@@ -4796,7 +4813,7 @@ void PasteAPLChars_EM
             //   on the last line.  The user can then press Enter to
             //   execute the expression.
             if (IzitSM (GetParent (hWndEC)))
-            while (uLenClip
+            while (uLenClip NE 0
                 && (lpMemText[uLenClip - 1] EQ WC_LF
                  || lpMemText[uLenClip - 1] EQ WC_CR))
             {

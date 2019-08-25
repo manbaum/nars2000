@@ -3508,6 +3508,8 @@ static void EDIT_WM_ContextMenu (EDITSTATE *es, INT x, INT y)
     EnableMenuItem(popup, IDM_COPY_PC3270 , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
     /* copy Braces */
     EnableMenuItem(popup, IDM_COPY_BRACES , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
+    /* copy LF as EOL */
+    EnableMenuItem(popup, IDM_COPY_LFEOL  , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
     /* paste */
     EnableMenuItem(popup, IDM_PASTE       , ((IsClipboardFormatAvailable (CF_TEXT) || IsClipboardFormatAvailable (CF_PRIVATEFIRST)) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* paste APL+Win */

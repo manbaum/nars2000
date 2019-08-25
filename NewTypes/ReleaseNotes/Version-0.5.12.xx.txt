@@ -1,6 +1,28 @@
 Version 0.5.12.xx consists of the following Builds:
 
 
+Build #2197 -- Version 0.5.12.xx
+--------------------------------
+
+* Changes In Preparation For Hyperators
+
+Directory branches/bsmith/NewTypes:
+
+FH_PARSE.H:
+  Correct mis-numbering.
+  Include new entries for <steDel> and <steDelDel> in preparation for Hyperators.
+  Change item in <tagFH_YYSTYPE> from <List> to <ListAny> so it can searched for without false positive.
+
+FH_PARSE.Y:
+  Re-format LALR text for better readability.
+  Define new parameter to <GetOprName> in preparation for Hyperators.
+  Define more DEBUG statements.
+
+FH_PROC.C:
+  Define more DEBUG statements.
+  Define new parameter to <GetOprName> in preparation for Hyperators.
+
+
 Build #2195 -- Version 0.5.12.xx
 --------------------------------
 

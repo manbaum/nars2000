@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -90,7 +90,28 @@ LPFH_YYSTYPE PushHdrStrand_YY
     // Save this token on the strand stack
     //   and skip over it
     *lpfhLocalVars->lpYYStrandNext++ = *lpYYArg;
+#ifdef DEBUG
+    if (IsTknNamed (&lpYYArg->tkToken)
+     && bDebugFH)
+    {
+        WCHAR   wszTemp[512];
+        LPWCHAR lpw;
+        size_t  uLen;
 
+        lstrcpyW (wszTemp, L"STE name = ");
+
+        uLen = lstrlenW (wszTemp);
+
+        // Copy the STE name to local storage
+        lpw = CopySteName (&wszTemp[uLen], lpYYArg->tkToken.tkData.tkSym, NULL);
+
+        // Ensure properly terminated
+        lstrcpyW (lpw, WS_CRLF);
+
+        // Display it
+        DbgMsgW (wszTemp);
+    } // End IF
+#endif
     return lpYYArg;
 } // End PushHdrStrand_YY
 
@@ -129,27 +150,30 @@ LPFH_YYSTYPE MakeHdrStrand_YY
 //***************************************************************************
 
 BOOL GetOprName_EM
-    (LPFH_YYSTYPE lpYYArg)
+    (LPFH_YYSTYPE lpYYArg,
+     UINT         uOprVal)          // Operator valence
 
 {
     LPFHLOCALVARS lpfhLocalVars;        // Ptr to Function Header local vars
+    UBOOL         bRet = TRUE;          // TRUE iff the result is valid
 
     // Get this thread's LocalVars ptr
     lpfhLocalVars = (LPFHLOCALVARS) TlsGetValue (dwTlsFhLocalVars);
 
     // Split cases based upon the strand length
-    switch (lpYYArg->uStrandLen)
+    // ("3 *" for Nil/Mon/Dyd)
+    switch (lpYYArg->uStrandLen + 3 * uOprVal)
     {
-        case 1:         // Function
+        case 1 + 3 * 0: // Function
             lpfhLocalVars->DfnType     = DFNTYPE_FCN;
             lpfhLocalVars->fhNameType  = NAMETYPE_FN12;
             lpfhLocalVars->lpYYFcnName = &lpYYArg->lpYYStrandBase[0];
             lpfhLocalVars->offFcnName  =  lpYYArg->lpYYStrandBase[0].offTknIndex;
             lpfhLocalVars->offFcnText  =  lpYYArg->lpYYStrandBase[0].tkToken.tkCharIndex;
 
-            return TRUE;
+            break;
 
-        case 2:         // Monadic operator
+        case 2 + 3 * 0: // Monadic operator
             lpfhLocalVars->DfnType     = DFNTYPE_OP1;
             lpfhLocalVars->fhNameType  = NAMETYPE_OP1;
             lpfhLocalVars->lpYYLftOpr  = &lpYYArg->lpYYStrandBase[0];
@@ -157,9 +181,9 @@ BOOL GetOprName_EM
             lpfhLocalVars->offFcnName  =  lpYYArg->lpYYStrandBase[1].offTknIndex;
             lpfhLocalVars->offFcnText  =  lpYYArg->lpYYStrandBase[1].tkToken.tkCharIndex;
 
-            return TRUE;
+            break;
 
-        case 3:         // Dyadic operator
+        case 3 + 3 * 0: // Dyadic operator
             lpfhLocalVars->DfnType     = DFNTYPE_OP2;
             lpfhLocalVars->fhNameType  = NAMETYPE_OP2;
             lpfhLocalVars->lpYYLftOpr  = &lpYYArg->lpYYStrandBase[0];
@@ -168,7 +192,8 @@ BOOL GetOprName_EM
             lpfhLocalVars->offFcnText  =  lpYYArg->lpYYStrandBase[1].tkToken.tkCharIndex;
             lpfhLocalVars->lpYYRhtOpr  = &lpYYArg->lpYYStrandBase[2];
 
-            return TRUE;
+            break;
+            
 
         default:
             if (lpfhLocalVars->DisplayErr)
@@ -177,8 +202,20 @@ BOOL GetOprName_EM
                 fh_yyerror (lpfhLocalVars, "syntax error");
             } // End IF
 
-            return FALSE;
+            // Mark as invalid result
+            bRet = FALSE;
+
+            break;
     } // End SWITCH
+
+    // If the result is valid, ...
+    if (bRet)
+    // If the function name is a {del} or {del}{del}, ...
+    if (IsTknDel (&lpfhLocalVars->lpYYFcnName->tkToken))
+        // Set the nametype
+        lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stFlags.stNameType = lpfhLocalVars->fhNameType;
+
+    return bRet;
 } // End GetOprName_EM
 
 

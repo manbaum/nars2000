@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -130,19 +130,21 @@ typedef struct tagDFN_HEADER            // Function header structure
                      aSysLblInv,        // 50:  Line/token #s of the []INV ...
                      aSysLblMs,         // 58:  Line/token #s of the []MS  ...
                      aSysLblPro;        // 60:  Line/token #s of the []PRO ...
-    LPSYMENTRY       steLftOpr,         // 64:  Left operand STE (may be NULL if not an operator)
-                     steFcnName,        // 68:  Function name STE
-                     steAxisOpr,        // 6C:  Axis operator STE
-                     steRhtOpr;         // 70:  Right operand STE (may be NULL if monadic operator or not an operator)
-    HGLOBAL          hGlbTxtHdr,        // 74:  Text of function header (APLCHAR) global memory handle
-                     hGlbTknHdr,        // 78:  Tokenized function header (TOKEN) ...
-                     hGlbUndoBuff,      // 7C:  Undo buffer (UNDO_BUF)            ... (may be NULL)
-                     hGlbMonInfo;       // 80:  Function line monitor info (MONINFO)
-    FILETIME         ftCreation,        // 84:  Time of creation (8 bytes)
-                     ftLastMod;         // 8C:  Time of last modification (8 bytes)
-    HSHTABSTR        htsDFN;            // 94:  Local HTS (htsDFN.lpHshTab may be NULL if none) (124 bytes)
-                                        //110:  Length
-                                        //110:  Array of function line structures (FCNLINE[nLines])
+    LPSYMENTRY       steLftOpr,         // 68:  Left operand STE (may be NULL if not an operator)
+                     steFcnName,        // 6C:  Function name STE
+                     steAxisOpr,        // 70:  Axis operator STE
+                     steRhtOpr,         // 74:  Right operand STE (may be NULL if monadic operator or not an operator)
+                     steDel,            // 78:  Del function STE
+                     steDelDel;         // 7C:  DelDel operator STE
+    HGLOBAL          hGlbTxtHdr,        // 80:  Text of function header (APLCHAR) global memory handle
+                     hGlbTknHdr,        // 84:  Tokenized function header (TOKEN) ...
+                     hGlbUndoBuff,      // 88:  Undo buffer (UNDO_BUF)            ... (may be NULL)
+                     hGlbMonInfo;       // 8C:  Function line monitor info (MONINFO)
+    FILETIME         ftCreation,        // 90:  Time of creation (8 bytes)
+                     ftLastMod;         // 98:  Time of last modification (8 bytes)
+    HSHTABSTR        htsDFN;            // A0:  Local HTS (htsDFN.lpHshTab may be NULL if none) (124 = 0x7C bytes)
+                                        //11C:  Length
+                                        //11C:  Array of function line structures (FCNLINE[nLines])
 } DFN_HEADER, *LPDFN_HEADER;
 
 // Whenever changing the above struct, be sure to make a
@@ -158,7 +160,7 @@ typedef struct tagFH_YYSTYPE            // YYSTYPE for Function Header parser
     TOKEN  tkToken;                     // 00:  Token info (28 bytes)
     UINT   uStrandLen:30,               // 1C:  3FFFFFFF:  # elements in this strand
            Indirect:1,                  //      40000000:  Indirect entry
-           List:1;                      //      80000000:  Itsa list
+           ListAny:1;                   //      80000000:  Itsa list
                                         //      00000000:  No available bits
     struct tagFH_YYSTYPE *
            lpYYStrandIndirect;          // 20:  Ptr to the indirect strand if .Indirect is set
@@ -182,7 +184,7 @@ typedef struct tagFHLOCALVARS           // Function Header Local Vars
                    lptkStop;            // 18:  Stopping token
     UINT           tkErrorCharIndex,    // 1C:  Error char index
                    offTknBase,          // 20:  Offset in hGlbTknHdr of the current token
-                   offFcnName,          // 24:  Offset in hGlbTknHdr of the function name token
+                   offFcnName,          // 24:  ...                         function name token
                    offFcnText;          // 28:  Offset in hGlbTxtLine of the function name
     UINT           DfnType:4,           // 2C:  0000000F:  User-defined function/operator type (see DFN_TYPES)
                    FcnValence:3,        //      00000070:  User-defined function/operator valence (see FCN_VALENCES)

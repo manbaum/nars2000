@@ -1,6 +1,19 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2210 -- Version 0.6.0.xx
+-------------------------------
+
+* Implement 4 []DR To Separate Rational Number Numerators And Denominators
+
+Directory branches/bsmith/NanTypes:
+
+QF_DR.C:
+QF_DR.H:
+  Implement 4 []DR.
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+
+
 Build #2208 -- Version 0.6.0.xx
 -------------------------------
 

@@ -171,6 +171,9 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_GETPREC:
             return SysFnDR_GetPrec_EM_YY (lptkRhtArg, lptkFunc);
 
+        case DR_GETNUMDEN:
+            return SysFnDR_GetNumDen_EM_YY (lptkRhtArg, lptkFunc);
+
         case DR_BOOL:
             return SysFnDR_Convert_EM_YY (ARRAY_BOOL,  lptkRhtArg, lptkFunc);
 
@@ -604,6 +607,320 @@ LPPL_YYSTYPE SysFnDR_GetPrec_EM_YY
 
 
 //***************************************************************************
+//  $SysFnDR_GetNumDen_EM_YY
+//
+//  Return the lowest precision in the right arg
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnDR_GetNumDen_EM_YY
+    (LPTOKEN  lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN  lptkFunc)             // Ptr to function token
+
+{
+    HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
+                      hGlbRes = NULL;       // Result    ...
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg global memory
+                      lpMemHdrRes = NULL;   // Ptr to result    ...
+    LPVOID            lpMemRht,             // Ptr to right arg global memory
+                      lpMemRes;             // Ptr to result    ...
+    APLSTYPE          aplTypeRht,           // Right arg storage type
+                      aplTypeRes;           // Result    ...
+    APLNELM           aplNELMRht,           // Right arg NELM
+                      aplColsRht,           // ...       # cols
+                      aplNELMRes;           // Result    ...
+    APLRANK           aplRankRht,           // Right arg rank
+                      aplRankRes;           // Result rank
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
+    APLLONGEST        aplLongestRht;        // Right arg as immediate
+    int               iHCDimRht,            // HC Dimension (1, 2, 4, 8)
+                      i;                    // Loop counter
+    APLUINT           ByteRes,              // # bytes in the result
+                      uCnt;                 // Loop counter
+    LPAPLDIM          lpMemDimRht,          // Ptr to right arg dimensions
+                      lpMemDimRes;          // ...    result    ...
+    APLRAT            aplTmp = {0};         // Temp RAT
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht );
+
+    // Get right arg's global ptrs
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+
+    // Get the HC Dimension (1, 2, 4, 8)
+    iHCDimRht = TranslateArrayTypeToHCDim (aplTypeRht);
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_APA:
+
+        case ARRAY_INT:
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+
+        case ARRAY_FLOAT:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+
+        case ARRAY_RAT:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+
+        case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+
+////////case ARRAY_ARB:
+////////case ARRAY_BA2F:
+////////case ARRAY_BA4F:
+////////case ARRAY_BA8F:
+            // Set the result storage type
+            aplTypeRes = ARRAY_RAT;
+
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_NESTED:
+        case ARRAY_HETERO:
+            goto DOMAIN_EXIT;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Calculate the result rank
+    aplRankRes = 1 + (iHCDimRht > 1) + aplRankRht;
+
+    // Calculate the result NELM
+    aplNELMRes = 2 * iHCDimRht * aplNELMRht;
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
+    // Allocate global memory for a length <aplNELMRes> vector of type <aplTypeRes>.
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (hGlbRes EQ NULL)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
+
+#define lpHeader    lpMemHdrRes
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = aplTypeRes;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = aplRankRes;
+#undef  lpHeader
+
+    // If the right arg is a global, ...
+    if (hGlbRht NE NULL)
+        // Skip over the header to the dimensions
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
+
+    // Skip over the header to the dimensions
+    lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
+
+    // Save leading dimensions
+    *lpMemDimRes++ = 2;
+
+    if (iHCDimRht > 1)
+        *lpMemDimRes++ = iHCDimRht;
+
+    // If the right arg is a global, ...
+    if (hGlbRht NE NULL)
+        // Copy the right arg dimensions as the result's trailing dimensions
+        CopyMemory (lpMemDimRes, lpMemDimRht, (APLU3264) (aplRankRht * sizeof (APLDIM)));
+
+    // If the right arg is a global, ...
+    if (hGlbRht NE NULL)
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    else
+        // Point to the data
+        lpMemRht = &aplLongestRht;
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+
+    // Initialize the temp to 0/1
+    mpq_init (&aplTmp);
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+            // Set the right arg storage type
+            aplTypeRht = ARRAY_INT;
+
+            // Fall through to common code
+
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            // Loop through the right arg
+            for (uCnt = 0; uCnt < aplNELMRht; uCnt++)
+            // Loop through the HC dimension
+            for (i = 0; i < iHCDimRht; i++)
+            {
+                // Initialize the result
+                mpq_init   (            &((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht                 ]);
+                mpq_init   (            &((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht + aplNELMRes / 2]);
+
+                // Convert the next item to a RAT
+                mpq_set_sx (&aplTmp, GetNextInteger (lpMemRht, aplTypeRht, i + uCnt * iHCDimRht), 1);
+
+                // Save the next item's numerator/denominator in the result
+                mpz_set    (mpq_numref (&((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht                 ]), mpq_numref (&aplTmp));
+                mpz_set    (mpq_numref (&((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht + aplNELMRes / 2]), mpq_denref (&aplTmp));
+            } // End FOR/FOR
+
+            break;
+
+        case ARRAY_FLOAT:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+            // Loop through the right arg
+            for (uCnt = 0; uCnt < aplNELMRht; uCnt++)
+            // Loop through the HC dimension
+            for (i = 0; i < iHCDimRht; i++)
+            {
+                // Initialize the result
+                mpq_init   (            &((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht                 ]);
+                mpq_init   (            &((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht + aplNELMRes / 2]);
+
+                // Convert the next item to a RAT
+                mpq_set_d  (&aplTmp,   ((LPAPLFLOAT) lpMemRht)[i + uCnt * iHCDimRht]);
+
+                // Save the next item's numerator/denominator in the result
+                mpz_set    (mpq_numref (&((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht                 ]), mpq_numref (&aplTmp));
+                mpz_set    (mpq_numref (&((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht + aplNELMRes / 2]), mpq_denref (&aplTmp));
+            } // End FOR/FOR
+
+            break;
+
+        case ARRAY_RAT:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+            // Loop through the right arg
+            for (uCnt = 0; uCnt < aplNELMRht; uCnt++)
+            // Loop through the HC dimension
+            for (i = 0; i < iHCDimRht; i++)
+            {
+                // Initialize the result
+                mpq_init   (            &((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht                 ]);
+                mpq_init   (            &((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht + aplNELMRes / 2]);
+
+                // Copy the next item as RAT
+                mpq_set    (&aplTmp,    &((LPAPLRAT) lpMemRht)[i + uCnt * iHCDimRht]);
+
+                // Save the next item's numerator/denominator in the result
+                mpz_set    (mpq_numref (&((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht                 ]), mpq_numref (&aplTmp));
+                mpz_set    (mpq_numref (&((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht + aplNELMRes / 2]), mpq_denref (&aplTmp));
+            } // End FOR/FOR
+
+            break;
+
+        case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+            // Loop through the right arg
+            for (uCnt = 0; uCnt < aplNELMRht; uCnt++)
+            // Loop through the HC dimension
+            for (i = 0; i < iHCDimRht; i++)
+            {
+                // Initialize the result
+                mpq_init   (            &((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht                 ]);
+                mpq_init   (            &((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht + aplNELMRes / 2]);
+
+                // Convert the next item to a RAT
+                mpfr_get_q (&aplTmp,    &((LPAPLVFP) lpMemRht)[i + uCnt * iHCDimRht ]);
+
+                // Save the next item's numerator/denominator in the result
+                mpz_set    (mpq_numref (&((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht                 ]), mpq_numref (&aplTmp));
+                mpz_set    (mpq_numref (&((LPAPLRAT) lpMemRes)[uCnt + i * aplColsRht + aplNELMRes / 2]), mpq_denref (&aplTmp));
+            } // End FOR/FOR
+
+            break;
+
+////////case ARRAY_ARB:
+////////case ARRAY_BA2F:
+////////case ARRAY_BA4F:
+////////case ARRAY_BA8F:
+////////    break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // We no longer need this storage
+    Myq_clear (&aplTmp);
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.bTempAPV  = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (hGlbRes NE NULL)
+    {
+        if (lpMemHdrRes NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        MyGlobalFree (hGlbRes); hGlbRes = NULL;
+    } // End IF
+NORMAL_EXIT:
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End SysFnDR_GetNumDen_EM_YY
+
+
+//***************************************************************************
 //  $SysFnDR_Convert_EM_YY
 //
 //  Return the <aplTypeRes> representation of the right arg
@@ -617,10 +934,10 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
 {
     HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
                       hGlbRes = NULL;       // Result    ...
-    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg global memory
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
                       lpMemHdrRes = NULL;   // ...    result    ...
-    LPVOID            lpMemRht,             // Ptr to right arg global memory
-                      lpMemRes;             // Ptr to result    ...
+    LPVOID            lpMemRht = NULL,      // Ptr to right arg global memory
+                      lpMemRes = NULL;      // Ptr to result    ...
     APLSTYPE          aplTypeRht;           // Right arg storage type
     APLNELM           aplNELMRht,           // Right arg NELM
                       aplNELMRes;           // Result    ...

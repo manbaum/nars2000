@@ -3729,14 +3729,8 @@ LPPL_YYSTYPE CoalesceIdx_EM
         // Zap the curried index so we don't free it in <FreeTempResult>
         lpYYVar->lpplYYIdxCurry = NULL;
 
-        // If it's valid, ...
-        if (lpYYRes2 NE NULL)
-        {
-            // Free (unnamed) and YYFree the objects
-            FreeTempResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
-        } // End IF
-
         // Free (unnamed) and YYFree the objects
+        FreeTempResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
         FreeTempResult (lpYYVar); YYFree (lpYYVar); lpYYVar = NULL;
 
         // Copy back and repeat
@@ -5257,9 +5251,9 @@ PARSELINE_ERROR:
                         // Free the object and its curries only if not named
                         // N.B.: when A[...][...]{is}B fails on an INDEX ERROR, we must not free 'A'
                         FreeTempErrResult (lpplYYCurObj);
-                    else
-                        // YYFree the current object's currys
-                        FreeResultCurry (lpplYYCurObj, FALSE);
+
+                    // YYFree the current object's currys
+                    FreeResultCurry (lpplYYCurObj, FALSE);
 
                     // YYFree the current object
                     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;

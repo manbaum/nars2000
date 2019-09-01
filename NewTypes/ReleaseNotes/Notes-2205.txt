@@ -1,0 +1,14 @@
+Build #2205 -- Version 0.5.12.xx
+--------------------------------
+
+* Fix Memory Leaks
+* Disallow "A FR" In A Train
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  In <CoalesceIdx_EM>, YYFree the old result even if the current result is invalid.
+  In <PARSELINE_ERROR>, free the current object's currys even if it's a Fcn/Var/Opr.
+
+PARSELINE.H:
+  Remove the reduction "A FR -> AFR" as it is not recognized in a Train.

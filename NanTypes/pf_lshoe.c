@@ -1020,7 +1020,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemWVec = MyGlobalLock000 (hGlbWVec);
+        lpMemWVec = MyGlobalLockInt (hGlbWVec);
 
         // Loop through the dimensions of the right arg in reverse
         //   order {backscan} and compute the cumulative product
@@ -1050,7 +1050,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemOdo = MyGlobalLock000 (hGlbOdo);
+        lpMemOdo = MyGlobalLockInt (hGlbOdo);
 
         //***************************************************************
         // Calculate space needed for each subarray.

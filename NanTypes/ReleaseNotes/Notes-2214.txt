@@ -1,0 +1,12 @@
+Build #2214 -- Version 0.6.0.xx
+-------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NanTypes:
+
+PF_LSHOE.C:
+  In <PrimFnMonLeftShoeGlb_EM_YY>, lock the Weighting Vector with LockInt instead of Lock000 in case the vector is short.
+
+YYFNS.C:
+  In <YYAlloc>, re-arrange the code so that <lpFileName and <uLineNum> are always copied to the YYSTYPE.

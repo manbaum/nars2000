@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2204 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Missing Prefix In DieresisJot Magic Functions
+
+Directory branches/bsmith/NanTypes:
+
+MF_DIJOT.H:
+  Include missing prefix for all local symbols.
+
+
 Build #2202 -- Version 0.6.0.xx
 -------------------------------
 

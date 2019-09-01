@@ -130,34 +130,28 @@ LPPL_YYSTYPE _YYAlloc
         // Set the return value
         lpYYRes = &lpMemPTD->lpYYRes[u];
 
-        // Zero the memory
-        ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
-
-        // Mark as inuse
-        lpYYRes->YYInuse = TRUE;
-#ifdef DEBUG
-        // Mark as unknown SynObj so as to catch cases where we miss setting it
-        lpYYRes->tkToken.tkSynObj = soUNK;
-
-        // Save the ptr to the filename where allocated
-        lpYYRes->lpFileName = lpFileName;
-
-        // Save the line # where allocated
-        lpYYRes->uLineNum   = uLineNum;
-#endif
         goto NORMAL_EXIT;
     } // End FOR/IF
 
     // If we get here, we ran out of indices
     lpYYRes = &lpMemPTD->lpYYRes[u++];
     lpMemPTD->numYYRes = u;
-
+NORMAL_EXIT:
     // Zero the memory
     ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
 
     // Mark as inuse
     lpYYRes->YYInuse = TRUE;
-NORMAL_EXIT:
+#ifdef DEBUG
+    // Mark as unknown SynObj so as to catch cases where we miss setting it
+    lpYYRes->tkToken.tkSynObj = soUNK;
+
+    // Save the ptr to the filename where allocated
+    lpYYRes->lpFileName = lpFileName;
+
+    // Save the line # where allocated
+    lpYYRes->uLineNum   = uLineNum;
+#endif
     // Initialize the token count
     lpYYRes->TknCount = 1;
 #ifdef DEBUG

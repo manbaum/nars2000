@@ -1,0 +1,9 @@
+Build #2208 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In MemberOf When Comparing Scalar Global Numerics
+
+Directory branches/bsmith/NanTypes:
+
+PF_EPSILON.C:
+  In <PrimFnDydEpsilonOther_EM>, improve the test for a scalar to handle global numerics.

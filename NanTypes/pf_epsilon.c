@@ -2359,7 +2359,7 @@ UBOOL PrimFnDydEpsilonOther_EM
                         &aplLongestSubLft,      // Ptr to left arg immediate value
                         &immTypeSubLft);        // Ptr to left arg immediate type
         // Is the global item a scalar?
-        bScalarLft = IsGlbScalar (hGlbSubLft);
+        bScalarLft = IsSimpleGlbNum (aplTypeLft) || IsGlbScalar (hGlbSubLft);
 
         // Loop through the right arg
         for (uRht = 0; uRht < aplNELMRht; uRht++)
@@ -2380,7 +2380,7 @@ UBOOL PrimFnDydEpsilonOther_EM
                             &aplLongestSubRht,      // Ptr to right arg immediate value
                             &immTypeSubRht);        // Ptr to right arg immediate type
             // Is the global item a scalar?
-            bScalarRht = IsGlbScalar (hGlbSubRht);
+            bScalarRht = IsSimpleGlbNum (aplTypeRht) || IsGlbScalar (hGlbSubRht);
 
             // If both items are scalar simple or global numeric, ...
             if (bScalarLft && bScalarRht

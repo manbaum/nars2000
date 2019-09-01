@@ -3531,8 +3531,10 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         &hGlbSubLft,            // Ptr to result as HGLOBAL (may be NULL if singleton or simple)
                         &aplLongestSubLft,      // Ptr to result as singleton or simple value
                         &immTypeSubLft);        // Ptr to result as singleton or simple type
-        // If the left arg item is a global value, ...
-        if (hGlbSubLft NE NULL)
+        // If the left arg item is a global value,
+        //   but not a global numeric, ...
+        if (hGlbSubLft NE NULL
+         && GetPtrTypeDir (hGlbSubLft) EQ PTRTYPE_HGLOBAL)
         {
             APLSTYPE          aplTypeSubLft;            // Left arg item storage type
             APLNELM           aplNELMSubLft;            // Left arg item NELM
@@ -3880,8 +3882,10 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         &hGlbSubRht,            // Ptr to result as HGLOBAL (may be NULL if singleton)
                         &aplLongestSubRht,      // Ptr to result as singleton value
                         &immTypeSubRht);        // Ptr to result as singleton type
-        // If the right arg item is a global value, ...
-        if (hGlbSubRht NE NULL)
+        // If the right arg item is a global value,
+        //   but not a global numeric, ...
+        if (hGlbSubRht NE NULL
+         && GetPtrTypeDir (hGlbSubRht) EQ PTRTYPE_HGLOBAL)
         {
             // If we're assigning a new value
             //   and this is the last element in the
@@ -4029,6 +4033,10 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 lpYYRes = PTR_SUCCESS;
             } else
             {
+                // If the right arg is not nested, ...
+                if (!IsNested (aplTypeRht))
+                    goto LENGTH_EXIT;
+
                 // In case we need to know where this item
                 //   came from, save its index & global memory handle
                 aplLongestPrvLft = aplLongestSubLft;
@@ -4119,12 +4127,27 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 // Allocate a new YYRes
                 lpYYRes = YYAlloc ();
 
-                // Fill in the result token
-                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-                lpYYRes->tkToken.tkFlags.ImmType   = immTypeSubRht;
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
-                lpYYRes->tkToken.tkData.tkLongest  = aplLongestSubRht;
-                lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+                if (IsImmGlbNum (immTypeSubRht))
+                {
+                    // Fill in the result token
+                    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                    lpYYRes->tkToken.tkData.tkGlbData  =
+                      MakeGlbEntry_EM (TranslateImmTypeToArrayType (immTypeSubRht), // Entry type
+                                       hGlbSubRht,                                  // Ptr to the value
+                                       TRUE,                                        // TRUE iff we should initialize the target first
+                                       lptkFunc);                                   // Ptr to function token
+                    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+                } else
+                {
+                    // Fill in the result token
+                    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+                    lpYYRes->tkToken.tkFlags.ImmType   = immTypeSubRht; // Already zero from YYAlloc
+////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                    lpYYRes->tkToken.tkData.tkLongest  = aplLongestSubRht;
+                    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+                } // End IF/ELSE
             } // End IF/ELSE
 
             goto NORMAL_EXIT;

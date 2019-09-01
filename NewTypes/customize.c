@@ -519,6 +519,9 @@ INT_PTR CALLBACK CustomizeDlgProc
 #define U   -1      // Unknown entry
 
     // The following var must be in the same order as UNITRANS_xxx
+    // The IC and IP columns contain U if the corresponding bValid bit is FALSE,
+    //   and otherwise contain consecutive numbers starting with 0.
+    // The OC and OP columns conain {iotaund} bValid padded out to the end with U.
     static UNITRANS_STR unitransStr[] = {   //                        Valid      I  I  O  O
                                             //                    Copy    Paste  C  P  C  P
                                          {L"APL+Win",             TRUE,   TRUE , 0, 0, 0, 0},   // 0
@@ -527,9 +530,9 @@ INT_PTR CALLBACK CustomizeDlgProc
                                          {L"Dyalog",              TRUE,   TRUE , 3, 3, 3, 3},   // 3
                                          {L"PC/3270",             TRUE,   TRUE , 4, 4, 4, 4},   // 4
                                          {L"Normal (Unicode)",    FALSE,  TRUE , U, 5, 6, 5},   // 5
-                                         {L"NARS (Unicode)",      TRUE,   FALSE, 5, U, 7, 7},   // 6
-                                         {L"{braces}",            TRUE,   TRUE , 6, 6, 8, U},   // 7
-                                         {L"LF as EOL",           TRUE,   FALSE, 7, U, U, U},   // 8
+                                         {L"NARS (Unicode)",      TRUE,   FALSE, 5, U, 7, 8},   // 6
+                                         {L"LF as EOL",           TRUE,   FALSE, 6, U, 8, U},   // 7
+                                         {L"{braces}",            TRUE,   TRUE , 7, 6, U, U},   // 8 ***MUST BE LAST***
                                         };
 #define UNITRANS_STR_LENGTH      countof (unitransStr)
 #undef  U

@@ -1,6 +1,18 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2202 -- Version 0.6.0.xx
+-------------------------------
+
+* Change Order Of Copy/Paste Context Menus
+
+Directory branches/bsmith/NanTypes:
+
+CUSTOMIZE.C:
+  Change the order of the entries in the Copy and Paste context menus so {braces}
+    always appears last.
+
+
 Build #2200 -- Version 0.6.0.xx
 -------------------------------
 

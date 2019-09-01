@@ -1,0 +1,9 @@
+Build #2203 -- Version 0.5.12.xx
+--------------------------------
+
+* Fix Missing Prefix In DieresisJot Magic Functions
+
+Directory branches/bsmith/NewTypes:
+
+MF_DIJOT.H:
+  Include missing prefix for all local symbols.

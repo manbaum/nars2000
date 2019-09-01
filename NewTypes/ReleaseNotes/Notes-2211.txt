@@ -1,0 +1,13 @@
+Build #2211 -- Version 0.5.12.xx
+--------------------------------
+
+* Fix Bug In Pick (Dyadic Right Shoe) When Encountering Global Numerics
+* Fix Bug In Pick (Dyadic Right Shoe) When Recursing Through A Nested Right Arg
+
+Directory branches/bsmith/NewTypes:
+
+PF_RSHOE.C:
+  In <PrimFnDydRightShoeGlbGlb_EM_YY>, when deciding on whether a global memory handle
+    is a var, check the low-order bit (PTRTYPE_STCONST vs. PTRTYPE_HGLOBAL).
+  In <PrimFnDydRightShoeGlbGlb_EM_YY>, when recursing through the right arg, ensure it's still
+    nested before continuing to the next item.

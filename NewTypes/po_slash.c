@@ -2607,7 +2607,7 @@ RESTART_EXCEPTION:
                                 (*aTypeActPromote[aplTypeTmp][aplTypeRes]) (&tkRhtArg.tkData.tkLongest, 0, &atTmp);
 
                                 // Save in the result as a FLOAT
-                                ((LPAPLFLOAT) lpMemRes)[uRht] = atTmp.aplFloat;
+                                ((LPAPLFLOAT) lpMemRes)[uRes] = atTmp.aplFloat;
 
                                 break;
 

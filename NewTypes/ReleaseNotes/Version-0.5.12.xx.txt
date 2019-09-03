@@ -1,6 +1,17 @@
 Version 0.5.12.xx consists of the following Builds:
 
 
+Build #2217 -- Version 0.5.12.xx
+--------------------------------
+
+* Fix Bug In Dyadic Reduction When Promoting From INT To FLT
+
+Directory branches/bsmith/NewTypes:
+
+PO_SLASH.C:
+  In <PrimOpDydSlashCommon_EM_YY>, when saving a APLFLOAT result that has been promoted from INT To FLT, the wrong index is used.
+
+
 Build #2215 -- Version 0.5.12.xx
 --------------------------------
 

@@ -1,6 +1,40 @@
 Version 0.6.0.xx consists of the following Builds:
 
-b?80 112 150 184 213 253 292 ? ¯2÷/b
+
+Build #2218 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In Dyadic Reduction When Promoting From INT To FLT
+
+Directory branches/bsmith/NanTypes:
+
+PO_SLASH.C:
+  In <PrimOpDydSlashCommon_EM_YY>, when saving a APLFLOAT result that has been promoted from INT To FLT, the wrong index is used.
+
+
+Build #2216 -- Version 0.6.0.xx
+-------------------------------
+
+* Extend Output Debugging To CR and LF
+* Fix Bug In Displaying VFP Numbers With All Digits
+
+Directory branches/bsmith/NanTypes:
+
+CUSTOMIZE.C:
+DEFINES.H:
+EXTERNS.H:
+MAIN.RC:
+RESOURCE.H:
+  Define a new checkbox for "Except CR & LF" for Output Debugging.
+
+DISPLAY.C:
+  In <DisplayGlbArr_EM>, <FormatImmedFC>, and <CheckTermCodes> when
+    displaying character arrays with Output Debugging ON,
+    handle ASCII characters below a space.
+  In <FormatAplVfpFC>, handle # signifcant digits of 0 as all digits.
+
+INIFILE.C:
+  Read in and write out the new User Preference.
 
 
 Build #2214 -- Version 0.6.0.xx

@@ -117,6 +117,7 @@
 #define KEYNAME_DISPOCTODIG             L"DisplayHCAsOctoDig"
 #define KEYNAME_DISPMPSUF               L"DisplayMPSuffix"
 #define KEYNAME_OUTPUTDEBUG             L"OutputDebug"
+#define KEYNAME_OUTPUTEXCRLF            L"OutputExCRLF"
 #define KEYNAME_SHOWNETERRS             L"ShowNetErrs"
 
 #define KEYNAME_SC_GLBNAME              L"GlbName"
@@ -711,6 +712,12 @@ UBOOL ReadIniFileGlb
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_OUTPUTDEBUG,   // Ptr to the key name
                              DEF_OUTPUTDEBUG,       // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bOutputExCRLF
+    OptionFlags.bOutputExCRLF =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_OUTPUTEXCRLF,  // Ptr to the key name
+                             DEF_OUTPUTEXCRLF,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Read in bShowNetErrs
     OptionFlags.bShowNetErrs =
@@ -2505,6 +2512,16 @@ void SaveIniFile
     // Write out bOutputDebug
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
                                 KEYNAME_OUTPUTDEBUG,        // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    //******************* bOutputExCRLF ***********************
+    // Format bOutputExCRLF
+    wszTemp[0] = L'0' + OptionFlags.bOutputExCRLF;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bOutputExCRLF
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_OUTPUTEXCRLF,       // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bShowNetErrs ************************

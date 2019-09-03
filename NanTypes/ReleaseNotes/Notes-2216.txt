@@ -1,0 +1,23 @@
+Build #2216 -- Version 0.6.0.xx
+-------------------------------
+
+* Extend Output Debugging To CR and LF
+* Fix Bug In Displaying VFP Numbers With All Digits
+
+Directory branches/bsmith/NanTypes:
+
+CUSTOMIZE.C:
+DEFINES.H:
+EXTERNS.H:
+MAIN.RC:
+RESOURCE.H:
+  Define a new checkbox for "Except CR & LF" for Output Debugging.
+
+DISPLAY.C:
+  In <DisplayGlbArr_EM>, <FormatImmedFC>, and <CheckTermCodes> when
+    displaying character arrays with Output Debugging ON,
+    handle ASCII characters below a space.
+  In <FormatAplVfpFC>, handle # signifcant digits of 0 as all digits.
+
+INIFILE.C:
+  Read in and write out the new User Preference.

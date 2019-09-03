@@ -938,31 +938,33 @@ BEGIN
                     IDC_USER_PREFS_XB_DISPMPSUF          , 10,156,260, 10
     AUTOCHECKBOX    "Enable output debugging",
                     IDC_USER_PREFS_XB_OUTPUTDEBUG        , 10,169,260, 10
+    AUTOCHECKBOX    "Except for CR and LF",
+                    IDC_USER_PREFS_XB_OUTPUTEXCRLF       , 20,182,250, 10
 
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,182, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,195, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Paste (Ctrl-V)",
-                    IDC_STATIC                           ,100,182,160, 10
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,195, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "Default translation on Copy (Ctrl-C)",
                     IDC_STATIC                           ,100,195,160, 10
-    COMBOBOX        IDC_USER_PREFS_CB_UPDFRQ             , 10,213, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,208, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Default translation on Copy (Ctrl-C)",
+                    IDC_STATIC                           ,100,208,160, 10
+    COMBOBOX        IDC_USER_PREFS_CB_UPDFRQ             , 10,226, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Frequency of check for new updates",
-                    IDC_STATIC                           ,100,213,160, 10
+                    IDC_STATIC                           ,100,226,160, 10
     AUTOCHECKBOX    "Show network update errors",
-                    IDC_USER_PREFS_XB_SHOWNETERRS        , 10,232,260, 10
+                    IDC_USER_PREFS_XB_SHOWNETERRS        , 10,245,260, 10
 
-    LTEXT           "Unicode"      , IDC_STATIC          , 10,242, 50, 14
+    LTEXT           "Unicode"      , IDC_STATIC          , 10,255, 50, 14
     CONTROL         ""               IDC_USER_PREFS_EC_UNICODE , ECWNDCLASS, WS_BORDER | WS_TABSTOP
-                                                         , 10,252, 30, 14
-    LTEXT           "Char"         , IDC_STATIC          , 55,242, 30, 14
+                                                         , 10,265, 30, 14
+    LTEXT           "Char"         , IDC_STATIC          , 55,255, 30, 14
     CONTROL         ""             , IDC_USER_PREFS_BN_UNICODE , ECWNDCLASS, WS_BORDER | WS_TABSTOP
-                                                         , 55,252, 14, 14
+                                                         , 55,265, 14, 14
     AUTORADIOBUTTON "Dec"          , IDC_USER_PREFS_RB_DEC
-                                                         , 10,267, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
+                                                         , 10,280, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
     AUTORADIOBUTTON "Hex"          , IDC_USER_PREFS_RB_HEX
-                                                         , 45,267, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP
+                                                         , 45,280, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP
     LTEXT           "Line Continuation Marker",
-                                     IDC_STATIC          , 75,252,120, 14
+                                     IDC_STATIC          , 75,265,120, 14
 
 END
 

@@ -871,52 +871,34 @@ UBOOL DisplayGlbArr_EM
                         // Split cases based upon the character
                         switch (wcCur)
                         {
-                            case WC_HT:         // []TCHT -- Move ahead to the next tab stop
-                                // If we're NOT Output Debugging, ...
-                                if (!OptionFlags.bOutputDebug)
+                            // N.B.  The cases for CR & LF *MUST* come first as they
+                            //       have different test conditions than the others
+                            case WC_CR:         // []TCNL -- Restart at the beginning of a new line
+                                // If we're NOT Output Debugging,
+                                //   or we are, but we're excluding CR & LF from display, ...
+                                if (!OptionFlags.bOutputDebug || OptionFlags.bOutputExCRLF)
                                 {
-                                    // *Insert* enough blanks to get to the next tabstop
-                                    uTmp = uTabStops - (uCurPos % uTabStops);
-                                    MoveMemoryW (&lpwszTemp[uCurPos + uTmp], &lpwszTemp[uCurPos], (APLU3264) uTmp);
-                                    FillMemoryW (&lpwszTemp[uCurPos], (APLU3264) uTmp, L' ');
+                                    // Zap the temp buffer at the maximum width
+                                    lpwszTemp[uMaxWidth] = WC_EOS;
 
-                                    // Increase the maximum width and current position by the # inserted blanks
-                                    uMaxWidth += uTmp;
-                                    uCurPos   += uTmp;
-
-                                    break;
-                                } else
-                                {
-                                    // Fall through to common code
-                                } // End IF/ELSE
-
-                            case WC_BEL:        // []TCBEL -- Sound the alarum!
-                                // If we're NOT Output Debugging, ...
-                                if (!OptionFlags.bOutputDebug)
-                                {
-                                    MessageBeep (NEG1U);
+                                    // Reset the current position (but not the max width)
+                                    uCurPos   =
+                                    uColCur   = 0;
+                                    uColCur--;              // Count it out
+                                    uOutLen = uQuadPW;      // Maximum output length
 
                                     break;
                                 } else
                                 {
                                     // Fall through to common code
-                                } // End IF/ELSE
-
-                            case WC_BS:         // []TCBS -- Backspace if there's room
-                                // If we're NOT Output Debugging, ...
-                                if (!OptionFlags.bOutputDebug)
-                                {
-                                    if (uCurPos NE 0)
-                                        uCurPos--;
-                                    break;
-                                } else
-                                {
-                                    // Fall through to common code
+                                    // Note that Output Debugging is FALSE, so the next
+                                    //   IF statement (if present) falls through
                                 } // End IF/ELSE
 
                             case WC_LF:         // []TCLF -- Start a new line
-                                // If we're NOT Output Debugging, ...
-                                if (!OptionFlags.bOutputDebug)
+                                // If we're NOT Output Debugging,
+                                //   or we are, but we're excluding CR & LF from display, ...
+                                if (!OptionFlags.bOutputDebug || OptionFlags.bOutputExCRLF)
                                 {
                                     // Zap the temp buffer at the maximum width
                                     lpwszTemp[uMaxWidth] = WC_EOS;
@@ -937,24 +919,63 @@ UBOOL DisplayGlbArr_EM
                                 } else
                                 {
                                     // Fall through to common code
+                                    // Note that Output Debugging is FALSE, so the next
+                                    //   IF statement (if present) falls through
+                                } // End IF/ELSE
+
+                            case WC_HT:         // []TCHT -- Move ahead to the next tab stop
+                                // If we're NOT Output Debugging, ...
+                                if (!OptionFlags.bOutputDebug)
+                                {
+                                    // *Insert* enough blanks to get to the next tabstop
+                                    uTmp = uTabStops - (uCurPos % uTabStops);
+                                    MoveMemoryW (&lpwszTemp[uCurPos + uTmp], &lpwszTemp[uCurPos], (APLU3264) uTmp);
+                                    FillMemoryW (&lpwszTemp[uCurPos], (APLU3264) uTmp, L' ');
+
+                                    // Increase the maximum width and current position by the # inserted blanks
+                                    uMaxWidth += uTmp;
+                                    uCurPos   += uTmp;
+
+                                    break;
+                                } else
+                                {
+                                    // Fall through to common code
+                                    // Note that Output Debugging is FALSE, so the next
+                                    //   IF statement (if present) falls through
+                                } // End IF/ELSE
+
+                            case WC_BEL:        // []TCBEL -- Sound the alarum!
+                                // If we're NOT Output Debugging, ...
+                                if (!OptionFlags.bOutputDebug)
+                                {
+                                    MessageBeep (NEG1U);
+
+                                    break;
+                                } else
+                                {
+                                    // Fall through to common code
+                                    // Note that Output Debugging is FALSE, so the next
+                                    //   IF statement (if present) falls through
+                                } // End IF/ELSE
+
+                            case WC_BS:         // []TCBS -- Backspace if there's room
+                                // If we're NOT Output Debugging, ...
+                                if (!OptionFlags.bOutputDebug)
+                                {
+                                    if (uCurPos NE 0)
+                                        uCurPos--;
+                                    break;
+                                } else
+                                {
+                                    // Fall through to common code
+                                    // Note that Output Debugging is FALSE, so the next
+                                    //   IF statement (if present) falls through
                                 } // End IF/ELSE
 
                             default:
                                 // Save the new char
                                 lpwszTemp[uCurPos++] = wcCur;
                                 uMaxWidth = max (uMaxWidth, uCurPos);
-
-                                break;
-
-                            case WC_CR:         // []TCNL -- Restart at the beginning of a new line
-                                // Zap the temp buffer at the maximum width
-                                lpwszTemp[uMaxWidth] = WC_EOS;
-
-                                // Reset the current position (but not the max width)
-                                uCurPos   =
-                                uColCur   = 0;
-                                uColCur--;              // Count it out
-                                uOutLen = uQuadPW;      // Maximum output length
 
                                 break;
                         } // End SWITCH
@@ -1298,24 +1319,57 @@ LPAPLCHAR FormatImmedFC
             // Test for Terminal Control chars
             switch (wc)
             {
+                // N.B.  The cases for CR & LF *MUST* come first as they
+                //       have different test conditions than the others
+                case WC_CR:     // CR
+                    // If we're NOT Output Debugging,
+                    //   or we are, but we're excluding CR & LF from display, ...
+                    if (!OptionFlags.bOutputDebug || OptionFlags.bOutputExCRLF)
+                    {
+                        *lpaplChar++ = L' ';    // Append a blank to be deleted
+
+                        break;                  // Can't go any farther left
+                    } else
+                    {
+                        // Fall through to common code
+                        // Note that Output Debugging is FALSE, so the next
+                        //   IF statement (if present) falls through
+                    } // End IF/ELSE
+
+                case WC_LF:     // LF       // Handled during raw output
+                    // If we're NOT Output Debugging,
+                    //   or we are, but we're excluding CR & LF from display, ...
+                    if (!OptionFlags.bOutputDebug || OptionFlags.bOutputExCRLF)
+                    {
+                        *lpaplChar++ = wc;      // Append it
+                        *lpaplChar++ = L' ';    // Append a blank to be deleted
+
+                        break;
+                    } else
+                    {
+                        // Fall through to common code
+                        // Note that Output Debugging is FALSE, so the next
+                        //   IF statement (if present) falls through
+                    } // End IF/ELSE
+
                 case WC_BEL:    // Bel
                     // If we're NOT Output Debugging, ...
                     if (!OptionFlags.bOutputDebug)
                     {
                         MessageBeep (NEG1U);    // Sound the alarum!
 
-                        // Fall through to common code
+                        break;
                     } else
                     {
                         // Fall through to common code
+                        // Note that Output Debugging is FALSE, so the next
+                        //   IF statement (if present) falls through
                     } // End IF/ELSE
 
                 case WC_ESC:    // Esc
                 case WC_FF:     // FF
                 case WC_EOS:    // NUL
                 case WC_BS:     // BS
-                case WC_CR:     // CR
-                    // If we're NOT Output Debugging, ...
                     if (!OptionFlags.bOutputDebug)
                     {
                         *lpaplChar++ = L' ';    // Append a blank to be deleted
@@ -1324,6 +1378,8 @@ LPAPLCHAR FormatImmedFC
                     } else
                     {
                         // Fall through to common code
+                        // Note that Output Debugging is FALSE, so the next
+                        //   IF statement (if present) falls through
                     } // End IF/ELSE
 
                 case WC_HT:     // HT
@@ -1339,19 +1395,8 @@ LPAPLCHAR FormatImmedFC
                     } else
                     {
                         // Fall through to common code
-                    } // End IF/ELSE
-
-                case WC_LF:     // LF       // Handled during raw output
-                    // If we're NOT Output Debugging, ...
-                    if (!OptionFlags.bOutputDebug)
-                    {
-                        *lpaplChar++ = wc;      // Append it
-                        *lpaplChar++ = L' ';    // Append a blank to be deleted
-
-                        break;
-                    } else
-                    {
-                        // Fall through to common code
+                        // Note that Output Debugging is FALSE, so the next
+                        //   IF statement (if present) falls through
                     } // End IF/ELSE
 
                 default:
@@ -2432,6 +2477,11 @@ LPAPLCHAR FormatAplVfpFC
               iPrcDigs;             // # significant digits in the precision
     LPCHAR    lpRawFmt;             // Ptr to raw formatted #
     int       nDigFPC;              // # significant digits based on the precision
+
+    // If we're to display all significant digits, ...
+    if (nDigits EQ 0)
+        // Use the default
+        nDigits = GetQuadPPV ();
 
     // Convert this number's precision to the # digits it represents
     //   via the formula  1 + floor (log10 (2^P))
@@ -6247,17 +6297,93 @@ UBOOL CheckTermCodes
     // Split cases based upon the char value
     switch (*lpwc)
     {
-        case WC_BEL:    // Bel
-            // If we're NOT Output Debugging, ...
-            if (!OptionFlags.bOutputDebug)
+        // N.B.  The cases for CR & LF *MUST* come first as they
+        //       have different test conditions than the others
+        case WC_CR:
+            // If we're NOT Output Debugging,
+            //   or we are, but we're excluding CR & LF from display, ...
+            if (!OptionFlags.bOutputDebug || OptionFlags.bOutputExCRLF)
             {
-                // Sound the alarum!
-                MessageBeep (NEG1U);
+                // Ensure properly terminated at the max width
+                lpaplCharIni[*lpuMaxPos - *lpuIniPos] = WC_EOS;
+
+                // Reset the ptrs and counters (but not max width) to the start of the line
+                (*lplpaplChar) = lpaplCharIni;
+                (*lpuCurPos)   =
+                (*lpuIniPos)   = 0;
+
+                // If this char is followed by WC_CR and WC_LF, ...
+                if (lpwc[1] EQ WC_CR
+                 && lpwc[2] EQ WC_LF)
+                {
+                    UINT uCharPos,              // Current char position in the buffer
+                         uLineNum;              // Current line #
+
+                    // The previous line ends with CR/LF and we need to change it
+                    //   so that it ends with CR/CR/LF
+
+                    // Get the indices of the selected text, and as
+                    //   there is none, we need the leading position only
+                    SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &uCharPos, 0);
+
+                    // Back up by 2 to the start of CR/LF
+                    SendMessageW (hWndEC, EM_SETSEL, uCharPos - 2, uCharPos - 2);
+
+                    // Insert another CR
+                    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) WS_CR);
+
+                    // Reset the selection to the end
+                    SendMessageW (hWndEC, EM_SETSEL, uCharPos + 1, uCharPos + 1);
+
+                    // Get the current line # in the Edit Ctrl buffer
+                    uLineNum = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
+
+                    // Draw a Line Continuation marker
+                    DrawLineCont (hWndEC, uLineNum);
+
+                    bRet = TRUE;
+                } // End IF
 
                 break;
             } else
             {
                 // Fall through to common code
+                // Note that Output Debugging is FALSE, so the next
+                //   IF statement (if present) falls through
+            } // End IF/ELSE
+
+        case WC_LF:
+            // If we're NOT Output Debugging,
+            //   or we are, but we're excluding CR & LF from display, ...
+            if (!OptionFlags.bOutputDebug || OptionFlags.bOutputExCRLF)
+            {
+                // Ensure properly terminated at the max width
+                lpaplCharIni[*lpuMaxPos - *lpuIniPos] = WC_EOS;
+
+                // Is the preceding char WC_CR?
+                bPrevCR = (lpwcIni < lpwc
+                        && lpwc[-1] EQ WC_CR);
+
+                // Display the (possibly continued) line with or w/o ending CRLF
+                AppendLine (lpaplCharIni, *lpbLineCont, bPrevCR);
+
+                // If the preceding char isn't WC_CR, ...
+                if (!bPrevCR)
+                    // Mark the following lines as continued
+                    *lpbLineCont = TRUE;
+                else
+                    // Reset the maximum position
+                    *lpuMaxPos = 0;
+
+                // Fill the line up to the current position with blanks
+                FillMemoryW (lpaplCharIni, (APLU3264) *lpuCurPos, L' ');
+
+                break;
+            } else
+            {
+                // Fall through to common code
+                // Note that Output Debugging is FALSE, so the next
+                //   IF statement (if present) falls through
             } // End IF/ELSE
 
         case WC_HT:
@@ -6281,6 +6407,23 @@ UBOOL CheckTermCodes
             } else
             {
                 // Fall through to common code
+                // Note that Output Debugging is FALSE, so the next
+                //   IF statement (if present) falls through
+            } // End IF/ELSE
+
+        case WC_BEL:    // Bel
+            // If we're NOT Output Debugging, ...
+            if (!OptionFlags.bOutputDebug)
+            {
+                // Sound the alarum!
+                MessageBeep (NEG1U);
+
+                break;
+            } else
+            {
+                // Fall through to common code
+                // Note that Output Debugging is FALSE, so the next
+                //   IF statement (if present) falls through
             } // End IF/ELSE
 
         case WC_BS:
@@ -6299,79 +6442,14 @@ UBOOL CheckTermCodes
             } else
             {
                 // Fall through to common code
+                // Note that Output Debugging is FALSE, so the next
+                //   IF statement (if present) falls through
             } // End IF/ELSE
 
         default:
             *(*lplpaplChar)++ = *lpwc;
             (*lpuCurPos)++;
             (*lpuMaxPos)      = max (*lpuMaxPos, *lpuCurPos);
-
-            break;
-
-        case WC_CR:
-            // Ensure properly terminated at the max width
-            lpaplCharIni[*lpuMaxPos - *lpuIniPos] = WC_EOS;
-
-            // Reset the ptrs and counters (but not max width) to the start of the line
-            (*lplpaplChar) = lpaplCharIni;
-            (*lpuCurPos)   =
-            (*lpuIniPos)   = 0;
-
-            // If this char is followed by WC_CR and WC_LF, ...
-            if (lpwc[1] EQ WC_CR
-             && lpwc[2] EQ WC_LF)
-            {
-                UINT uCharPos,              // Current char position in the buffer
-                     uLineNum;              // Current line #
-
-                // The previous line ends with CR/LF and we need to change it
-                //   so that it ends with CR/CR/LF
-
-                // Get the indices of the selected text, and as
-                //   there is none, we need the leading position only
-                SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &uCharPos, 0);
-
-                // Back up by 2 to the start of CR/LF
-                SendMessageW (hWndEC, EM_SETSEL, uCharPos - 2, uCharPos - 2);
-
-                // Insert another CR
-                SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) WS_CR);
-
-                // Reset the selection to the end
-                SendMessageW (hWndEC, EM_SETSEL, uCharPos + 1, uCharPos + 1);
-
-                // Get the current line # in the Edit Ctrl buffer
-                uLineNum = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
-
-                // Draw a Line Continuation marker
-                DrawLineCont (hWndEC, uLineNum);
-
-                bRet = TRUE;
-            } // End IF
-
-            break;
-
-        case WC_LF:
-            // Ensure properly terminated at the max width
-            lpaplCharIni[*lpuMaxPos - *lpuIniPos] = WC_EOS;
-
-            // Is the preceding char WC_CR?
-            bPrevCR = (lpwcIni < lpwc
-                    && lpwc[-1] EQ WC_CR);
-
-            // Display the (possibly continued) line with or w/o ending CRLF
-            AppendLine (lpaplCharIni, *lpbLineCont, bPrevCR);
-
-            // If the preceding char isn't WC_CR, ...
-            if (!bPrevCR)
-                // Mark the following lines as continued
-                *lpbLineCont = TRUE;
-            else
-                // Reset the maximum position
-                *lpuMaxPos = 0;
-
-            // Fill the line up to the current position with blanks
-            FillMemoryW (lpaplCharIni, (APLU3264) *lpuCurPos, L' ');
 
             break;
 

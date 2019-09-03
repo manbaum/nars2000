@@ -204,6 +204,7 @@
 #define DEF_DISPFCNLINENUMS         TRUE
 #define DEF_DISPMPSUF               FALSE
 #define DEF_OUTPUTDEBUG             FALSE
+#define DEF_OUTPUTEXCRLF            TRUE
 #define DEF_SHOWNETERRS             FALSE
 
 

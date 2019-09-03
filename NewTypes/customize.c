@@ -1654,7 +1654,16 @@ INT_PTR CALLBACK CustomizeDlgProc
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS , OptionFlags.bDefDispFcnLineNums );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_DISPMPSUF          , OptionFlags.bDispMPSuf          );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_OUTPUTDEBUG        , OptionFlags.bOutputDebug        );
+                        CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_OUTPUTEXCRLF       , OptionFlags.bOutputExCRLF       );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_SHOWNETERRS        , OptionFlags.bShowNetErrs        );
+
+                        // If the "Output Debugging" box is now checked, ...
+                        if (OptionFlags.bOutputDebug)
+                            // Enable the matching checkbox
+                            EnableWindow (GetDlgItem (hWndProp, IDC_USER_PREFS_XB_OUTPUTEXCRLF), TRUE );
+                        else
+                            // Disable the matching checkbox
+                            EnableWindow (GetDlgItem (hWndProp, IDC_USER_PREFS_XB_OUTPUTEXCRLF), FALSE);
 
                         // If any of the Fallback fonts are not available, ...
                         if (hFontFB_SM    EQ NULL
@@ -3395,6 +3404,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         OptionFlags.bDefDispFcnLineNums  = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS );
                         OptionFlags.bDispMPSuf           = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_DISPMPSUF          );
                         OptionFlags.bOutputDebug         = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_OUTPUTDEBUG        );
+                        OptionFlags.bOutputExCRLF        = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_OUTPUTEXCRLF       );
                         OptionFlags.bShowNetErrs         = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_SHOWNETERRS        );
 
                         // Get the window handle for the Paste & Copy combo boxes
@@ -5348,6 +5358,29 @@ INT_PTR CALLBACK CustomizeDlgProc
                 // USER PREFERENCES -- WM_COMMAND
                 //***************************************************************
 
+                case IDC_USER_PREFS_XB_OUTPUTDEBUG:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ cmdCtl)
+                    {
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+
+                        // Get the associated item data (window handle of the Property Page)
+                        hWndProp = (HWND)
+                          SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_USER_PREFS - IDD_PROPPAGE_START, 0);
+
+                        // If the "Output Debugging" box is now checked, ...
+                        if (IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_OUTPUTDEBUG))
+                            // Enable the matching checkbox
+                            EnableWindow (GetDlgItem (hWndProp, IDC_USER_PREFS_XB_OUTPUTEXCRLF), TRUE );
+                        else
+                            // Disable the matching checkbox
+                            EnableWindow (GetDlgItem (hWndProp, IDC_USER_PREFS_XB_OUTPUTEXCRLF), FALSE);
+                    } // End IF
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
                 case IDC_USER_PREFS_XB_ADJUSTPW:
                 case IDC_USER_PREFS_XB_NEWTABONCLEAR:
                 case IDC_USER_PREFS_XB_NEWTABONLOAD:
@@ -5360,7 +5393,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                 case IDC_USER_PREFS_XB_REVDBLCLK:
                 case IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS:
                 case IDC_USER_PREFS_XB_DISPMPSUF:
-                case IDC_USER_PREFS_XB_OUTPUTDEBUG:
+                case IDC_USER_PREFS_XB_OUTPUTEXCRLF:
                 case IDC_USER_PREFS_XB_SHOWNETERRS:
                     // We care about BN_CLICKED only
                     if (BN_CLICKED EQ cmdCtl)

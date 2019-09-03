@@ -9,4 +9,4 @@ PF_LSHOE.C:
   In <PrimFnMonLeftShoeGlb_EM_YY>, lock the Weighting Vector with LockInt instead of Lock000 in case the vector is short.
 
 YYFNS.C:
-  In <YYAlloc>, re-arrange the codee so that <lpFileName and <uLineNum> are always copied to the YYSTYPE.
+  In <YYAlloc>, re-arrange the code so that <lpFileName and <uLineNum> are always copied to the YYSTYPE.

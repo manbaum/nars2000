@@ -1,0 +1,15 @@
+Build #2220 -- Version 0.6.0.xx
+-------------------------------
+
+* Validate The Incoming Value For The Variant Operator
+
+Directory branches/bsmith/NanTypes:
+
+MPFNS.C:
+  Fix bug in <mpfr_mod_sx> using the wrong rounding mode.
+
+PO_VARIANT.C:
+  Validate the value to be used for a System Variable.
+
+REBAR.C:
+  Fix typos in Language Bar text.

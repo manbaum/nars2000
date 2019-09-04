@@ -551,7 +551,7 @@ LPPL_YYSTYPE PrimOpVariantCom_EM_YY
                                          &uNum,                     // ...    Numeric count so far
                                          &uChr,                     // ...    Char    ...
                                          &aplRhtOprItm[uRhtOpr],    // ...    result  array
-                                          varOprType[lpEnumVarN1[uNum]], // Convert to this datatype if numeric
+                                          lpEnumVarN1[uNum],        // ENUM_VARIANT_xxx if numeric
                                          &lpYYFcnStrOpr->tkToken,   // Ptr to operator token
                                          &lpYYFcnStrRht->tkToken))  // Ptr to right operand token
             goto ERROR_EXIT;
@@ -567,7 +567,7 @@ LPPL_YYSTYPE PrimOpVariantCom_EM_YY
                                          &uNum,                     // ...    Numeric count so far
                                          &uChr,                     // ...    Char    ...
                                          &aplRhtOprItm[uRhtOpr],    // ...    result array
-                                          varOprType[lpEnumVarN1[uNum]], // Convert to this datatype if numeric
+                                          lpEnumVarN1[uNum],        // ENUM_VARIANT_xxx if numeric
                                          &lpYYFcnStrOpr->tkToken,   // Ptr to operator token
                                          &lpYYFcnStrRht->tkToken))  // Ptr to right operand token
             goto ERROR_EXIT;
@@ -1741,7 +1741,7 @@ UBOOL PrimOpVariantCheckSimple_EM
      LPAPLUINT    lpuNum,               // ...    Numeric count so far
      LPAPLUINT    lpuChr,               // ...    Char    ...
      LPAPLLONGEST lpaplLongest,         // ...    Num/Chr
-     APLSTYPE     aplTypeNum,           // Convert to this datatype if numeric
+     ENUM_VARIANT enumVarN1,            // ENUM_VARIANT entry if numeric
      LPTOKEN      lptkOpr,              // Ptr to operator token
      LPTOKEN      lptkRhtOpr)           // Ptr to right operand token
 
@@ -1752,6 +1752,10 @@ UBOOL PrimOpVariantCheckSimple_EM
     if (IsNumeric (aplTypeRhtOpr))
     {
         ALLTYPES atArg = {0};
+        APLSTYPE aplTypeNum;            // Convert to this datatype if numeric
+
+        // Set the target storage type
+        aplTypeNum = varOprType[enumVarN1];
 
         // If it's an error type, ...
         if (IsErrorType (aplTypeNum))
@@ -1766,6 +1770,10 @@ UBOOL PrimOpVariantCheckSimple_EM
 
         // Check for error
         if (!bRet)
+            goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+        // Check for valid value
+        if (!(*varOprValTab[enumVarN1]) (&atArg.aplLongest))
             goto RIGHT_OPERAND_DOMAIN_EXIT;
 
         // Set the flag
@@ -1819,7 +1827,7 @@ UBOOL PrimOpVariantCheckHetero_EM
      LPAPLUINT    lpuNum,               // ...    Numeric count so far
      LPAPLUINT    lpuChr,               // ...    Char    ...
      LPAPLLONGEST lpaplLongest,         // ...    Num/Chr
-     APLSTYPE     aplTypeNum,           // Convert to this datatype if numeric
+     ENUM_VARIANT enumVarN1,            // ENUM_VARIANT entry if numeric
      LPTOKEN      lptkOpr,              // Ptr to operator token
      LPTOKEN      lptkRhtOpr)           // Ptr to right operand token
 
@@ -1870,7 +1878,7 @@ UBOOL PrimOpVariantCheckHetero_EM
                                    lpuNum,              // ...    Numeric count so far
                                    lpuChr,              // ...    Char    ...
                                    lpaplLongest,        // ...    Num/Chr
-                                   aplTypeNum,          // Convert to this datatype if numeric
+                                   enumVarN1,           // ENUM_VARIANT entry if numeric
                                    lptkOpr,             // Ptr to operator token
                                    lptkRhtOpr);         // Ptr to right operand token
     // If we locked global memory, ...
@@ -2408,6 +2416,8 @@ void SetAllSysVars
      LPPERTABDATA     lpMemPTD)         // Ptr to PerTabData global memory
 
 {
+    UBOOL bRet;
+
     // Split cases based upon the enum for the first item numeric
     switch (enumVarOpr)
     {
@@ -2424,8 +2434,19 @@ void SetAllSysVars
             break;
 
         case ENUM_VARIANT_FPC :
-            // Set the new value
-            SetQuadFPC (*(LPAPLUINT ) &aplRhtOprItm);
+            // Set secondary values related to []FPC
+            bRet =
+              ValidNdxFPC (0,                        // The origin-0 index value (in case the position is important)
+                           ARRAY_INT,                // Right arg storage type
+                          &aplRhtOprItm,             // Ptr to the right arg value
+                           NULL,                     // Ptr to right arg immediate type (may be NULL)
+                           NULL,                     // Ptr to right arg global value
+                           NULL);                    // Ptr to function token
+            Assert (bRet);
+
+            if (bRet)
+                // Set the new value
+                SetQuadFPC (*(LPAPLUINT ) &aplRhtOprItm);
 
             break;
 
@@ -2455,13 +2476,13 @@ void SetAllSysVars
 
         case ENUM_VARIANT_EIG :
             // Set the new value
-            lpAllSysVars->uEigenNew = *(LPAPLUINT   ) &aplRhtOprItm;
+            lpAllSysVars->uEigenNew = *(LPAPLUINT ) &aplRhtOprItm;
 
             break;
 
         case ENUM_VARIANT_POCH:
             // Set the new value
-            lpAllSysVars->uPochNew  = *(LPAPLUINT   ) &aplRhtOprItm;
+            lpAllSysVars->uPochNew  = *(LPAPLUINT ) &aplRhtOprItm;
 
             break;
 
@@ -2507,7 +2528,7 @@ void SetAllSysVars
 
         case ENUM_VARIANT_SUB:
             // Set the new value
-            lpAllSysVars->cSubNew   = *(LPAPLCHAR) &aplRhtOprItm;
+            lpAllSysVars->cSubNew   = *(LPAPLCHAR ) &aplRhtOprItm;
 
             break;
 
@@ -2532,6 +2553,8 @@ void RestAllSysVars
      LPPERTABDATA     lpMemPTD)         // Ptr to PerTabData global memory
 
 {
+    UBOOL bRet;
+
     // Split cases based upon the enum for the first item numeric
     switch (enumVarOpr)
     {
@@ -2548,6 +2571,16 @@ void RestAllSysVars
             break;
 
         case ENUM_VARIANT_FPC :
+            // Restore secondary values related to []FPC
+            bRet =
+              ValidNdxFPC (0,                        // The origin-0 index value (in case the position is important)
+                           ARRAY_INT,                // Right arg storage type
+                          &lpAllSysVars->uQuadFPC,   // Ptr to the right arg value
+                           NULL,                     // Ptr to right arg immediate type (may be NULL)
+                           NULL,                     // Ptr to right arg global value
+                           NULL);                    // Ptr to function token
+            Assert (bRet);
+
             // Restore the old value
             SetQuadFPC (lpAllSysVars->uQuadFPC);
 
@@ -2623,10 +2656,10 @@ void InitVarOprTab
     // Loop through all of the entries
     for (uCnt = 0; uCnt < countof (varOprStr); uCnt++)
     {
-        Assert (varOprTab[OprTrans (varOprStr[uCnt].wc)] EQ NULL);
+        Assert (varOprTab[(*varOprStr[uCnt].SYMTRANS) (varOprStr[uCnt].wc)] EQ NULL);
 
         // Point to the entry based upon the function/operator symbol
-        varOprTab[OprTrans (varOprStr[uCnt].wc)] = &varOprStr[uCnt];
+        varOprTab[(*varOprStr[uCnt].SYMTRANS) (varOprStr[uCnt].wc)] = &varOprStr[uCnt];
     } // End FOR
 } // End InitVarOprTab
 
@@ -2643,9 +2676,9 @@ UBOOL varOprCT
 {
     return
       ValidateFloatTest (lpValue              ,     // Ptr to the value to validate
-                          DEF_MIN_QUADCT      ,     // Minimum value
-                          DEF_MAX_QUADCT      ,     // Maximum ...
-                          bRangeLimit.CT      );    // TRUE iff range limiting
+                         DEF_MIN_QUADCT       ,     // Minimum value
+                         DEF_MAX_QUADCT       ,     // Maximum ...
+                         bRangeLimit.CT       );    // TRUE iff range limiting
 } // End varOprCT
 
 
@@ -2796,7 +2829,7 @@ UBOOL varOprPOCH
 //***************************************************************************
 
 UBOOL varOprGALL
-    (LPAPLCHAR lpValue)
+    (LPAPLCHAR  lpValue)
 
 {
     WCHAR wszTemp[2];

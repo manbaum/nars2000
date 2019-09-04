@@ -1902,7 +1902,7 @@ void mpfr_mod_sx
 {
     APLVFP aplDiv = {0};
 
-    mpfr_init_set_sx (&aplDiv, aplMod, 1);
+    mpfr_init_set_sx (&aplDiv, aplMod, MPFR_RNDN);
     mpfr_mod         ( dest,   aplOpr, &aplDiv);
 
     // We no longer need this storage

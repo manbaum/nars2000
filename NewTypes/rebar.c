@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3022,15 +3022,15 @@ typedef struct tagLANGCHARS
                                            L" where " WS_UTF16_GAMMA L" is Euler-Mascheroni's Constant (0.5772156649015329...)."
                                            },
         {L"iJ"                      , {0}, L"Complex Point Notation",
-                                           L"This infix notation alllows you to enter numeric constants of the form 2.3i4.5 or 2.3J4.5 as a Complex number."
+                                           L"This infix notation allows you to enter numeric constants of the form 2.3i4.5 or 2.3J4.5 as a Complex number."
                                            L"  A suffix notation of 2i (=0i2) is also recognized."
                                            },
         {L"ijk"                     , {0}, L"Quaternion Point Notation",
-                                           L"This infix notation alllows you to enter numeric constants of the form 2.3i4.5j6k7 as a Quaternion number."
+                                           L"This infix notation allows you to enter numeric constants of the form 2.3i4.5j6k7 as a Quaternion number."
                                            L"  An infix/suffix notation with many forms such as 2j3k (=0i0j2k3) is also recognized."
                                            },
         {L"ijkl"                    , {0}, L"Octonion Point Notation",
-                                           L"This infix notation alllows you to enter numeric constants of the form 1i2j3k4l5ij6jk7kl8 as an Octonion number."
+                                           L"This infix notation allows you to enter numeric constants of the form 1i2j3k4l5ij6jk7kl8 as an Octonion number."
                                            L"  A infix/suffix notation with many forms such as 2j3kl (=0i0j2k0l0ij0jk0kl3) is also recognized, along with an"
                                            L" infix notation of 1i2j3k4os5oi6oj7ok8 using a single letter for the Quaternion part and two letters for"
                                            L" the Octonion part as well a matching infix/suffix form."

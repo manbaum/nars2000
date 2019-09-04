@@ -1,6 +1,23 @@
 Version 0.5.12.xx consists of the following Builds:
 
 
+Build #2219 -- Version 0.5.12.xx
+--------------------------------
+
+* Validate The Incoming Value For The Variant Operator
+
+Directory branches/bsmith/NewTypes:
+
+MPFNS.C:
+  Fix bug in <mpfr_mod_sx> using the wrong rounding mode.
+
+PO_VARIANT.C:
+  Validate the value to be used for a System Variable.
+
+REBAR.C:
+  Fix typos in Language Bar text.
+
+
 Build #2217 -- Version 0.5.12.xx
 --------------------------------
 

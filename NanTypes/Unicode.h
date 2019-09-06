@@ -23,6 +23,11 @@
 #ifndef NARS_UNICODE
 #define NARS_UNICODE
 
+// In case we need to change the symbol for the Derivative Operator, ...
+#define    UTF16_DERIV     UTF16_DELTA
+#define WS_UTF16_DERIV  WS_UTF16_DELTA
+
+
 // When initializing an array of functions/operators (such as PrimFlags/PrimSpecTab/PrimFnsTab/PrimProtoFnsTab/PrimProtoOpsTab) use these
 //   equates instead of the PRIMTAB_MASK of the corresponding UTF16_xxx
 //   so as to avoid a conflict

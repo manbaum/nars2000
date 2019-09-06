@@ -375,8 +375,9 @@ UBOOL IsValid1stCharInName
 
 {
     return (wch NE WC_EOS
-         && (wch EQ UTF16_DELTA
-          || wch EQ UTF16_DELTAUNDERBAR
+         && (FALSE
+///////// || wch EQ UTF16_DELTA
+///////// || wch EQ UTF16_DELTAUNDERBAR
           || wch EQ UTF16_UNDERBAR
           || strchrW (WQUADa, wch) NE NULL
           || strchrW (WQUADA, wch) NE NULL

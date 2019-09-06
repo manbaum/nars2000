@@ -2909,6 +2909,15 @@ typedef struct tagLANGCHARS
                                            L"\n\n"
                                            L"Keyboard:  Alt-'Q'\n\n"
                                            L"Unicode:  0x2248 or 8776"},
+        {WS_UTF16_DERIV             , {0}, L"Deriv",
+                                           L"Derivative Operator:  LO" $DERIV L"R      1st derivative\n"
+                                           L"                    L LO" $DERIV L"R\n"
+                                           L"                      LO" $DERIV $DERIV L"R     2nd derivative, etc.\n"
+                                           L"                    L LO" $DERIV $DERIV L"R\n"
+                                           L"  where LO is any function.\n"
+                                           L"  Repeat the operator symbol for higher degree derivatives.\n\n"
+                                           L"Keyboard:  Alt-'h'\n\n"
+                                           L"Unicode:  0x2206 or 8710"},
         LANGCHARS_SEPARATOR
         {WS_UTF16_QUOTEQUAD         , {0}, L"QuoteQuad",
                                            L"Character input from the keyboard:  A" WS_UTF16_LEFTARROW WS_UTF16_QUOTEQUAD L"\n"
@@ -2941,14 +2950,6 @@ typedef struct tagLANGCHARS
                                            L"expression " WS_UTF16_LAMP L" Comment which is not evaluated\n\n"
                                            L"Keyboard:  Alt-','\n\n"
                                            L"Unicode:  0x235D or 9053"},
-        {WS_UTF16_DELTA             , {0}, L"Delta",
-                                           L"Used as the first or subsequent character in names\n\n"
-                                           L"Keyboard:  Alt-'h'\n\n"
-                                           L"Unicode:  0x2206 or 8710"},
-        {WS_UTF16_DELTAUNDERBAR     , {0}, L"DeltaUnderbar",
-                                           L"Used as the first or subsequent character in names\n\n"
-                                           L"Keyboard:  Alt-'H' or Alt-Shift-'h'\n\n"
-                                           L"Unicode:  0x2359 or 9049"},
         {WS_UTF16_UNDERBAR          , {0}, L"Underbar",
                                            L"Used as the first or subsequent character in names such as _type\n\n"
                                            L"Keyboard:  '_' or Shift-'-'\n\n"

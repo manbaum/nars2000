@@ -6215,9 +6215,10 @@ TKCOLINDICES CharTransTK
         case L'Y':
         case L'Z':
 
+#if UTF16_DERIV != UTF16_DELTA
         case UTF16_DELTA:               // Alt-'h' - delta
         case UTF16_DELTAUNDERBAR:       // Alt-'H' - delta-underbar
-
+#endif
         case L'\x00E2':                 // Circumflex a
         case L'\x0109':                 // ...        c
         case L'\x00EA':                 // ...        e
@@ -6409,7 +6410,11 @@ TKCOLINDICES CharTransTK
         case UTF16_EPSILON2:            //         - epsilon2
 ////////case UTF16_INFINITY:            // Alt-'f' - infinity (TKCOL_INFINITY)
 ////////case UTF16_DEL:                 // Alt-'g' - del (TKCOL_DEL)
+#if UTF16_DERIV == UTF16_DELTA
+////////case UTF16_DELTA:               // Alt-'h' - delta (TKCOL_PRIM_OP1)
+#else
 ////////case UTF16_DELTA:               // Alt-'h' - delta (TKCOL_ALPHA)
+#endif
         case UTF16_IOTA:                // Alt-'i' - iota
 ////////case UTF16_JOT:                 // Alt-'j' - compose (jot) (TKCOL_JOT)
 ////////case UTF16_JOT2:                // Jot2
@@ -6526,6 +6531,11 @@ TKCOLINDICES CharTransTK
         case UTF16_QUERY:               //     '?' - query
             return TKCOL_PRIM_FN;
 
+#if UTF16_DERIV == UTF16_DELTA
+        case UTF16_DERIV:               // Alt-'h' - deriv
+#else
+        case UTF16_DERIV:               //         - deriv
+#endif
         case UTF16_SLOPE:               //     '\' - slope
         case UTF16_SLOPEBAR:            // Alt-'.' - slope-bar
         case UTF16_SLASH:               //     '/' - slash
@@ -6677,6 +6687,9 @@ TKCOLINDICES CharTransTK
         case L'&':
         case WC_EOS:
         case WC_HT:
+#if UTF16_DERIV == UTF16_DELTA
+        case UTF16_DELTAUNDERBAR:       // Alt-'H' - delta-underbar
+#endif
             return TKCOL_UNK;
 
         default:

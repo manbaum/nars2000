@@ -59,6 +59,12 @@
 #define DEF_QUADELX_CWS_BR  L"{quad}DM"         // ...                        ELX
 #define DEF_QUADALX_GLB     hGlbQuadxLX
 #define DEF_QUADELX_GLB     hGlbQuadxLX
+#define DEF_QUADND_CWS      L"c"
+#define DEF_QUADND_ALLOW    L"bcfBCF"
+#define DEF_MIN_QUADSFE     -100
+#define DEF_MAX_QUADSFE     -1
+#define DEF_MIN_QUADORD     2
+#define DEF_MAX_QUADORD     7
 
 // Characters to use as various separators and fills from []FC
 #define DecSep      (GetQuadFCValue (FCNDX_DECIMAL_SEP))

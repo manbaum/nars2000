@@ -639,22 +639,19 @@
     <ClCompile Include="po_distar.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ba_proc.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="hungarian_arb.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="arbcho_com.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="po_dbltilde.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="qf_dft.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="sc_box.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_deriv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_deriv_flt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_deriv_vfp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

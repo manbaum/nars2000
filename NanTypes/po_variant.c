@@ -61,6 +61,9 @@ VAROPR varOprValTab[ENUM_VARIANT_LENGTH] =
     varOprHCM   ,                   // 0A:  {times}  Interior/Exterior/Cross/Dot/Conjugation product
     varOprSUB   ,                   // 0B:  {iota}   Ascending/Descending subsequence
     varOprGALL  ,                   // 0C:  {grade}  Grade all arrays
+    varOprBCF   ,                   // 0D:  {deriv}  Backward, central, forward finite differences
+    varOprSFE   ,                   // 0E:  {deriv}  Sampling frequency exponent
+    varOprORD   ,                   // 0F:  {deriv}  Order
 };
 
 // N.B.:  Whenever changing the above struct (varOprValTab)
@@ -85,6 +88,9 @@ APLSTYPE varOprType[ENUM_VARIANT_LENGTH] =
     ARRAY_CHAR  ,                   // 0A:  {times}  Interior/Exterior/Cross/Dot/Conjugation product
     ARRAY_CHAR  ,                   // 0B:  {iota}   Ascending/Descending subsequence
     ARRAY_INT   ,                   // 0C:  {grade}  Grade all arrays
+    ARRAY_CHAR  ,                   // 0D:  {deriv}  Backward, central, forward finite differences
+    ARRAY_INT   ,                   // 0E:  {deriv}  Sampling frequency exponent
+    ARRAY_INT   ,                   // 0F:  {deriv}  Order
 };
 
 // N.B.:  Whenever changing the above struct (varOprValType)
@@ -102,6 +108,7 @@ VARIANT_STR varOprStr[] =
    VAR_MAC (CIRCLESLOPE         , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK , FcnTrans),   // CIRCLESLOPE
    VAR_MAC (COLONBAR            , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK , OprTrans),   // COLONBAR
    VAR_MAC (DELSTILE            , IO  , UNK , GALL, UNK , IO  , UNK , UNK  , UNK , FcnTrans),   // DELSTILE
+   VAR_MAC (DERIV               , ORD , SFE , BCF , UNK , ORD , SFE , BCF  , UNK , OprTrans),   // DERIV
    VAR_MAC (DELTASTILE          , IO  , UNK , GALL, UNK , IO  , UNK , UNK  , UNK , FcnTrans),   // DELTASTILE
    VAR_MAC (DOMINO              , EIG , UNK , UNK , UNK , UNK , UNK , UNK  , UNK , FcnTrans),   // DOMINO
    VAR_MAC (DOT                 , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK , OprTrans),   // DOT
@@ -719,6 +726,105 @@ LPPL_YYSTYPE PrimOpVariantCom_EM_YY
             } // End IF
 
             goto DEFAULT;
+
+        // Numerical Differentiation
+        case UTF16_DERIV:
+        {
+            // Get left operand's left operand
+            LPPL_YYSTYPE lpYYFcnStrLft2;        // Ptr to left operand function strand
+
+            // Set ptr to left operand's left operand
+            //   skipping over the operator and axis token (if present)
+            lpYYFcnStrLft2 = GetMonLftOper (lpYYFcnStrLft, CheckAxisOper (lpYYFcnStrLft)); Assert (lpYYFcnStrLft2 NE NULL);
+
+            // Split cases based upon the BCF value
+            switch (allSysVarsStr.cBCF)
+            {
+                case 'b':
+                    lpYYRes =
+                      PrimOpDerivNewBackward_EM_YY
+                        (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic derived function)
+                                                //   If this is an identity function call (lpPrimFlagsLft NE NULL),
+                                                //     then this value is the original right arg
+                         lpYYFcnStrLft,         // Ptr to function strand with all Deriv operators
+                         lptkRhtArg,            // Ptr to right arg token
+                         bPrototyping,          // TRUE iff protoyping
+                         allSysVarsStr.uOrder,  // Order
+                         allSysVarsStr.iSFE);   // Sampling Frequency Exponent
+                    break;
+
+                case L'\0':
+                case 'c':
+                    lpYYRes =
+                      PrimOpDerivNewCentral_EM_YY
+                        (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic derived function)
+                                                //   If this is an identity function call (lpPrimFlagsLft NE NULL),
+                                                //     then this value is the original right arg
+                         lpYYFcnStrLft,         // Ptr to function strand with all Deriv operators
+                         lptkRhtArg,            // Ptr to right arg token
+                         bPrototyping,          // TRUE iff protoyping
+                         allSysVarsStr.uOrder,  // Order
+                         allSysVarsStr.iSFE);   // Sampling Frequency Exponent
+                    break;
+
+                case 'f':
+                    lpYYRes =
+                      PrimOpDerivNewForward_EM_YY
+                        (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic derived function)
+                                                //   If this is an identity function call (lpPrimFlagsLft NE NULL),
+                                                //     then this value is the original right arg
+                         lpYYFcnStrLft,         // Ptr to function strand with all Deriv operators
+                         lptkRhtArg,            // Ptr to right arg token
+                         bPrototyping,          // TRUE iff protoyping
+                         allSysVarsStr.uOrder,  // Order
+                         allSysVarsStr.iSFE);   // Sampling Frequency Exponent
+                    break;
+
+                case 'B':
+                    lpYYRes =
+                      PrimOpDerivGSLBackward_EM_YY
+                        (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic derived function)
+                                                //   If this is an identity function call (lpPrimFlagsLft NE NULL),
+                                                //     then this value is the original right arg
+                         lpYYFcnStrLft2,        // Ptr to function strand to left of rightmost Deriv operator
+                         lptkRhtArg,            // Ptr to right arg token
+                         bPrototyping,          // TRUE iff protoyping
+                         allSysVarsStr.uOrder,  // Order
+                         allSysVarsStr.iSFE);   // Sampling Frequency Exponent
+                    break;
+
+                case 'C':
+                    lpYYRes =
+                      PrimOpDerivGSLCentral_EM_YY
+                        (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic derived function)
+                                                //   If this is an identity function call (lpPrimFlagsLft NE NULL),
+                                                //     then this value is the original right arg
+                         lpYYFcnStrLft2,        // Ptr to function strand to left of rightmost Deriv operator
+                         lptkRhtArg,            // Ptr to right arg token
+                         bPrototyping,          // TRUE iff protoyping
+                         allSysVarsStr.uOrder,  // Order
+                         allSysVarsStr.iSFE);   // Sampling Frequency Exponent
+                    break;
+
+                case 'F':
+                    lpYYRes =
+                      PrimOpDerivGSLForward_EM_YY
+                        (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic derived function)
+                                                //   If this is an identity function call (lpPrimFlagsLft NE NULL),
+                                                //     then this value is the original right arg
+                         lpYYFcnStrLft2,        // Ptr to function strand to left of rightmost Deriv operator
+                         lptkRhtArg,            // Ptr to right arg token
+                         bPrototyping,          // TRUE iff protoyping
+                         allSysVarsStr.uOrder,  // Order
+                         allSysVarsStr.iSFE);   // Sampling Frequency Exponent
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+        } // End UTF16_DERIV
 
         default:
         DEFAULT:
@@ -2400,6 +2506,12 @@ void SaveAllSysVars
 
     // ENUM_VARIANT_SUB:
     // No old value to save
+
+    // ENUM_VARIANT_BCF:
+    // No old value to save
+
+    // ENUM_VARIANT_SFE:
+    // No old value to save
 } // End SaveAllSysVars
 
 
@@ -2532,6 +2644,24 @@ void SetAllSysVars
 
             break;
 
+        case ENUM_VARIANT_BCF:
+            // Set the new value
+            lpAllSysVars->cBCF      = *(LPAPLCHAR ) &aplRhtOprItm;
+
+            break;
+
+        case ENUM_VARIANT_SFE:
+            // Set the new value
+            lpAllSysVars->iSFE      = *(LPINT     ) &aplRhtOprItm;
+
+            break;
+
+        case ENUM_VARIANT_ORD:
+            // Set the new value
+            lpAllSysVars->uOrder    = *(LPUINT    ) &aplRhtOprItm;
+
+            break;
+
         case ENUM_VARIANT_GALL:
             break;
 
@@ -2627,6 +2757,13 @@ void RestAllSysVars
             break;
 
         case ENUM_VARIANT_SUB:
+            // No old value to restore
+
+            break;
+
+        case ENUM_VARIANT_BCF:
+        case ENUM_VARIANT_SFE:
+        case ENUM_VARIANT_ORD:
             // No old value to restore
 
             break;
@@ -2875,6 +3012,62 @@ UBOOL varOprSUB
                         DEF_QUADSUB_ALLOW     ,     // Ptr to vector of allowed values
                         lpValue               );    // Ptr to the return value if <lpValue[0] EQ WC_EOS>
 } // End varOprSUB
+
+
+//***************************************************************************
+//  $varOprBCF
+//
+//  Variant operator []ND value validation routine
+//***************************************************************************
+
+UBOOL varOprBCF
+    (LPAPLCHAR  lpValue)
+
+{
+    return
+      ValidateCharTest (lpValue               ,     // Ptr to the value to validate
+                        DEF_QUADND_CWS[0]     ,     // Default value
+                        DEF_QUADND_ALLOW      ,     // Ptr to vector of allowed values
+                        lpValue               );    // Ptr to the return value if <lpValue[0] EQ WC_EOS>
+} // End varOprBCF
+
+
+//***************************************************************************
+//  $varOprSFE
+//
+//  Variant operator []SFE value validation routine
+//***************************************************************************
+
+UBOOL varOprSFE
+    (LPAPLINT   lpValue)
+
+{
+    return
+      ValidateIntegerTest (lpValue              ,       // Ptr to the value to validate
+                           DEF_MIN_QUADSFE      ,       // Minimum value
+                           DEF_MAX_QUADSFE      ,       // Maximum ...
+                           TRUE                 );      // TRUE iff range limiting
+///////////////////////////bRangeLimit.SFE      );      // TRUE iff range limiting
+} // End varOprSFE
+
+
+//***************************************************************************
+//  $varOprORD
+//
+//  Variant operator []ORD value validation routine
+//***************************************************************************
+
+UBOOL varOprORD
+    (LPAPLINT   lpValue)
+
+{
+    return
+      ValidateIntegerTest (lpValue            ,     // Ptr to the value to validate
+                           DEF_MIN_QUADORD    ,     // Minimum value
+                           DEF_MAX_QUADORD    ,     // Maximum ...
+                           TRUE               );    // TRUE iff range limiting
+///////////////////////////bRangeLimit.ORD    );    // TRUE iff range limiting
+} // End varOprORD
 
 
 //***************************************************************************

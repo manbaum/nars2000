@@ -1087,7 +1087,7 @@ UBOOL ModifyAssignNamedVars_EM
         lpYYRes =
           ExecFunc_EM_YY (&lpMemNam[0].tkToken, lpYYFcnStr, lptkVal);
 
-        if (lpYYRes)
+        if (lpYYRes NE NULL)
         {
             // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
             //   and increments the RefCnt
@@ -1129,7 +1129,7 @@ UBOOL ModifyAssignNamedVars_EM
                 lpYYRes =
                   ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, lptkVal);
 
-                if (lpYYRes)
+                if (lpYYRes NE NULL)
                 {
                     // Assign this token to this name
                     // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
@@ -1219,7 +1219,7 @@ UBOOL ModifyAssignNamedVars_EM
                 lpYYRes =
                   ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
 
-                if (lpYYRes)
+                if (lpYYRes NE NULL)
                 {
                     // Assign this token to this name
                     // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
@@ -1264,7 +1264,7 @@ UBOOL ModifyAssignNamedVars_EM
                 lpYYRes =
                   ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
 
-                if (lpYYRes)
+                if (lpYYRes NE NULL)
                 {
                     // Assign this token to this name
                     // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
@@ -1295,7 +1295,7 @@ UBOOL ModifyAssignNamedVars_EM
                 lpYYRes =
                   ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
 
-                if (lpYYRes)
+                if (lpYYRes NE NULL)
                 {
                     // Assign this token to this name
                     // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
@@ -1326,7 +1326,7 @@ UBOOL ModifyAssignNamedVars_EM
                 lpYYRes =
                   ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
 
-                if (lpYYRes)
+                if (lpYYRes NE NULL)
                 {
                     // Assign this token to this name
                     // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
@@ -1366,7 +1366,7 @@ UBOOL ModifyAssignNamedVars_EM
                 lpYYRes =
                   ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
 
-                if (lpYYRes)
+                if (lpYYRes NE NULL)
                 {
                     // Assign this token to this name
                     // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
@@ -1430,7 +1430,7 @@ UBOOL ModifyAssignNamedVars_EM
                 lpYYRes =
                   ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
 
-                if (lpYYRes)
+                if (lpYYRes NE NULL)
                 {
                     // Assign this token to this name
                     // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
@@ -1461,7 +1461,7 @@ UBOOL ModifyAssignNamedVars_EM
                 lpYYRes =
                   ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
 
-                if (lpYYRes)
+                if (lpYYRes NE NULL)
                 {
                     // Assign this token to this name
                     // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
@@ -1512,9 +1512,6 @@ UBOOL ModifyAssignNamedVars_EM
                 // Copy to ALLTYPES
                 (*aTypeActPromote[aplTypeVal][aplTypeVal]) (lpMemVal, aplIndex, &atVal);
 
-                // Free the old value
-                (*aTypeFree[aplTypeVal]) (lpMemVal, aplIndex);
-
                 // Fill in the value token
                 tkToken.tkData.tkGlbData =
                   MakeGlbEntry_EM (aplTypeVal,              // Entry type
@@ -1528,7 +1525,10 @@ UBOOL ModifyAssignNamedVars_EM
                 lpYYRes =
                   ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
 
-                if (lpYYRes)
+                // Free the global data we created in the token
+                FreeResultTkn (&tkToken);
+
+                if (lpYYRes NE NULL)
                 {
                     // Assign this token to this name
                     // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token

@@ -71,10 +71,13 @@ typedef enum tagENUM_VARIANT
     ENUM_VARIANT_RL        ,        // 07:  []RL
     ENUM_VARIANT_EIG       ,        // 08:  {domino} Eigenvalues, vectors, and Schur vectors
     ENUM_VARIANT_POCH      ,        // 09:  {shriek} Pochhammer k-symbol
-    ENUM_VARIANT_HCM       ,        // 0A:  {times} Interior/Exterior/Cross/Dot/Conjugation product
-    ENUM_VARIANT_SUB       ,        // 0B:  Ascending/descending subsequence
-    ENUM_VARIANT_GALL      ,        // 0C:  Grade all arrays
-    ENUM_VARIANT_LENGTH             // 0D:  # enums
+    ENUM_VARIANT_HCM       ,        // 0A:  {times}  Interior/Exterior/Cross/Dot/Conjugation product
+    ENUM_VARIANT_SUB       ,        // 0B:  {iota}   Ascending/descending subsequence
+    ENUM_VARIANT_GALL      ,        // 0C:  {grade}  Grade all arrays
+    ENUM_VARIANT_BCF       ,        // 0D:  {deriv}  Backward, central, forward finite differences
+    ENUM_VARIANT_SFE       ,        // 0E:  {deriv}  Sampling frequency exponent
+    ENUM_VARIANT_ORD       ,        // 0F:  {deriv}  Order
+    ENUM_VARIANT_LENGTH             // 10:  # enums
 } ENUM_VARIANT, *LPENUM_VARIANT;
 
 // N.B.:  Whenever changing the above enum (ENUM_VARIANT)
@@ -124,9 +127,12 @@ typedef struct tagALLSYSVARS
     ENUM_HCMUL eHCMul;          // 07:  New HCM value saved in <lpMemPTD->eHCMul>
 
     // New values
-    APLCHAR    cSubNew;         //      Ascending/descending subsequence
+    APLCHAR    cSubNew,         //      Ascending/descending subsequence
+               cBCF;            //      Backward, Central, Forward finite difference
     APLUINT    uEigenNew,       //      Eigenvalues & -vectors, etc.
                uPochNew;        //      Pochhammer k-symbol
+    UINT       uOrder;          //      Order
+    int        iSFE;            //      Sampling Frequency Exponent
 } ALLSYSVARS_STR, *LPALLSYSVARS_STR;
 
 

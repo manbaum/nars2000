@@ -1354,6 +1354,58 @@ WSFULL_EXIT:
 
 
 //***************************************************************************
+//  $SaveGlbNumeric_EM
+//
+//  Save a global numeric as a scalar in a global
+//***************************************************************************
+
+LPPL_YYSTYPE SaveGlbNumeric_EM
+    (APLSTYPE aplTypeRes,
+     LPVOID   lpGlbNumeric,
+     int      iCharIndex)
+
+{
+    HGLOBAL           hGlbRes;
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;
+    LPVOID            lpMemRes;
+    LPPL_YYSTYPE      lpYYRes = NULL;
+
+    // Save lpGlbNumeric into a global
+
+    // Allocate room for a global numeric scalar
+    hGlbRes = AllocateGlobalArray (aplTypeRes, 1, 0, NULL);
+
+    // Check for error
+    if (hGlbRes EQ NULL)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+
+    // Save lpGlbNumeric in the result
+    mpfr_init_set (&((LPAPLVFP) lpMemRes)[0], lpGlbNumeric, MPFR_RNDN);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   =
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = iCharIndex;
+WSFULL_EXIT:
+    return lpYYRes;
+} // End SaveGlbNumeric_EM
+
+
+//***************************************************************************
 //  $IsArgNaN
 //
 //  Determine if an arg is a NaN

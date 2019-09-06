@@ -2076,6 +2076,52 @@ void mpfr_bin_ui
 
 
 //***************************************************************************
+//  $mpfr_mul_sx
+//
+//  Calculate aplOpr * aplArg
+//***************************************************************************
+
+void mpfr_mul_sx
+    (mpfr_ptr   dest,       // Destination
+     mpfr_ptr   aplOpr,     // Operand
+     APLINT     aplArg,     // Multiplier
+     mpfr_rnd_t rnd)        // Rounding mode
+
+{
+    APLVFP aplMul = {0};
+
+    mpfr_init_set_sx (&aplMul, aplArg, rnd);
+    mpfr_mul         ( dest,   aplOpr, &aplMul, rnd);
+
+    // We no longer need this storage
+    Myf_clear (&aplMul);
+} // End mpfr_mul_sx
+
+
+//***************************************************************************
+//  $mpfr_div_sx
+//
+//  Calculate aplOpr / aplArg
+//***************************************************************************
+
+void mpfr_div_sx
+    (mpfr_ptr   dest,       // Destination
+     mpfr_ptr   aplOpr,     // Operand
+     APLINT     aplArg,     // Divisor
+     mpfr_rnd_t rnd)        // Rounding mode
+
+{
+    APLVFP aplDiv = {0};
+
+    mpfr_init_set_sx (&aplDiv, aplArg, rnd);
+    mpfr_div         ( dest,   aplOpr, &aplDiv, rnd);
+
+    // We no longer need this storage
+    Myf_clear (&aplDiv);
+} // End mpfr_div_sx
+
+
+//***************************************************************************
 //  $Myf_init
 //***************************************************************************
 

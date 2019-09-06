@@ -1,6 +1,81 @@
 Version 0.5.12.xx consists of the following Builds:
 
 
+Build #2221 -- Version 0.5.12.xx
+--------------------------------
+
+* Implement Numerical Differentiation Operator
+
+Directory branches/bsmith/NewTypes:
+
+AFOFNS.C:
+QF_NC.C:
+  Remove {delta} and {deltaunderbar} from alphabetic characters.
+
+APLERRORS.H:
+ENUMS.H:
+  Define new error message "DEPTH ERROR".
+
+ASSIGN.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  In <ModifyAssignNamedVars_EM>, if the valued being assign is a Global Numeric,
+    don't free the old value.
+
+COMMON.C:
+  Define new function to save a global numeric into global memory.
+
+COMPRO.H:
+  Include three new files.
+
+EXECFNS.C:
+  Handle new monadic operator.
+
+EXECMFN.H:
+  Define shortcut name for Deriative operator symbol string.
+
+GETFNS.C:
+  Define new function to extract a VFP item from a token.
+
+HEADERS.H:
+  Include new header in global list.
+
+MAKEFILE.INC:
+MAKEFILE.SRC:
+NARS2000.VCXPROJ:
+NARS2000.VCXPROJ.FILTERS:
+  Include new files in global lists.
+
+MPFNS.C:
+  Define new MPFR helper functions.
+
+PO_DERIV.C:
+PO_DERIV.H:
+PO_DERIV_FLT.C:
+PO_DERIV_VFP.C:
+  New files to implement Numerical Differentiation operator.
+
+PO_VARIANT.C:
+PO_VARIANT.H:
+  Define Variant operator on ND operator.
+
+REBAR.C:
+  Document ND operator in Language Bar.
+  Remove {delta} and {deltaunderbar} from alphabetic characters.
+
+SYSVARS.H:
+  Define upper and lower limits for new variables.
+
+TOKENIZE.C:
+  Remove {delta} and {deltaunderbar} from alphabetic characters.
+  Implement Numerical Differentiation operator.
+
+UNICODE.H:
+  Implement Numerical Differentiation operator.
+
+WCOM.BAT:
+  Improve comments.
+
+
 Build #2219 -- Version 0.5.12.xx
 --------------------------------
 

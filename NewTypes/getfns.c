@@ -539,6 +539,73 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  $GetNextVfpToken
+//
+//  Return the next value from a token as a VFP.
+//***************************************************************************
+
+APLVFP GetNextVfpToken
+    (LPTOKEN  lptkArg,                      // Ptr to arg token
+     APLINT   uIndex,                       // Index
+     APLSTYPE aplTypeArg,                   // Arg storage type
+     LPUBOOL  lpbRet)                       // Ptr to TRUE iff the result is valid
+
+{
+    APLLONGEST        aplLongestArg;        // Immediate value
+    HGLOBAL           hGlbArg = NULL;       // Right arg global memory handle
+    LPVARARRAY_HEADER lpMemHdrArg = NULL;   // Ptr to memory header
+    LPVOID            lpMemArg;             // Ptr to right arg global memory
+    UBOOL             bRet;                 // TRUE iff the result is valid
+    ALLTYPES          atRes = {0};          // The result as ALLTYPES
+
+    if (lpbRet EQ NULL)
+        // Point to local value
+        lpbRet = &bRet;
+
+    // Assume it'll be successful
+    *lpbRet = TRUE;
+
+    // If the arg is simple non-hetero, ...
+    if (IsSimpleNH (aplTypeArg))
+        // Get the next value from the right operand (index origin)
+        GetNextValueToken (lptkArg,                     // Ptr to the token
+                           uIndex,                      // Index to use
+                           NULL,                        // Ptr to the integer (or Boolean) (may be NULL)
+                           NULL,                        // ...        float (may be NULL)
+                           NULL,                        // ...        char (may be NULL)
+                          &aplLongestArg,               // ...        longest (may be NULL)
+                           NULL,                        // ...        LPSYMENTRY or HGLOBAL (may be NULL)
+                           NULL,                        // ...        immediate type (see IMM_TYPES) (may be NULL)
+                           NULL);                       // ...        array type:  ARRAY_TYPES (may be NULL)
+    else
+    // Otherwise it's global numeric
+        // Get the global ptrs
+        aplLongestArg = GetGlbPtrs_LOCK (lptkArg, &hGlbArg, &lpMemHdrArg);
+
+    // If it's not an immediate, ...
+    if (hGlbArg NE NULL
+     && lpMemHdrArg NE NULL)
+        // Point to the data
+        lpMemArg = VarArrayDataFmBase (lpMemHdrArg);
+    else
+        // Point to the data
+        lpMemArg = &aplLongestArg;
+
+    // Attempt to convert the data to VFP
+    (*aTypeActConvert[aplTypeArg][ARRAY_VFP]) (lpMemArg, uIndex, &atRes, lpbRet);
+
+    // If it's not an immediate, ...
+    if (hGlbArg NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbArg); lpMemHdrArg = NULL;
+    } // End IF
+
+    return atRes.aplVfp;
+} // End GetNextVfpToken
+
+
+//***************************************************************************
 //  $GetFirstItemToken
 //
 //  Return the first item from the token

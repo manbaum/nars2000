@@ -94,6 +94,7 @@
 #include "afofns.h"
 #include "qf_nfns.h"
 #include "po_variant.h"
+#include "po_deriv.h"
 
 #pragma pack(pop)
 

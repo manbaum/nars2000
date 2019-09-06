@@ -135,27 +135,29 @@ typedef enum tagEXCEPTION_CODES // Exception Codes
 {
     EXCEPTION_SUCCESS            = 0                    ,   // 00:  All OK
     EXCEPTION_DOMAIN_ERROR       = MAKE_ERRCODE (0x01)  ,   // 01:  Signal a DOMAIN ERROR
-    EXCEPTION_LIMIT_ERROR        = MAKE_ERRCODE (0x02)  ,   // 02:  Signal a LIMIT ERROR
-    EXCEPTION_NONCE_ERROR        = MAKE_ERRCODE (0x03)  ,   // 03:  Signal a NONCE ERROR
-    EXCEPTION_WS_FULL            = MAKE_ERRCODE (0x04)  ,   // 04:  Signal a WS FULL
-    EXCEPTION_CTRL_BREAK         = MAKE_ERRCODE (0x05)  ,   // 05:  Ctrl-Break pressed
+    EXCEPTION_LENGTH_ERROR       = MAKE_ERRCODE (0x02)  ,   // 02:  Signal a LENGTH ERROR
+    EXCEPTION_LIMIT_ERROR        = MAKE_ERRCODE (0x03)  ,   // 03:  Signal a LIMIT ERROR
+    EXCEPTION_DEPTH_ERROR        = MAKE_ERRCODE (0x04)  ,   // 04:  Signal a DEPTH ERROR
+    EXCEPTION_NONCE_ERROR        = MAKE_ERRCODE (0x05)  ,   // 05:  Signal a NONCE ERROR
+    EXCEPTION_WS_FULL            = MAKE_ERRCODE (0x06)  ,   // 06:  Signal a WS FULL
+    EXCEPTION_CTRL_BREAK         = MAKE_ERRCODE (0x07)  ,   // 07:  Ctrl-Break pressed
                                                             // N.B.  The following values *MUST* be in order F, R, V, F, R, V, etc.
                                                             //       so we can do arithmetic on them as in
                                                             //       EXCEPTION_RESULT_FLT + FRV_MUL * iHCDimIndex
-    EXCEPTION_RESULT_FLT         = MAKE_ERRCODE (0x06)  ,   // 06:  Result should be FLT
-    EXCEPTION_RESULT_RAT         = MAKE_ERRCODE (0x07)  ,   // 07:  ...              RAT
-    EXCEPTION_RESULT_VFP         = MAKE_ERRCODE (0x08)  ,   // 08:  ...              VFP
-    EXCEPTION_RESULT_HC2F        = MAKE_ERRCODE (0x09)  ,   // 09:  ...              HC2F
-    EXCEPTION_RESULT_HC2R        = MAKE_ERRCODE (0x0A)  ,   // 0A:  ...              HC2R
-    EXCEPTION_RESULT_HC2V        = MAKE_ERRCODE (0x0B)  ,   // 0B:  ...              HC2V
-    EXCEPTION_RESULT_HC4F        = MAKE_ERRCODE (0x0C)  ,   // 0C:  ...              HC4F
-    EXCEPTION_RESULT_HC4R        = MAKE_ERRCODE (0x0D)  ,   // 0D:  ...              HC4R
-    EXCEPTION_RESULT_HC4V        = MAKE_ERRCODE (0x0E)  ,   // 0E:  ...              HC4V
-    EXCEPTION_RESULT_HC8F        = MAKE_ERRCODE (0x0F)  ,   // 0F:  ...              HC8F
-    EXCEPTION_RESULT_HC8R        = MAKE_ERRCODE (0x10)  ,   // 10:  ...              HC8R
-    EXCEPTION_RESULT_HC8V        = MAKE_ERRCODE (0x11)  ,   // 11:  ...              HC8V
+    EXCEPTION_RESULT_FLT         = MAKE_ERRCODE (0x08)  ,   // 08:  Result should be FLT
+    EXCEPTION_RESULT_RAT         = MAKE_ERRCODE (0x09)  ,   // 09:  ...              RAT
+    EXCEPTION_RESULT_VFP         = MAKE_ERRCODE (0x0A)  ,   // 0A:  ...              VFP
+    EXCEPTION_RESULT_HC2F        = MAKE_ERRCODE (0x0B)  ,   // 0B:  ...              HC2F
+    EXCEPTION_RESULT_HC2R        = MAKE_ERRCODE (0x0C)  ,   // 0C:  ...              HC2R
+    EXCEPTION_RESULT_HC2V        = MAKE_ERRCODE (0x0D)  ,   // 0D:  ...              HC2V
+    EXCEPTION_RESULT_HC4F        = MAKE_ERRCODE (0x0E)  ,   // 0E:  ...              HC4F
+    EXCEPTION_RESULT_HC4R        = MAKE_ERRCODE (0x0F)  ,   // 0F:  ...              HC4R
+    EXCEPTION_RESULT_HC4V        = MAKE_ERRCODE (0x10)  ,   // 10:  ...              HC4V
+    EXCEPTION_RESULT_HC8F        = MAKE_ERRCODE (0x11)  ,   // 11:  ...              HC8F
+    EXCEPTION_RESULT_HC8R        = MAKE_ERRCODE (0x12)  ,   // 12:  ...              HC8R
+    EXCEPTION_RESULT_HC8V        = MAKE_ERRCODE (0x13)  ,   // 13:  ...              HC8V
 
-    EXCEPTION_ERRMSG_ALREADY_SET = MAKE_ERRCODE (0x12)  ,   // 12:  Look in lpMemPTD->lpwszErrorMessage
+    EXCEPTION_ERRMSG_ALREADY_SET = MAKE_ERRCODE (0x14)  ,   // 14:  Look in lpMemPTD->lpwszErrorMessage
 
     EXCEPTION_RESULT_FLOAT= EXCEPTION_RESULT_FLT        ,   // An old alias
     EXCEPTION_RESULT_HC1F = EXCEPTION_RESULT_FLT        ,   // To simplify common macros

@@ -148,6 +148,7 @@ typedef enum tagMFO
 #define $DROP           WS_UTF16_DOWNARROW
 #define $DEL            WS_UTF16_DEL
 #define $DELDEL         WS_UTF16_DELDEL
+#define $DERIV          WS_UTF16_DERIV
 #define $DISCLOSE       WS_UTF16_RIGHTSHOE
 #define $DIVIDE         WS_UTF16_COLONBAR
 #define $DOMINO         WS_UTF16_DOMINO

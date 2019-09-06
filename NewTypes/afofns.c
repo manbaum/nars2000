@@ -1093,8 +1093,10 @@ AFOCOLINDICES CharTransAFO
         case L'Y':
         case L'Z':
 
+#if UTF16_DERIV != UTF16_DELTA
         case UTF16_DELTA:               // Alt-'h' - delta
         case UTF16_DELTAUNDERBAR:       // Alt-'H' - delta-underbar
+#endif
         case L'_':
             return AFOCOL_ALPHA;
 

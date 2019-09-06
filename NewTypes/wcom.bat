@@ -44,7 +44,7 @@ Set MSPDB=%MSVC%bin^\
 REM Path to library files (x64 uses the 64-bit libraries)
 Set LIB=%SDK%Lib\winv6.3\um\x64;%SDK%Lib\winv6.3\ucrt\x64;%MSVC%lib\amd64
 
-REM Path to various executables
+REM Path to various WIN64 executables
 Set PATH=%MSVC%bin\x86_amd64;%SDK%Bin\x86;%MSPDB%;%NARSROOT%qdebug;%ORIGPATH%
 
 goto START
@@ -56,7 +56,7 @@ Set MSPDB=%MSVC%bin^\
 REM Path to library files (x86 build uses the 32-bit libraries)
 Set LIB=%SDK%Lib\winv6.3\um\x86;%SDK%Lib\winv6.3\ucrt\x86;%MSVC%lib
 
-REM Path to various executables
+REM Path to various WIN32 executables
 Set PATH=%MSVC%bin;%SDK%bin\x86;%MSPDB%;%NARSROOT%qdebug;%ORIGPATH%
 
 :START

@@ -645,6 +645,15 @@
     <ClCompile Include="sc_box.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="po_deriv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_deriv_flt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_deriv_vfp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Bison_Rule Include="cs_parse.y">

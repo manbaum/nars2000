@@ -22,19 +22,25 @@
 
 
 //***************************************************************************
-//  Variant enums, strucs, etc.
+//  Deriv enums, strucs, etc.
 //***************************************************************************
 
+#define MAX_DEGREE      9
+#define MIN_ORDER       2
+#define MAX_ORDER       7
+#define DEF_ORDER       5
+
+
 // Definition of an arbitrary function with parameters
-struct vfp_function_struct
+struct gsl_function_vfp_struct
 {
     APLVFP (*function) (LPAPLVFP x, void *params);
     void *params;
 };
 
-typedef struct vfp_function_struct vfp_function ;
+typedef struct gsl_function_vfp_struct gsl_function_vfp ;
 
-#define VFP_FN_EVAL(F,x) (*((F)->function))(x,(F)->params)
+#define GSL_FN_VFP_EVAL(F,x) (*((F)->function))(x,(F)->params)
 
 
 //***************************************************************************

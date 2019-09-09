@@ -34,19 +34,19 @@ typedef int (*GSL_DERIV)
      double *result, double *abserr);
 
 typedef int (*MPFR_DERIV)
-    (const vfp_function *f,
-     LPAPLVFP            x,
-     LPAPLVFP            h,
-     LPAPLVFP            result,
-     LPAPLVFP            abserr);
+    (const gsl_function_vfp *f,
+     LPAPLVFP                x,
+     LPAPLVFP                h,
+     LPAPLVFP                result,
+     LPAPLVFP                abserr);
 
 typedef int (*MPFR_DERIV_CALC)
-    (const vfp_function *f,
-     LPAPLVFP            x,
-     LPAPLVFP            h,
-     LPAPLVFP            result,
-     LPAPLVFP            abserr_round,
-     LPAPLVFP            abserr_trunc);
+    (const gsl_function_vfp *f,
+     LPAPLVFP                x,
+     LPAPLVFP                h,
+     LPAPLVFP                result,
+     LPAPLVFP                abserr_round,
+     LPAPLVFP                abserr_trunc);
 
 typedef struct tagLCLPARAMS
 {
@@ -56,12 +56,6 @@ typedef struct tagLCLPARAMS
     BOOL            bInitPTD;
     EXCEPTION_CODES exCode;        /* Exception code from lclFuncXXX */
 } LCL_PARAMS, *LPLCL_PARAMS;
-
-
-#define MAX_DEGREE      9
-#define MIN_ORDER       2
-#define MAX_ORDER       7
-#define DEF_ORDER       5
 
 
 //***************************************************************************
@@ -619,7 +613,7 @@ LPPL_YYSTYPE PrimOpDerivGSLCommon_EM_YY
     LPPRIMFNS         lpPrimProtoLft;       // Ptr to left operand prototype function
     GSL_ERRNO         ErrCode;              // Error code from GSL
     gsl_function      F;                    // GSL function for call to gsl_deriv_xxx
-    vfp_function      V;                    // VFP ...
+    gsl_function_vfp  V;                    // VFP ...
     APLFLOAT          resultFlt,            // The result as a FLT
                       abserrFlt;            // Absolute error ...
     APLVFP            resultVfp = {0},      // The result as a VFP

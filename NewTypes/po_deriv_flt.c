@@ -43,12 +43,6 @@ typedef struct tagLCLPARAMS
 } LCL_PARAMS, *LPLCL_PARAMS;
 
 
-#define MAX_DEGREE      9
-#define MIN_ORDER       2
-#define MAX_ORDER       7
-#define DEF_ORDER       5
-
-
 //***************************************************************************
 //  Local GSL Function
 //***************************************************************************

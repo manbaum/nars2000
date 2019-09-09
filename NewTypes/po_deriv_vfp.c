@@ -29,19 +29,19 @@
 #include "headers.h"
 
 typedef int (*MPFR_DERIV)
-    (const vfp_function *f,
-     LPAPLVFP            x,
-     LPAPLVFP            h,
-     LPAPLVFP            result,
-     LPAPLVFP            abserr);
+    (const gsl_function_vfp *f,
+     LPAPLVFP                x,
+     LPAPLVFP                h,
+     LPAPLVFP                result,
+     LPAPLVFP                abserr);
 
 typedef int (*MPFR_DERIV_CALC)
-    (const vfp_function *f,
-     LPAPLVFP            x,
-     LPAPLVFP            h,
-     LPAPLVFP            result,
-     LPAPLVFP            abserr_round,
-     LPAPLVFP            abserr_trunc);
+    (const gsl_function_vfp *f,
+     LPAPLVFP                x,
+     LPAPLVFP                h,
+     LPAPLVFP                result,
+     LPAPLVFP                abserr_round,
+     LPAPLVFP                abserr_trunc);
 
 typedef struct tagLCLPARAMS
 {
@@ -51,12 +51,6 @@ typedef struct tagLCLPARAMS
     BOOL            bInitPTD;
     EXCEPTION_CODES exCode;        /* Exception code from lclFuncXXX */
 } LCL_PARAMS, *LPLCL_PARAMS;
-
-
-#define MAX_DEGREE      9
-#define MIN_ORDER       2
-#define MAX_ORDER       7
-#define DEF_ORDER       5
 
 
 //***************************************************************************
@@ -189,12 +183,12 @@ void lclFuncVfp2
 //***************************************************************************
 
 void mpfr_deriv_forward_calc
-    (const vfp_function *f,
-     LPAPLVFP            x,
-     LPAPLVFP            h,
-     LPAPLVFP            result,
-     LPAPLVFP            abserr_round,
-     LPAPLVFP            abserr_trunc)
+    (const gsl_function_vfp *f,
+     LPAPLVFP                x,
+     LPAPLVFP                h,
+     LPAPLVFP                result,
+     LPAPLVFP                abserr_round,
+     LPAPLVFP                abserr_trunc)
 
 {
     APLVFP T = {0},
@@ -222,25 +216,25 @@ void mpfr_deriv_forward_calc
     mpfr_set    (&T, h, MPFR_RNDN);             //         h
     mpfr_div_si (&T, &T, 4, MPFR_RNDN);         //         h / 4
     mpfr_add    (&T, x, &T, MPFR_RNDN);         //     x + h / 4
-    APLVFP f1 = VFP_FN_EVAL (f, &T);            // (f, x + h / 4);
+    APLVFP f1 = GSL_FN_VFP_EVAL (f, &T);        // (f, x + h / 4);
 
     // double f2 = GSL_FN_EVAL (f, x + h / 2.0);
     mpfr_set    (&T, h, MPFR_RNDN);             //         h
     mpfr_div_si (&T, &T, 2, MPFR_RNDN);         //         h / 2
     mpfr_add    (&T, x, &T, MPFR_RNDN);         //     x + h / 2
-    APLVFP f2 = VFP_FN_EVAL (f, &T);            // (f, x + h / 2);
+    APLVFP f2 = GSL_FN_VFP_EVAL (f, &T);        // (f, x + h / 2);
 
     // double f3 = GSL_FN_EVAL (f, x + (3.0 / 4.0) * h);
     mpfr_set    (&T, h, MPFR_RNDN);             //         h
     mpfr_mul_si (&T, &T, 3, MPFR_RNDN);         //         h * 3
     mpfr_div_si (&T, &T, 4, MPFR_RNDN);         //         h * 3 / 4
     mpfr_add    (&T, x, &T, MPFR_RNDN);         //     x + h * 3 / 4
-    APLVFP f3 = VFP_FN_EVAL (f, &T);            // (f, x + h * 3 / 4);
+    APLVFP f3 = GSL_FN_VFP_EVAL (f, &T);        // (f, x + h * 3 / 4);
 
     // double f4 = GSL_FN_EVAL (f, x + h);
     mpfr_set    (&T, h, MPFR_RNDN);             //         h
     mpfr_add    (&T, x, &T, MPFR_RNDN);         //     x + h
-    APLVFP f4 = VFP_FN_EVAL (f, &T);            // (f, x + h);
+    APLVFP f4 = GSL_FN_VFP_EVAL (f, &T);        // (f, x + h);
 
     // double r2 = 2.0 * (f4 - f2);
     mpfr_set    (&r2, &f4, MPFR_RNDN);          //          f4
@@ -343,12 +337,12 @@ void mpfr_deriv_forward_calc
 //***************************************************************************
 
 void mpfr_deriv_central_calc
-    (const vfp_function *f,
-     LPAPLVFP            x,
-     LPAPLVFP            h,
-     LPAPLVFP            result,
-     LPAPLVFP            abserr_round,
-     LPAPLVFP            abserr_trunc)
+    (const gsl_function_vfp *f,
+     LPAPLVFP                x,
+     LPAPLVFP                h,
+     LPAPLVFP                result,
+     LPAPLVFP                abserr_round,
+     LPAPLVFP                abserr_trunc)
 
 {
     APLVFP dbleps = {0};    // Set to 2*(1 - []FPC)
@@ -367,21 +361,21 @@ void mpfr_deriv_central_calc
 
     mpfr_set    (&T, h, MPFR_RNDN);             //         h
     mpfr_sub    (&T, x, &T, MPFR_RNDN);         //     x - h
-    APLVFP fm1 = VFP_FN_EVAL (f, &T);           // (f, x - h);
+    APLVFP fm1 = GSL_FN_VFP_EVAL (f, &T);       // (f, x - h);
 
     mpfr_set    (&T, h, MPFR_RNDN);             //         h
     mpfr_add    (&T, x, &T, MPFR_RNDN);         //     x + h
-    APLVFP fp1 = VFP_FN_EVAL (f, &T);           // (f, x + h);
+    APLVFP fp1 = GSL_FN_VFP_EVAL (f, &T);       // (f, x + h);
 
     mpfr_set    (&T, h, MPFR_RNDN);             //         h
     mpfr_div_si (&T, &T, 2, MPFR_RNDN);         //         h / 2
     mpfr_sub    (&T, x, &T, MPFR_RNDN);         //     x - h / 2
-    APLVFP fmh = VFP_FN_EVAL (f, &T);           // (f, x - h / 2);
+    APLVFP fmh = GSL_FN_VFP_EVAL (f, &T);       // (f, x - h / 2);
 
     mpfr_set    (&T, h, MPFR_RNDN);             //         h
     mpfr_div_si (&T, &T, 2, MPFR_RNDN);         //         h / 2
     mpfr_add    (&T, x, &T, MPFR_RNDN);         //     x + h / 2
-    APLVFP fph = VFP_FN_EVAL (f, &T);           // (f, x + h / 2);
+    APLVFP fph = GSL_FN_VFP_EVAL (f, &T);       // (f, x + h / 2);
 
     APLVFP r3 = {0};        // r3 = 0.5 * (fp1 - fm1);
     mpfr_init   (&r3);
@@ -499,11 +493,11 @@ void mpfr_deriv_central_calc
 //***************************************************************************
 
 int mpfr_deriv_central2
-    (const vfp_function *f,
-     LPAPLVFP            x,
-     LPAPLVFP            h,
-     LPAPLVFP            result,
-     LPAPLVFP            abserr)
+    (const gsl_function_vfp *f,
+     LPAPLVFP                x,
+     LPAPLVFP                h,
+     LPAPLVFP                result,
+     LPAPLVFP                abserr)
 
 {
     return
@@ -526,11 +520,11 @@ int mpfr_deriv_central2
 //***************************************************************************
 
 int mpfr_deriv_forward
-    (const vfp_function *f,
-     LPAPLVFP            x,
-     LPAPLVFP            h,
-     LPAPLVFP            result,
-     LPAPLVFP            abserr)
+    (const gsl_function_vfp *f,
+     LPAPLVFP                x,
+     LPAPLVFP                h,
+     LPAPLVFP                result,
+     LPAPLVFP                abserr)
 
 {
     return
@@ -553,11 +547,11 @@ int mpfr_deriv_forward
 //***************************************************************************
 
 int mpfr_deriv_backward
-    (const vfp_function *f,
-     LPAPLVFP            x,
-     LPAPLVFP            h,
-     LPAPLVFP            result,
-     LPAPLVFP            abserr)
+    (const gsl_function_vfp *f,
+     LPAPLVFP                x,
+     LPAPLVFP                h,
+     LPAPLVFP                result,
+     LPAPLVFP                abserr)
 
 {
     APLVFP T = {0};
@@ -590,12 +584,12 @@ int mpfr_deriv_backward
 //***************************************************************************
 
 int mpfr_deriv_common
-    (const vfp_function *f,
-     LPAPLVFP            x,
-     LPAPLVFP            h,
-     LPAPLVFP            result,
-     LPAPLVFP            abserr,
-     void               *mpfr_deriv_calc)
+    (const gsl_function_vfp *f,
+     LPAPLVFP                x,
+     LPAPLVFP                h,
+     LPAPLVFP                result,
+     LPAPLVFP                abserr,
+     void                   *mpfr_deriv_calc)
 
 {
     APLVFP r_0 = {0},

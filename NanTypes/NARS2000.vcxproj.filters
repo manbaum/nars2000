@@ -654,6 +654,21 @@
     <ClCompile Include="po_deriv_vfp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="arbcho_com.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ba_proc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hungarian_arb.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_dbltilde.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_deriv_arb.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Bison_Rule Include="cs_parse.y">

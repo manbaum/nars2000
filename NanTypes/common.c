@@ -1413,8 +1413,24 @@ LPPL_YYSTYPE SaveGlbNumeric_EM
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
-    // Save lpGlbNumeric in the result
-    mpfr_init_set (&((LPAPLVFP) lpMemRes)[0], lpGlbNumeric, MPFR_RNDN);
+    // Split cases based upon the storage type
+    switch (aplTypeRes)
+    {
+        case ARRAY_VFP:
+            // Save lpGlbNumeric in the result
+            mpfr_init_set (&((LPAPLVFP) lpMemRes)[0], lpGlbNumeric, MPFR_RNDN);
+
+            break;
+
+        case ARRAY_ARB:
+            // Save lpGlbNumeric in the result
+            arb_init_set (&((LPAPLARB) lpMemRes)[0], lpGlbNumeric);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;

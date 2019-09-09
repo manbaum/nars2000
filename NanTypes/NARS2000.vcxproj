@@ -493,6 +493,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile Include="po_comb.c" />
     <ClCompile Include="po_dbltilde.c" />
     <ClCompile Include="po_deriv.c" />
+    <ClCompile Include="po_deriv_arb.c" />
     <ClCompile Include="po_deriv_flt.c" />
     <ClCompile Include="po_deriv_vfp.c" />
     <ClCompile Include="po_dicircle.c" />

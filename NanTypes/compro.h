@@ -147,6 +147,7 @@
   #include "po_cmiddot.pro"
   #include "po_comb.pro"
   #include "po_deriv.pro"
+  #include "po_deriv_arb.pro"
   #include "po_deriv_flt.pro"
   #include "po_deriv_vfp.pro"
   #include "po_dicircle.pro"

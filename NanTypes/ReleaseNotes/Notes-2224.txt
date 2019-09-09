@@ -1,0 +1,12 @@
+Build #2224 -- Version 0.6.0.xx
+-------------------------------
+
+* Tweak Numerical Differentiation Operator
+
+Directory branches/bsmith/NanTypes:
+
+PO_DERIV.C:
+PO_DERIV.H:
+PO_DERIV_FLT.C:
+PO_DERIV_VFP.C:
+  Minor tweaks in preparation for Ball Arithmetic support.

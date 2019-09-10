@@ -805,7 +805,7 @@ UBOOL DisplayGlbArr_EM
                 {
                     APLUINT uColCur,            // ...
                             uTmp,               // Temporary
-                            uMaxWidth,          // Maximum col width
+                            uMaxPos,            // Maximum col position
                             uCurPos;            // Current col position
 
                     // ***FIXME*** -- this routine may split a number in half
@@ -834,8 +834,8 @@ UBOOL DisplayGlbArr_EM
                         uCurPos = 0;
                     } // End IF/ELSE
 
-                    // Set the current maximum width
-                    uMaxWidth = uCurPos;
+                    // Set the current maximum position
+                    uMaxPos = uCurPos;
 
                     // Loop through this part of the output line
                     for (uColCur = 0; (uColCur < uOutLen) && lpwszNxt < lpwszEnd; uColCur++)
@@ -857,8 +857,8 @@ UBOOL DisplayGlbArr_EM
                                 //   or we are, but we're excluding CR & LF from display, ...
                                 if (!OptionFlags.bOutputDebug || OptionFlags.bOutputExCRLF)
                                 {
-                                    // Zap the temp buffer at the maximum width
-                                    lpwszTemp[uMaxWidth] = WC_EOS;
+                                    // Zap the temp buffer at the maximum position
+                                    lpwszTemp[uMaxPos] = WC_EOS;
 
                                     // Reset the current position (but not the max width)
                                     uCurPos   =
@@ -870,8 +870,8 @@ UBOOL DisplayGlbArr_EM
                                 } else
                                 {
                                     // Fall through to common code
-                                    // Note that Output Debugging is FALSE, so the next
-                                    //   IF statement (if present) falls through
+                                    // Note that bOutputDebug and bOutputExCRLF are FALSE,
+                                    //   so the next IF statement (if present) falls through
                                 } // End IF/ELSE
 
                             case WC_LF:         // []TCLF -- Start a new line
@@ -879,8 +879,8 @@ UBOOL DisplayGlbArr_EM
                                 //   or we are, but we're excluding CR & LF from display, ...
                                 if (!OptionFlags.bOutputDebug || OptionFlags.bOutputExCRLF)
                                 {
-                                    // Zap the temp buffer at the maximum width
-                                    lpwszTemp[uMaxWidth] = WC_EOS;
+                                    // Ensure properly terminated at the max position
+                                    lpwszTemp[uMaxPos] = WC_EOS;
 
                                     // Output the line up to this point w/o NL
                                     AppendLine (lpwszTemp, bLineCont, FALSE);
@@ -891,15 +891,15 @@ UBOOL DisplayGlbArr_EM
                                     // Output enough blanks to get back to the current position
                                     FillMemoryW (lpwszTemp, (APLU3264) uCurPos, L' ');
 
-                                    // Reset the maximum width
-                                    uMaxWidth = uCurPos;
+                                    // Reset the maximum position
+                                    uMaxPos = uCurPos;
 
                                     break;
                                 } else
                                 {
                                     // Fall through to common code
-                                    // Note that Output Debugging is FALSE, so the next
-                                    //   IF statement (if present) falls through
+                                    // Note that bOutputDebug and bOutputExCRLF are FALSE,
+                                    //   so the next IF statement (if present) falls through
                                 } // End IF/ELSE
 
                             case WC_HT:         // []TCHT -- Move ahead to the next tab stop
@@ -911,16 +911,16 @@ UBOOL DisplayGlbArr_EM
                                     MoveMemoryW (&lpwszTemp[uCurPos + uTmp], &lpwszTemp[uCurPos], (APLU3264) uTmp);
                                     FillMemoryW (&lpwszTemp[uCurPos], (APLU3264) uTmp, L' ');
 
-                                    // Increase the maximum width and current position by the # inserted blanks
-                                    uMaxWidth += uTmp;
-                                    uCurPos   += uTmp;
+                                    // Increase the maximum and current positions by the # inserted blanks
+                                    uCurPos += uTmp;
+                                    uMaxPos  = max (uMaxPos, uCurPos);
 
                                     break;
                                 } else
                                 {
                                     // Fall through to common code
-                                    // Note that Output Debugging is FALSE, so the next
-                                    //   IF statement (if present) falls through
+                                    // Note that bOutputDebug is FALSE,
+                                    //   so the next IF statement (if present) falls through
                                 } // End IF/ELSE
 
                             case WC_BEL:        // []TCBEL -- Sound the alarum!
@@ -933,8 +933,8 @@ UBOOL DisplayGlbArr_EM
                                 } else
                                 {
                                     // Fall through to common code
-                                    // Note that Output Debugging is FALSE, so the next
-                                    //   IF statement (if present) falls through
+                                    // Note that bOutputDebug is FALSE,
+                                    //   so the next IF statement (if present) falls through
                                 } // End IF/ELSE
 
                             case WC_BS:         // []TCBS -- Backspace if there's room
@@ -947,14 +947,14 @@ UBOOL DisplayGlbArr_EM
                                 } else
                                 {
                                     // Fall through to common code
-                                    // Note that Output Debugging is FALSE, so the next
-                                    //   IF statement (if present) falls through
+                                    // Note that bOutputDebug is FALSE,
+                                    //   so the next IF statement (if present) falls through
                                 } // End IF/ELSE
 
                             default:
                                 // Save the new char
                                 lpwszTemp[uCurPos++] = wcCur;
-                                uMaxWidth = max (uMaxWidth, uCurPos);
+                                uMaxPos = max (uMaxPos, uCurPos);
 
                                 break;
                         } // End SWITCH
@@ -963,8 +963,8 @@ UBOOL DisplayGlbArr_EM
                     // Save ptr to next input
                     lpRowPtrs[uFmtRow].lpNxtChar = lpwszNxt;
 
-                    // Ensure properly terminated at the maximum width
-                    lpwszTemp[uMaxWidth] = WC_EOS;          // Zap it
+                    // Ensure properly terminated at the maximum position
+                    lpwszTemp[uMaxPos] = WC_EOS;            // Zap it
 
                     // If we're in the first ColGrp and not the last row, ...
                     if (uColGrp EQ 0
@@ -5413,7 +5413,7 @@ UBOOL DisplayGlbVector
                 } // End FOR
 
                 // Ensure properly terminated at the maximum width
-                lpaplChar[uMaxPos] = WC_EOS;
+                lpaplCharIni[uMaxPos] = WC_EOS;
 
                 // Account for it
                 aplDimNCols -= uCnt;
@@ -5656,8 +5656,8 @@ UBOOL CheckTermCodes
             } else
             {
                 // Fall through to common code
-                // Note that Output Debugging is FALSE, so the next
-                //   IF statement (if present) falls through
+                // Note that bOutputDebug and bOutputExCRLF are FALSE,
+                //   so the next IF statement (if present) falls through
             } // End IF/ELSE
 
         case WC_LF:
@@ -5679,19 +5679,19 @@ UBOOL CheckTermCodes
                 if (!bPrevCR)
                     // Mark the following lines as continued
                     *lpbLineCont = TRUE;
-                else
-                    // Reset the maximum position
-                    *lpuMaxPos = 0;
 
                 // Fill the line up to the current position with blanks
                 FillMemoryW (lpaplCharIni, (APLU3264) *lpuCurPos, L' ');
+
+                // Reset the maximum position to the current position
+                *lpuMaxPos = *lpuCurPos;
 
                 break;
             } else
             {
                 // Fall through to common code
-                // Note that Output Debugging is FALSE, so the next
-                //   IF statement (if present) falls through
+                // Note that bOutputDebug and bOutputExCRLF are FALSE,
+                //   so the next IF statement (if present) falls through
             } // End IF/ELSE
 
         case WC_HT:
@@ -5715,8 +5715,8 @@ UBOOL CheckTermCodes
             } else
             {
                 // Fall through to common code
-                // Note that Output Debugging is FALSE, so the next
-                //   IF statement (if present) falls through
+                // Note that bOutputDebug is FALSE,
+                //   so the next IF statement (if present) falls through
             } // End IF/ELSE
 
         case WC_BEL:    // Bel
@@ -5730,8 +5730,8 @@ UBOOL CheckTermCodes
             } else
             {
                 // Fall through to common code
-                // Note that Output Debugging is FALSE, so the next
-                //   IF statement (if present) falls through
+                // Note that bOutputDebug is FALSE,
+                //   so the next IF statement (if present) falls through
             } // End IF/ELSE
 
         case WC_BS:
@@ -5750,11 +5750,12 @@ UBOOL CheckTermCodes
             } else
             {
                 // Fall through to common code
-                // Note that Output Debugging is FALSE, so the next
-                //   IF statement (if present) falls through
+                // Note that bOutputDebug is FALSE,
+                //   so the next IF statement (if present) falls through
             } // End IF/ELSE
 
         default:
+            // Save the new char
             *(*lplpaplChar)++ = *lpwc;
             (*lpuCurPos)++;
             (*lpuMaxPos)      = max (*lpuMaxPos, *lpuCurPos);

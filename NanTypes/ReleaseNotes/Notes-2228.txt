@@ -1,0 +1,11 @@
+Build #2228 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In Display Of A Character Vector Including TCNLs, Part II
+
+Directory branches/bsmith/NanTypes:
+
+DISPLAY.C:
+  In <DisplayGlbArr_EM>, where raw output occurs, rename vars to be like in <CheckTermCodes>.
+  In <DisplayGlbVector>, fix bug introduced in the last build where I used the wrong var name.
+  Improve comments.

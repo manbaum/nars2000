@@ -984,7 +984,7 @@ UBOOL DisplayGlbArr_EM
                     // Save ptr to next input
                     lpRowPtrs[uFmtRow].lpNxtChar = lpwszNxt;
 
-                    // Zap the temp buffer at the maximum width
+                    // Ensure properly terminated at the maximum width
                     lpwszTemp[uMaxWidth] = WC_EOS;          // Zap it
 
                     // If we're in the first ColGrp and not the last row, ...
@@ -6100,8 +6100,8 @@ UBOOL DisplayGlbVector
                     } // End IF
                 } // End FOR
 
-                // Ensure properly terminated
-                lpaplChar[0] = WC_EOS;
+                // Ensure properly terminated at the maximum width
+                lpaplChar[uMaxPos] = WC_EOS;
 
                 // Account for it
                 aplDimNCols -= uCnt;

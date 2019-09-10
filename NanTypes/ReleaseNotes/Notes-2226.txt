@@ -1,0 +1,9 @@
+Build #2226 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In Display Of A Character Vector Including TCNLs
+
+Directory branches/bsmith/NanTypes:
+
+DISPLAY.C:
+  When displaying a character vector involving TCNLs, after looping through all items, we terminate the result at the wrong place possibly losing the tail.

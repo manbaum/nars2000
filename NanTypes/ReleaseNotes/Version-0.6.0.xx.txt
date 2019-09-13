@@ -1,6 +1,25 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2234 -- Version 0.6.0.xx
+-------------------------------
+
+* Change Beta Version To Untested And List All Such Categories
+* Define New Tag <_mark>...</_mark> To Mark A Digit Specially
+
+Directory branches/bsmith/NanTypes/htdocs/download:
+
+DOWNLOAD-BODY.PHP:
+DOWNLOAD-LEFT.PHP:
+  Change Beta Version to Untested and list all such categories.
+
+
+Directory branches/bsmith/NanTypes/MediaWiki/extensions:
+
+RENDERAPL.PHP:
+  Define new tag <_mark>...</_mark> to mark a digit specially.
+
+
 Build #2232 -- Version 0.6.0.xx
 -------------------------------
 

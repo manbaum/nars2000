@@ -177,27 +177,29 @@ Downloads</h1>
 </div>
 
 <div class="section">
-  <h2 id="Beta_Versions">Beta Versions</h2>
+  <h2 id="Untested_Versions">Untested Versions</h2>
 
-  <p>For the latest (<b>unreleased</b>) versions, goto the <a class="linkleft" href="binaries/beta">beta</a>
-    directory and download either the 32- or 64-bit file.  This is a .zip file (as opposed to the released
-    version which is an executable Setup file) which you might want to unzip into a directory separate from
+  <p>There are usually several independent branches to this project going at the same time.
+     Here is the current list:</p>
+  <ul>
+    <li><a class="linkleft" href="binaries/gamma">Gama</a> Version:  This branch implements
+      <a class="linkleft" href="http://wiki.nars2000.org/index.php/Hyperators">Hyperators</a></li>
+    <li><a class="linkleft" href="binaries/beta">Beta</a> Version:  This branch implements the features
+      ready to go into the released version, but not quite there as yet.  For details, view the file
+      in the <a class="linkleft" href="binaries/beta">Beta</a> directory named something like
+      <b>Version-n.n.nn.nn.txt</b> with the most recent version number.</li>
+    <li><a class="linkleft" href="binaries/alpha">Alpha</a> Version:  This branch implements
+      <a class="linkleft" href="http://wiki.nars2000.org/index.php/Ball_Arithmetic">Ball Arithmetic</a>.</li>
+    <li><a class="linkleft" href="binaries/java">Java</a> Version:  This branch implements support for
+      the Java language.</li>
+  </ul>
+
+  <p>For the latest (<b>unreleased</b>) versions, goto the appropriate linked directory above
+    and download either the 32- or 64-bit file.  This is an executable Setup file which you might
+    want to unzip into a directory separate from
     the released installation so as to leave the latter unaffected.  As with the released version, please
     report any bugs to the Bug Report section of the NARS2000
     <a class="linkleft" href="http://forum.nars2000.org/viewforum.php?f=12">Forum</a>.</p>
-</div>
-
-<div class="section">
-  <h2 id="Alpha_Versions">Alpha Versions</h2>
-
-  <p>For the latest (<b>unreleased</b>) version that implements
-    <a class="linkleft" href="http://wiki.nars2000.org/index.php/Ball_Arithmetic">Ball
-    Arithmetic</a>, goto the <a class="linkleft" href="binaries/alpha">alpha</a>
-    directory and download either the 32- or 64-bit file.  This is an executable Setup file which you might want
-    to install into a directory separate from
-    the released installation so as to leave the latter unaffected.  As with the released version, please
-    report any bugs to the Bug Report section of the NARS2000
-    <a class="linkleft" href="http://forum.nars2000.org/ball-arithmetic-f23/">Forum</a>.</p>
 </div>
 
 <div class="section">
@@ -211,7 +213,7 @@ Downloads</h1>
     <li><a href="workspaces/trains.ws.nars">Trains</a> contains a set of tests for the Train function.</li>
   </ul>
 
-  <p>To load one of these workspacces, right-click on the link, save it to your local system, and then <apll>)LOAD</apll> it from NARS2000.
+  <p>To load one of these workspaces, right-click on the link, save it to your local system, and then <apll>)LOAD</apll> it from NARS2000.
 </div>
 
 <div class="section">

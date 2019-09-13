@@ -8,6 +8,8 @@ $wgHooks['ParserFirstCallInit'][] = 'wfAPLExtension';
 
 $FontName = 'SImPL';
 
+$md_style = "color: red; background: yellow; text-decoration: underline;";
+
 function wfAPLExtension (Parser $parser)
 {
     // Register the extension with the WikiText parser
@@ -22,6 +24,7 @@ function wfAPLExtension (Parser $parser)
 
     $parser->sethook( 'pn'   , 'pnNotation'       );
     $parser->sethook( 'hc'   , 'hcNotation'       );
+    $parser->sethook( '_mark', 'mark_digit'       );
 
     $parser->sethook( '_ad'  , 'pn_ad_Notation'   );
     $parser->sethook( '_ah'  , 'pn_ah_Notation'   );
@@ -112,7 +115,7 @@ function renderAPLxxlarge ($input, array $args, Parser $parser, PPFrame $frame)
 // The callback function for converting the input text to HTML output
 function renderAPLcom ($input, array $argv, Parser $parser, $iLargeSize, $bBoldWeight)
 {
-    global $FontName;
+    global $FontName, $md_style;
 
     // Disable caching for these parser tags
     $parser->disableCache ();
@@ -173,6 +176,9 @@ function renderAPLcom ($input, array $argv, Parser $parser, $iLargeSize, $bBoldW
 
     // Handle <hc>...</hc> within $input
     $input = preg_replace ('#<hc>(.*?)</hc>#', '<span style="color:blue;">$1</span>', $input);
+
+    // Handle <_mark>...</_mark> within $input
+    $input = preg_replace ('#<_mark>(.*?)</_mark>#', '<span style="' . $md_style . '">$1</span>', $input);
 
     // Handle <_ad/> within $input
     $input = preg_replace ('#<ad */>#',   '<span style="color:blue;">ad</span>', $input);
@@ -283,6 +289,13 @@ function renderAPLcom ($input, array $argv, Parser $parser, $iLargeSize, $bBoldW
     return '<span ' . $class . 'style="' . $style . '">' . $input . '</span>';
 } // End renderAPLcom
 
+// The callback function for marking a digit specially
+function mark_digit ($input, array $args, Parser $parser, PPFrame $frame)
+{
+    global $md_style;
+
+    return '<span style="' . $md_style . '">' . $input . '</span>';
+} // End mark_digit
 
 // The callback function for converting PN input text to HTML output
 function pnNotation ($input, array $args, Parser $parser, PPFrame $frame)

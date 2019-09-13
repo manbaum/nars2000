@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2230 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In NAMETYPE assigned to TKT_OPJOTDOT
+
+Directory branches/bsmith/NanTypes:
+
+ASSIGN.C:
+  In <GetNameType> the token TKT_OPJOTDOT is incorrectly categorized as NAMETYPE_FN12; it should be NAMETYPE_OP1.
+
+
 Build #2228 -- Version 0.6.0.xx
 -------------------------------
 

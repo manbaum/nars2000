@@ -1,0 +1,9 @@
+Build #2229 -- Version 0.5.12.xx
+--------------------------------
+
+* Fix Bug In NAMETYPE assigned to TKT_OPJOTDOT
+
+Directory branches/bsmith/NewTypes:
+
+ASSIGN.C:
+  In <GetNameType> the token TKT_OPJOTDOT is incorrectly categorized as NAMETYPE_FN12; it should be NAMETYPE_OP1.

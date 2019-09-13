@@ -507,11 +507,11 @@ NAME_TYPES GetNameType
             return plSetDfn (lptkFunc, GetGlbDataToken (lptkFunc));
 
         case TKT_FCNIMMED:
-        case TKT_OPJOTDOT:
             return NAMETYPE_FN12;
 
         case TKT_OP1NAMED:
         case TKT_OP1IMMED:
+        case TKT_OPJOTDOT:
             return NAMETYPE_OP1;
 
         case TKT_OP2NAMED:

@@ -1,0 +1,12 @@
+Build #2231 -- Version 0.5.12.xx
+--------------------------------
+
+* Fix Parser Bug With Double Free With Index Coalescing
+* Fix Parser Bug With "A FR"
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  In <plRedNAM_ISPA>, if the call to <CoalesceIdx_EM> fails, zap the curried index
+    as it has already been freed by <CoalesceIdx_EM>.
+  In <PARSELINE_REDUCE:>, detect "A FR" and fail softly.  This should be made to work.

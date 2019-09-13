@@ -3625,7 +3625,12 @@ LPPL_YYSTYPE plRedNAM_ISPA
 
         // Check for errors
         if (lpYYIdx EQ NULL)
+        {
+            // Zap this curried index as it's been freed in <CoalesceIdx>
+            lpplYYLstRht->lpplYYIdxCurry = NULL;
+
             goto ERROR_EXIT;
+        } // End IF
     } else
         lpYYIdx = lpplYYLstRht->lpplYYIdxCurry;
 
@@ -4929,8 +4934,9 @@ PARSELINE_REDUCE:
 #ifdef DEBUG
                     WCHAR wszTemp[128];
 
-                    // If we already know about this one, ...
-                    if (curSynObj EQ soFR && lstSynObj EQ soHY)
+                    // If we already know about these, ...
+                    if ((curSynObj EQ soFR && lstSynObj EQ soHY)
+                     || (lftSynObj EQ soA  && curSynObj EQ soFR))   // ***FIXME*** -- allow this curry
                         goto PARSELINE_SYNTERR;
 
                     MySprintfW (wszTemp,

@@ -1,0 +1,9 @@
+Build #2237 -- Version 0.5.13.xx
+--------------------------------
+
+* Fix Documentation For Derivative Operator In Language Bar
+
+Directory branches/bsmith/NewTypes:
+
+REBAR.C:
+  Fix documentation for Derivative Operator in language bar.

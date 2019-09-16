@@ -2916,8 +2916,8 @@ typedef struct tagLANGCHARS
                                            L"                    L LO" $DERIV $DERIV L"R\n"
                                            L"  where LO is any function.\n"
                                            L"  Repeat the operator symbol for higher degree derivatives.\n\n"
-                                           L"Keyboard:  Alt-'h'\n\n"
-                                           L"Unicode:  0x2206 or 8710"},
+                                           L"Keyboard:  Alt-'D'\n\n"
+                                           L"Unicode:  0x2202 or 8706"},
         LANGCHARS_SEPARATOR
         {WS_UTF16_QUOTEQUAD         , {0}, L"QuoteQuad",
                                            L"Character input from the keyboard:  A" WS_UTF16_LEFTARROW WS_UTF16_QUOTEQUAD L"\n"

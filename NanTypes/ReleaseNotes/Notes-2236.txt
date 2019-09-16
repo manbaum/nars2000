@@ -1,0 +1,20 @@
+Build #2236 -- Version 0.6.0.xx
+-------------------------------
+
+* Change Symbol For Derivative Operator To {CurlyD} or {Deriv} (Alt-'D' U+2202)
+
+Directory branches/bsmith/NanTypes:
+
+CUSTOMIZE.C:
+KEYBOARDS_BI.H:
+UNICODE.H:
+  Change symbol for Derivative operator to {CurlyD} or {Deriv} (Alt-'D' U+2202).
+
+VER.RC:
+  Increment version # to 0.6.1.xx.
+
+
+Directory branches/bsmith/NanTypes/Mediawiki/extensions:
+
+B2A.INC.PHP:
+  Change symbol for Derivative operator to {CurlyD} or {Deriv} (Alt-'D' U+2202).

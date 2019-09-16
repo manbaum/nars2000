@@ -1,0 +1,23 @@
+Version 0.5.13.xx consists of the following Builds:
+
+
+Build #2235 -- Version 0.5.13.xx
+--------------------------------
+
+* Change Symbol For Derivative Operator To {CurlyD} or {Deriv} (Alt-'D' U+2202)
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+KEYBOARDS_BI.H:
+UNICODE.H:
+  Change symbol for Derivative operator to {CurlyD} or {Deriv} (Alt-'D' U+2202).
+
+VER.RC:
+  Increment version # to 0.5.13.xx.
+
+
+Directory branches/bsmith/NewTypes/Mediawiki/extensions:
+
+B2A.INC.PHP:
+  Change symbol for Derivative operator to {CurlyD} or {Deriv} (Alt-'D' U+2202).

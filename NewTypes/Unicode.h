@@ -23,11 +23,6 @@
 #ifndef NARS_UNICODE
 #define NARS_UNICODE
 
-// In case we need to change the symbol for the Derivative Operator, ...
-#define    UTF16_DERIV     UTF16_DELTA
-#define WS_UTF16_DERIV  WS_UTF16_DELTA
-
-
 // When initializing an array of functions/operators (such as PrimFlags/PrimSpecTab/PrimFnsTab/PrimProtoFnsTab/PrimProtoOpsTab) use these
 //   equates instead of the PRIMTAB_MASK of the corresponding UTF16_xxx
 //   so as to avoid a conflict
@@ -169,7 +164,7 @@
 //efine UTF16_                                  // Alt-'A' - (none)
 //efine UTF16_                                  // Alt-'B' - (none)
 //efine UTF16_                                  // Alt-'C' - (none)
-//efine UTF16_                                  // Alt-'D' - (none)
+#define UTF16_DERIV               0x2202        // Alt-'D' - Derivative Operator  (curly-d)
 #define UTF16_EPSILONUNDERBAR     0x2377        // Alt-'E' - Epsilon-Underbar
 #define UTF16_QUADJOT             0x233B        // Alt-'F' - Matrix operator      (quad-jot)
 #define UTF16_DIERESISDEL         0x2362        // Alt-'G' - Dual operator        (frog)
@@ -429,7 +424,7 @@
 //efine WS_UTF16_                               // Alt-'A' - (none)
 //efine WS_UTF16_                               // Alt-'B' - (none)
 //efine WS_UTF16_                               // Alt-'C' - (none)
-//efine WS_UTF16_                               // Alt-'D' - (none)
+#define WS_UTF16_DERIV               L"\x2202"  // Alt-'D' - Derivative Operator  (curly-d)
 #define WS_UTF16_EPSILONUNDERBAR     L"\x2377"  // Alt-'E' - Epsilon-underbar
 #define WS_UTF16_QUADJOT             L"\x233B"  // Alt-'F' - Matrix operator      (quad-jot)
 #define WS_UTF16_DIERESISDEL         L"\x2362"  // Alt-'G' - Dual operator        (frog)

@@ -144,6 +144,9 @@ $br2a = array (
 'downarrow'             => 0x2193,
 'raze'                  => 0x2193,
 
+'curlyd'                => 0x2202,
+'deriv'                 => 0x2202,
+
 'nan'                   => 0x2205,
 'circleslash'           => 0x2205,
 

@@ -443,14 +443,35 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
             break;
     } // End SWITCH
 
-    // Check for LENGTH ERROR
-    if (IsMatrix (aplRankRht)
-     && uNumRows < uNumCols)
-        goto LENGTH_EXIT;
-
     // Check for DOMAIN ERROR
     if (!IsNumeric (aplTypeRht))
         goto DOMAIN_EXIT;
+
+    // Check for Underdetermined
+    if (IsMatrix (aplRankRht)
+     && uNumRows < uNumCols)
+    {
+        HGLOBAL      hGlbMFO;           // Magic function/operator ...
+        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetMemPTD ();
+
+        // Get the magic function/operator global memory handle
+        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_MonDomino2];
+
+        //  Use an internal magic function/operator.
+        lpYYRes =
+          ExecuteMagicFunction_EM_YY (NULL,         // Ptr to left arg token
+                                      lptkFunc,     // Ptr to function token
+                                      NULL,         // Ptr to function strand
+                                      lptkRhtArg,   // Ptr to right arg token
+                                      lptkAxis,     // Ptr to axis token
+                                      hGlbMFO,      // Magic function/operator global memory handle
+                                      NULL,         // Ptr to HSHTAB struc (may be NULL)
+                                      LINENUM_ONE); // Starting line # type (see LINE_NUMS)
+        goto NORMAL_EXIT;
+    } // End IF
 
     // Calculate the result storage type
     if (IsSimpleNum (aplTypeRht))
@@ -1441,11 +1462,6 @@ RANK_EXIT:
                                lptkFunc);
     goto ERROR_EXIT;
 
-LENGTH_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                               lptkFunc);
-    goto ERROR_EXIT;
-
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkFunc);
@@ -2040,10 +2056,30 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
             break;
     } // End SWITCH
 
-    // Check for LENGTH ERROR
+    // Check for Underdetermined
     if (uNumRowsRht <  uNumColsRht
      || uNumRowsLft NE uNumRowsRht)
-        goto LENGTH_EXIT;
+    {
+        HGLOBAL      hGlbMFO;           // Magic function/operator ...
+        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetMemPTD ();
+
+        // Get the magic function/operator global memory handle
+        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydDomino2];
+
+        //  Use an internal magic function/operator.
+        return
+          ExecuteMagicFunction_EM_YY (lptkLftArg,   // Ptr to left arg token
+                                      lptkFunc,     // Ptr to function token
+                                      NULL,         // Ptr to function strand
+                                      lptkRhtArg,   // Ptr to right arg token
+                                      lptkAxis,     // Ptr to axis token
+                                      hGlbMFO,      // Magic function/operator global memory handle
+                                      NULL,         // Ptr to HSHTAB struc (may be NULL)
+                                      LINENUM_ONE); // Starting line # type (see LINE_NUMS)
+    } // End IF
 
     // Save the # rows & cols in the result
     uNumRowsRes = uNumColsRht;
@@ -2797,11 +2833,6 @@ YYALLOC_EXIT:
 
 RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                               lptkFunc);
-    goto ERROR_EXIT;
-
-LENGTH_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 

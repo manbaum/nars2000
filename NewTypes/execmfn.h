@@ -47,7 +47,7 @@ typedef enum tagMFO
     MFOE_DydUpShoe       ,      // 15:  Dyadic Up Shoe
     MFOE_DydLRShoeUnd    ,      // 16:  Dyadic Left/Right Shoe Underbar
     MFOE_SD              ,      // 17:  Symmetric Difference
-    MFOE_MonDomino       ,      // 18:  Monadic Domino for global numerics
+    MFOE_MonDomino       ,      // 18:  Monadic Domino for Overdetermined global numerics
     MFOE_DydDomino       ,      // 19:  Dyadic  ...
     MFOE_DydDotDot       ,      // 1A:  Dyadic DotDot
     MFOE_DydIotaUnderbar ,      // 1B:  Dyadic Iota Underbar
@@ -76,7 +76,9 @@ typedef enum tagMFO
     MFOE_DydDot2         ,      // 32:  APL2's defn of Inner Product
     MFOE_DydMask         ,      // 33:  Dyadic function derived from Monadic Mask Operator
     MFOE_DydMesh         ,      // 34:  ...                                  Mesh ...
-    MFOE_LENGTH                 // 35:  # entries in this enum
+    MFOE_MonDomino2      ,      // 35:  Monadic Domino for Underdetermined matrices
+    MFOE_DydDomino2      ,      // 36:  Dyadic  ...
+    MFOE_LENGTH                 // 37:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -133,6 +135,8 @@ typedef enum tagMFO
 #define MFON_DydDot2            L"#DydDot2"
 #define MFON_DydMask            L"#DydMask"
 #define MFON_DydMesh            L"#DydMesh"
+#define MFON_MonDomino2         L"#MonDomino2"
+#define MFON_DydDomino2         L"#DydDomino2"
 
 // Magic Function/Operator Variables
 #define $ALPHA          WS_UTF16_ALPHA
@@ -143,6 +147,8 @@ typedef enum tagMFO
 #define $COMMABAR       WS_UTF16_COMMABAR
 #define $COMMENT        WS_UTF16_LAMP
 #define $COMMUTE        WS_UTF16_DIERESISTILDE
+#define $DAGGER         WS_UTF16_DAGGER
+#define $DBLDAGGER      WS_UTF16_DOUBLEDAGGER
 #define $DECODE         WS_UTF16_UPTACK
 #define $DIAMOND        WS_UTF16_DIAMOND
 #define $DROP           WS_UTF16_DOWNARROW
@@ -186,6 +192,7 @@ typedef enum tagMFO
 #define $LDC_LT_HORZ_U  WS_UTF16_LDC_LT_HORZ_U
 #define $LE             WS_UTF16_LEFTCARETUNDERBAR
 #define $LOPER          WS_UTF16_LFTOPER
+#define $LRARROWS       WS_UTF16_LEFTRIGHTARROWS
 #define $MATCH          WS_UTF16_EQUALUNDERBAR
 #define $MAX            WS_UTF16_UPSTILE
 #define $MIN            WS_UTF16_DOWNSTILE
@@ -236,6 +243,7 @@ typedef enum tagMFO
 #define $ROPER          WS_UTF16_RHTOPER
 #define $ROTATE         WS_UTF16_CIRCLESTILE
 #define $SQUAD          WS_UTF16_SQUAD
+#define $SECTION        WS_UTF16_SECTION
 #define $SUBSET         WS_UTF16_LEFTSHOEUNDERBAR
 #define $SUPERSET       WS_UTF16_RIGHTSHOEUNDERBAR
 #define $TAKE           WS_UTF16_UPARROW

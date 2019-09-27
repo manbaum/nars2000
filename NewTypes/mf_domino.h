@@ -29,48 +29,79 @@
 #define S   WS_MFOLCL
 
 //***************************************************************************
-//  Magic function/operator for Monadic Domino for Global Numerics
+//  Magic function/operator for Monadic Domino for Overdetermined Global Numerics
 //
-//  Return the pseudo-inverse of an array of global numerics.
+//  Return the pseudo-inverse of an array of Overdetermined global numerics.
+//    by Berthold K. P. Horn:
+//
+//    http://people.csail.mit.edu/bkph/articles/Pseudo_Inverse.pdf
 //***************************************************************************
 
-static APLCHAR MonHeader[] =
-  L""S L"Z←" MFON_MonDomino L" "S L"R";
-
-static APLCHAR MonLine1[] =
-  L""S L"Z←(⌽⍴"S L"R)⍴(⌹(⍉"S L"Z)+.×"S L"Z)+.×⍉"S L"Z←⍪"S L"R";
-
 static LPAPLCHAR MonBody[] =
-{MonLine1,
+{
+  L""S L"Z←(⌽⍴"S L"R)⍴(⌹(⍉"S L"Z)+.×"S L"Z)+.×⍉"S L"Z←⍪"S L"R",
 };
 
 MAGIC_FCNOPR MFO_MonDomino =
-{MonHeader,
- MonBody,
- countof (MonBody),
+{
+  L""S L"Z←" MFON_MonDomino L" "S L"R",
+  MonBody,
+  countof (MonBody),
 };
 
 
 //***************************************************************************
-//  Magic function/operator for Dyadic Domino for Global Numerics
+//  Magic function/operator for Dyadic Domino for Overdetermined Global Numerics
 //
-//  Return the pseudo-inverse of an array of global numerics.
+//  Return the pseudo-inverse of an array of Overdetermined global numerics.
 //***************************************************************************
 
-static APLCHAR DydHeader[] =
-  L""S L"Z←"S L"L " MFON_DydDomino L" "S L"R";
-
-static APLCHAR DydLine1[] =
-  L""S L"Z←(⌹"S L"R)+.×"S L"L";
-
 static LPAPLCHAR DydBody[] =
-{DydLine1,
+{
+  L""S L"Z←(⌹"S L"R)+.×"S L"L",
 };
 
 MAGIC_FCNOPR MFO_DydDomino =
-{DydHeader,
- DydBody,
- countof (DydBody),
+{
+  L""S L"Z←"S L"L " MFON_DydDomino L" "S L"R",
+  DydBody,
+  countof (DydBody),
+};
+
+
+//***************************************************************************
+//  Magic function/operator for Monadic Domino for Underdetermined matrices
+//
+//  Return the pseudo-inverse of an array of Underdetermined matrices.
+//    by Berthold K. P. Horn:
+//
+//    http://people.csail.mit.edu/bkph/articles/Pseudo_Inverse.pdf
+//***************************************************************************
+
+static LPAPLCHAR MonBody2[] =
+{
+  L""S L"Z←(⍉"S L"R)+.×⌹"S L"R+.×⍉"S L"R",
+};
+
+MAGIC_FCNOPR MFO_MonDomino2 =
+{
+  L""S L"Z←" MFON_MonDomino2 L" "S L"R",
+  MonBody2,
+  countof (MonBody2),
+};
+
+
+//***************************************************************************
+//  Magic function/operator for Dyadic Domino for Underdetermined matrices
+//
+//  Return the pseudo-inverse of an array of Underdetermined matrices
+//***************************************************************************
+
+MAGIC_FCNOPR MFO_DydDomino2 =
+{
+  L""S L"Z←"S L"L " MFON_DydDomino2 L" "S L"R",
+  DydBody,
+  countof (DydBody),
 };
 
 #undef  S

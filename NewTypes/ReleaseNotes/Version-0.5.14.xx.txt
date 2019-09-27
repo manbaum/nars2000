@@ -1,0 +1,20 @@
+Version 0.5.14.xx consists of the following Builds:
+
+
+Build #2239 -- Version 0.5.14.xx
+--------------------------------
+
+* Implement Matrix Inverse/Divide For Underdetermined Matrices
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+EXECMFN.H:
+MF_DOMINO.H:
+  Define and initialize magic functions for Domino on Underdetermined matrices.
+
+PF_DOMINO.C:
+  Check for Underdetermined matrices in the Monadic and Dyadic cases.
+
+VER.RC:
+  Increment version # to 0.5.14.xx.

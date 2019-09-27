@@ -75,6 +75,8 @@ extern MAGIC_FCNOPR MFO_DetPerm;
 extern MAGIC_FCNOPR MFO_DydDot2;
 extern MAGIC_FCNOPR MFO_DydMask;
 extern MAGIC_FCNOPR MFO_DydMesh;
+extern MAGIC_FCNOPR MFO_MonDomino2;
+extern MAGIC_FCNOPR MFO_DydDomino2;
 
 
 //***************************************************************************
@@ -844,6 +846,8 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydDot2          ]  = Init1MagicFunction (MFON_DydDot2          , &MFO_DydDot2          , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydMask          ]  = Init1MagicFunction (MFON_DydMask          , &MFO_DydMask          , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydMesh          ]  = Init1MagicFunction (MFON_DydMesh          , &MFO_DydMesh          , lpMemPTD, hWndEC, NULL));
+    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonDomino2       ]  = Init1MagicFunction (MFON_MonDomino2       , &MFO_MonDomino2       , lpMemPTD, hWndEC, NULL));
+    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydDomino2       ]  = Init1MagicFunction (MFON_DydDomino2       , &MFO_DydDomino2       , lpMemPTD, hWndEC, NULL));
 
     //***************************************************************
     //  N.B.:  If you define an additional MFO with a local

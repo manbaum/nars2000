@@ -1,6 +1,17 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2244 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug In  1 []CR With Multiline AFOs
+
+Directory branches/bsmith/NanTypes:
+
+QF_CR.C:
+  Fix bug in 1 []CR with multiline AFOs.  This time, handle all the lines by using the UDFO code.
+
+
 Build #2242 -- Version 0.6.2.xx
 -------------------------------
 

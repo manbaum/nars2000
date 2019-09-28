@@ -182,8 +182,8 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
                       aplLongestRht;        // Right arg    ...
     LPVOID            lpMemOpr,             // Ptr to left operand data
                       lpMemRht;             // ...    right arg data
-    APLINT            aplFS,                // Function Selector
-                      aplCvG;               // Count (0) v. Generate (1) flag
+    FS_ENUM           aplFS;                // Function Selector
+    CvG_ENUM          aplCvG;               // Count(0) v. Generate(1, 2, 3) flag
     APLUINT           uRht;                 // Index of the right arg
     UBOOL             bRet;                 // TRUE iff the result is valid
     LPTOKEN           lptkAxisOpr,          // Ptr to operator axis token (may be NULL)
@@ -278,14 +278,15 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
         {
             switch (aplFS)
             {
-                case  10:
-                case  11:
-                case  12:
-                case 110:
-                case 111:
+                case FS_COMB:       // 010:
+                case FS_MULTISET:   // 011:
+                case FS_COMPO:      // 012:
+////////////////case FS_PART_ORD:   // 012:
+                case FS_PERM:       // 110:
+                case FS_TUPLE:      // 111:
                     // The CvG flag must be Integer 0..3 for FS=010 011 012 110 111
-                    if (!(0 <= aplCvG
-                      &&       aplCvG <= 3))
+                    if (!(CvG_CNT <= aplCvG
+                      &&             aplCvG <= CvG_GEN_GCG))
                         goto LEFT_OPERAND_DOMAIN_EXIT;
                     break;
 
@@ -299,7 +300,7 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
             goto LEFT_OPERAND_DOMAIN_EXIT;
     } else
         // The default is to Count
-        aplCvG = 0;
+        aplCvG = CvG_CNT;
 
     // Get the attributes of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
@@ -374,93 +375,93 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
     combArgs.lptkRhtArg   = lptkRhtArg;
     combArgs.lptkFunc     = &lpYYFcnStrOpr->tkToken;
     combArgs.lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
-    combArgs.aplGF        = aplCvG;
+    combArgs.aplCvG       = aplCvG;
 
     __try
     {
         // Split cases based upon the Function Selector
         switch (aplFS)
         {
-            case   0:   // L Pigeons into R holes
-                if (aplCvG EQ 0)
+            case FS_PIGEON0:        // 000:  L Pigeons into R holes
+                if (aplCvG EQ CvG_CNT)
                     lpYYRes = FS000C_EM_YY (&combArgs);
                 else
                     lpYYRes = FS000G_EM_YY (&combArgs);
                 break;
 
-            case   1:   // Partitions of the number L into at most R parts
-                if (aplCvG EQ 0)
+            case FS_PART_LE:        // 001:  Partitions of the number L into at most R parts
+                if (aplCvG EQ CvG_CNT)
                     lpYYRes = FS001C_EM_YY (&combArgs);
                 else
                     lpYYRes = FS001G_EM_YY (&combArgs);
                 break;
 
-            case   2:   // Partitions of the number L into R parts
-                if (aplCvG EQ 0)
+            case FS_PART_EQ:        // 002:  Partitions of the number L into R parts
+                if (aplCvG EQ CvG_CNT)
                     lpYYRes = FS002C_EM_YY (&combArgs);
                 else
                     lpYYRes = FS002G_EM_YY (&combArgs);
                 break;
 
-            case  10:   // L Combinations of R items
-                if (aplCvG EQ 0)
+            case FS_COMB:           // 010:  L Combinations of R items
+                if (aplCvG EQ CvG_CNT)
                     lpYYRes = FS010C_EM_YY (&combArgs);
                 else
                     lpYYRes = FS010G_EM_YY (&combArgs);
                 break;
 
-            case  11:   // L Multisets of R items
-                if (aplCvG EQ 0)
+            case FS_MULTISET:       // 011:  L Multisets of R items
+                if (aplCvG EQ CvG_CNT)
                     lpYYRes = FS011C_EM_YY (&combArgs);
                 else
                     lpYYRes = FS011G_EM_YY (&combArgs);
                 break;
 
-            case  12:   // Compositions of the number L into R parts
-                        // a.k.a. Partitions of the number L into R ordered parts
-                if (aplCvG EQ 0)
+            case FS_COMPO:          // 012:  Compositions of the number L into R parts
+////////////case FS_PART_ORD:       // a.k.a. Partitions of the number L into R ordered parts
+                if (aplCvG EQ CvG_CNT)
                     lpYYRes = FS012C_EM_YY (&combArgs);
                 else
                     lpYYRes = FS012G_EM_YY (&combArgs);
                 break;
 
-            case 100:   // L Pigeons into R holes
-                if (aplCvG EQ 0)
+            case FS_PIGEON1:        // 100:  L Pigeons into R holes
+                if (aplCvG EQ CvG_CNT)
                     lpYYRes = FS000C_EM_YY (&combArgs);
                 else
                     lpYYRes = FS000G_EM_YY (&combArgs);
                 break;
 
-            case 101:   // Partitions of the set {{iota}L} into at most R parts
-                if (aplCvG EQ 0)
+            case FS_PART_IM_LE:     // 101:  Partitions of the set {{iota}L} into at most R parts
+                if (aplCvG EQ CvG_CNT)
                     lpYYRes = FS101C_EM_YY (&combArgs);
                 else
                     lpYYRes = FS101G_EM_YY (&combArgs);
                 break;
 
-            case 102:   // Partitions of the set {{iota}L} into R parts
-                if (aplCvG EQ 0)
+            case FS_PART_IM_EQ:     // 102:  Partitions of the set {{iota}L} into R parts
+                if (aplCvG EQ CvG_CNT)
                     lpYYRes = FS102C_EM_YY (&combArgs);
                 else
                     lpYYRes = FS102G_EM_YY (&combArgs);
                 break;
 
-            case 110:   // L Permutations of R items
+            case FS_PERM:           // 110:  L Permutations of R items
                 switch (aplCvG)
                 {
-                    case 0:             // Count only
+                    case CvG_CNT:       // Count only
                         lpYYRes = FS110C_EM_YY (&combArgs);
 
                         break;
 
-                    case 1:             // Enumerate:  order unspecified
-                    case 3:             // Enumerate:  Gray Code
+                    case CvG_GEN_UNK:   // Enumerate:  order unspecified
+                    case CvG_GEN_GCG:   // Enumerate:  Gray Code/Genlex
                         combArgs.lpCombFn = FS110S_G;
                         lpYYRes = FS110G_EM_YY (&combArgs);
 
                         break;
 
-                    case 2:             // Enumerate:  Lexicographic
+                    case CvG_GEN_LEX:   // Enumerate:  Lexicographic
                         combArgs.lpCombFn = FS110S_L;
                         lpYYRes = FS110G_EM_YY (&combArgs);
 
@@ -472,21 +473,21 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
 
                 break;
 
-            case 111:   // L Tuples of R items
+            case FS_TUPLE:          // 111:  L Tuples of R items
                 switch (aplCvG)
                 {
-                    case 0:             // Count only
+                    case CvG_CNT:       // Count only
                         lpYYRes = FS111C_EM_YY (&combArgs);
 
                         break;
 
-                    case 1:             // Enumerate:  order unspecified
-                    case 2:             // Enumerate:  Lexicographic
+                    case CvG_GEN_UNK:   // Enumerate:  order unspecified
+                    case CvG_GEN_LEX:   // Enumerate:  Lexicographic
                         lpYYRes = FS111L_EM_YY (&combArgs);
 
                         break;
 
-                    case 3:             // Enumerate:  Gray Code
+                    case CvG_GEN_GCG:   // Enumerate:  Gray Code/Genlex
                         ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                                   &lpYYFcnStrLft->tkToken);
                         break;
@@ -497,8 +498,8 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
 
                 break;
 
-            case 112:   // Partitions of the set {{iota}L} into R ordered parts
-                if (aplCvG EQ 0)
+            case FS_PART_IM_ORD:    // 112:  Partitions of the set {{iota}L} into R ordered parts
+                if (aplCvG EQ CvG_CNT)
                     lpYYRes = FS112C_EM_YY (&combArgs);
                 else
                     lpYYRes = FS112G_EM_YY (&combArgs);
@@ -2283,7 +2284,7 @@ WSFULL_EXIT:
 //***************************************************************************
 //  $FS001S1
 //
-//  Generate partitions of L into at most R parts
+//  Generate partitions of L into at most R parts in Lexicographic Order
 //
 //  This algorithm was taken from Knuth, TAoCP, Vol 4A, p. 392, Algorithm P.
 //  The above algorithm was written in origin-0 for n > 0.
@@ -3098,9 +3099,6 @@ NORMAL_EXIT:
 //  $FS010S
 //
 //  Subroutine to FS010G, FS011G, FS012G, and FS110G
-//
-//  This algorithm was taken from Knuth, TAoCP, Vol 4A, p. 359, Algorithm T.
-//  The above algorithm was written in origin-1 for t < n.
 //***************************************************************************
 
 void FS010S
@@ -3108,7 +3106,7 @@ void FS010S
      APLINT    t,               // # Balls
      APLINT    n,               // # Boxes
      APLINT    nCnt,            // # rows in the result
-     APLINT    GF,              // Generate Flag
+     CvG_ENUM  CvG,             // Count(0) v. Generate(1, 2, 3) Flag
      LPAPLINT  c,               // Ptr to temp
      LPAPLINT  m,               // Ptr to result
      LPUBOOL   lpbCtrlBreak)    // Ptr to Ctrl-Break flag
@@ -3119,21 +3117,21 @@ void FS010S
      || n <= 0)
         goto NORMAL_EXIT;
 
-    // Split cases based upon the Generate Flag
-    switch (GF)
+    // Split cases based upon the Count v. Generate Flag
+    switch (CvG)
     {
-        case 1:
-        case 3:
+        case CvG_GEN_UNK:
+        case CvG_GEN_GCG:
             FS010S_G (sm, t, n, nCnt, c, m, lpbCtrlBreak);
 
             break;
 
-        case 2:
+        case CvG_GEN_LEX:
             FS010S_L (sm, t, n, nCnt, c, m, lpbCtrlBreak);
 
             break;
 
-        case 0:
+        case CvG_CNT:
         defstop
             break;
     } // End SWITCH
@@ -3145,7 +3143,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $FS010S_G
 //
-//  Subroutine to FS010S for Gray Code ordering
+//  Subroutine to FS010S for Genlex ordering
 //
 //  This algorithm was taken from Knuth, TAoCP, Vol 4A, p. 363, Algorithm R.
 //  The above algorithm was written in origin-1 for n > t > 1.
@@ -3478,14 +3476,14 @@ LPPL_YYSTYPE FS010G_EM_YY
 #define t       lpCombArgs->aplIntBalls         // L
 #define n       lpCombArgs->aplIntBoxes         // R
 #define nCnt    aplIntRes                       // # rows in the result
-#define GF      lpCombArgs->aplGF               // GF
+#define CvG     lpCombArgs->aplCvG              // CvG
 #define c       lpMemTmp                        // Temp var (length aplDimRes[1]+2)
 #define m       lpMemRes                        // m output array of shape (L!R) L
         // Generate the result into <lpMemRes>
-        FS010S (u, t, n, nCnt, GF, c, m, lpbCtrlBreak);
+        FS010S (u, t, n, nCnt, CvG, c, m, lpbCtrlBreak);
 #undef  m
 #undef  c
-#undef  GF
+#undef  CvG
 #undef  nCnt
 #undef  n
 #undef  t
@@ -3792,14 +3790,14 @@ LPPL_YYSTYPE FS011G_EM_YY
 #define t       aplIntLft                       // L
 #define n       aplIntRht                       // R
 #define nCnt    aplIntRes                       // # rows in the result
-#define GF      lpCombArgs->aplGF               // GF
+#define CvG     lpCombArgs->aplCvG              // CvG
 #define c       lpMemTmp                        // Temp var (length aplDimRes[1]+2)
 #define m       lpMemRes                        // m output array of shape X x L
         // Generate the result into <lpMemRes>
-        FS010S (u, t, n, nCnt, GF, c, m, lpbCtrlBreak);
+        FS010S (u, t, n, nCnt, CvG, c, m, lpbCtrlBreak);
 #undef  m
 #undef  c
-#undef  GF
+#undef  CvG
 #undef  nCnt
 #undef  n
 #undef  t
@@ -4016,8 +4014,8 @@ LPPL_YYSTYPE FS012G_EM_YY
     LPUBOOL           lpbCtrlBreak;                     // Ptr to Ctrl-Break flag
     EXCEPTION_CODES   exCode = EXCEPTION_CTRL_BREAK;    // Exception code in case we're to signal an exception
 
-    // If we're doing Gray Codes, ...
-    if (lpCombArgs->aplGF EQ 3)
+    // If we're doing Gray Codes/Genlexes, ...
+    if (lpCombArgs->aplCvG EQ CvG_GEN_GCG)
         goto NONCE_EXIT;
 
     // Get the thread's ptr to local vars
@@ -4109,14 +4107,14 @@ LPPL_YYSTYPE FS012G_EM_YY
 #define t       aplIntRht-1                     // R-1
 #define n       aplIntLft-1                     // L-1
 #define nCnt    aplIntRes                       // # rows in the result
-#define GF      lpCombArgs->aplGF               // GF
+#define CvG     lpCombArgs->aplCvG              // CvG
 #define c       lpMemTmp                        // Temp var (length aplDimRes[1]+2)
 #define m       lpMemRes                        // m output array of shape X x L
         // Generate the result into <lpMemRes>
-        FS010S (u, t, n, nCnt, GF, c, m, lpbCtrlBreak);
+        FS010S (u, t, n, nCnt, CvG, c, m, lpbCtrlBreak);
 #undef  m
 #undef  c
-#undef  GF
+#undef  CvG
 #undef  nCnt
 #undef  n
 #undef  t
@@ -5478,7 +5476,8 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $FS110S_G
 //
-//  Generate R-permutations of R items
+//  Generate R-permutations of R items in Gray Code Order
+//
 //  This algorithm was taken from Knuth, TAoCP, Vol 4A, p. 322, Algorithm P.
 //  The above algorithm was written in origin-1 for n >= 1.
 //***************************************************************************
@@ -5564,7 +5563,8 @@ ERROR_EXIT:
 //***************************************************************************
 //  $FS110S_L
 //
-//  Generate R-permutations of R items
+//  Generate R-permutations of R items in lexicographic order
+//
 //  This algorithm was taken from Knuth, TAoCP, Vol 4A, p. 319, Algorithm L.
 //  The above algorithm was written in origin-1 for n >= 1.
 //***************************************************************************
@@ -5835,8 +5835,8 @@ LPPL_YYSTYPE FS110G_EM_YY
                 goto ERROR_EXIT;
         } else
         {
-            // We can't handle as yet GF > 1
-            if (lpCombArgs->aplGF NE 1)
+            // We can't handle as yet CvG > 1
+            if (lpCombArgs->aplCvG NE CvG_GEN_UNK)
                 goto NONCE_EXIT;
 
             // Calculate space needed for a temp Integer matrix of shape <(!L) L>
@@ -5897,14 +5897,14 @@ LPPL_YYSTYPE FS110G_EM_YY
 #define t       lpCombArgs->aplIntBalls     // L
 #define n       lpCombArgs->aplIntBoxes     // R
 #define nCnt    aplIntRes                       // # rows in the result
-#define GF      lpCombArgs->aplGF           // GF
+#define CvG     lpCombArgs->aplCvG          // CvG
 #define c       lpMemTmpLp2                 // Temp var (length L+2)
 #define m       lpMemTmpT                   // m output array of shape (!L) L
             // Generate the <L comb R> result into <lpMemTmpLp2>
-            FS010S (u, t, n, nCnt, GF, c, m, lpbCtrlBreak);
+            FS010S (u, t, n, nCnt, CvG, c, m, lpbCtrlBreak);
 #undef  m
 #undef  c
-#undef  GF
+#undef  CvG
 #undef  nCnt
 #undef  n
 #undef  t

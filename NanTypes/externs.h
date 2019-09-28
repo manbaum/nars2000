@@ -2643,6 +2643,36 @@ size_t gSymTabSize
 //  Combinatorial stuff
 //***************************************************************************
 
+// Count(0) v. Generate(1, 2, 3) Flag
+typedef enum tagCvG_ENUM
+{
+    CvG_CNT = 0,                // 00:  Count
+    CvG_GEN_UNK,                // 01:  Generate, order unspecified
+    CvG_GEN_LEX,                // 02:     "            Lexicographic
+    CvG_GEN_GCG,                // 03:     "            Gray Code/Genlex
+} CvG_ENUM, *LPCvG_ENUM;
+
+// Function Selector
+typedef enum tagFS_ENUM
+{
+    FS_PIGEON0 = 0         ,    // 000:  M Pigeons into N holes
+    FS_PART_LE             ,    // 001:  Partitions of M into <= N parts
+    FS_PART_EQ             ,    // 002:  Partitions of M into N parts
+
+    FS_COMB    = 10        ,    // 010:  M combinations of N items
+    FS_MULTISET            ,    // 011:  M multisets of N items
+    FS_COMPO               ,    // 012:  Compositions of M into N parts, a.k.a.
+    FS_PART_ORD = FS_COMPO ,    // 012:  partitions of M into N ordered parts
+
+    FS_PIGEON1 = 100       ,    // 100:  M pigeons into N holes
+    FS_PART_IM_LE          ,    // 101:  Partitions of {iota}M into <= N parts
+    FS_PART_IM_EQ          ,    // 102:  Partitions of {iota}M into N parts
+
+    FS_PERM    = 110       ,    // 110:  M permutations of N items
+    FS_TUPLE               ,    // 111:  M tuples of N items
+    FS_PART_IM_ORD         ,    // 112:  Partitions of {iota}M into N ordered parts
+} FS_ENUM, *LPFS_ENUM;
+
 // Special combinatorial function
 typedef void (*LPCOMBFN) (APLINT   ,
                           APLINT   ,
@@ -2664,7 +2694,7 @@ typedef struct tagCOMB_ARGS
     UINT     bIntBalls:1,       // 18:  00000001:  TRUE iff aplIntBalls is valid
              bIntBoxes:1,       //      00000002:  ...      aplIntBoxes ...
              :30;               //      FFFFFFFC:  Available bits
-    APLINT   aplGF;             // 1C:  Generate Flag
+    CvG_ENUM aplCvG;            // 1C:  Count(0) v. Generate(1, 2, 3) Flag
     LPUBOOL  lpbCtrlBreak;      // 20:  Ptr to Ctrl-Break flag
     LPCOMBFN lpCombFn;          // 24:  Ptr to special function
                                 // 28:  Length

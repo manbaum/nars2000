@@ -1,0 +1,18 @@
+Build #2242 -- Version 0.6.2.xx
+-------------------------------
+
+* Document Combinatorial Operator Internal Values
+
+Directory branches/bsmith/NanTypes:
+
+EXTERNS.H:
+  Define ENUMs for Combinatorial operator Function Selectors and Count v. Generate values.
+
+PO_COMB.C:
+ Use ENUMs for Combinatorial operators values.
+
+REBAR.C:
+  Document Lexicographic/Gray Code/Genlex use in Combinatorial operator.
+
+UNICODE.H:
+  Define names for Dagger and DoubleDagger symbols.

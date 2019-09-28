@@ -315,10 +315,12 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_HC2F:
         case DR_HC2R:
         case DR_HC2V:
+
         case DR_HC4I:
         case DR_HC4F:
         case DR_HC4R:
         case DR_HC4V:
+
         case DR_HC8I:
         case DR_HC8F:
         case DR_HC8R:
@@ -1135,7 +1137,7 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
     // Lock the memory to get a ptr to it
     lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -1211,13 +1213,13 @@ YYALLOC_EXIT:
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
-    if (hGlbRht NE NULL && lpMemRht NE NULL)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes NE NULL && lpMemRes NE NULL)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -1315,21 +1317,21 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
      LPTOKEN  lptkFunc)
 
 {
-    APLSTYPE          aplTypeRht;       // Right arg storage type
-    APLNELM           aplNELMRht;       // ...       NELM
-    APLRANK           aplRankRht;       // ...       rank
-    APLUINT           ByteRes,          // # bytes in the result
-                      uLen,             // Limit for HC #s
-                      uRht;             // Loop counter
-    HGLOBAL           hGlbRht,          // Right arg global memory handle
-                      hGlbRes;          // Result    ...
+    APLSTYPE          aplTypeRht;           // Right arg storage type
+    APLNELM           aplNELMRht;           // ...       NELM
+    APLRANK           aplRankRht;           // ...       rank
+    APLUINT           ByteRes,              // # bytes in the result
+                      uLen,                 // Limit for HC #s
+                      uRht;                 // Loop counter
+    HGLOBAL           hGlbRht,              // Right arg global memory handle
+                      hGlbRes;              // Result    ...
     LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg array header
-                      lpMemHdrRes = NULL;   // ...    result ...
-    LPVOID            lpMemRes;         // Ptr to result global memory
-    LPPL_YYSTYPE      lpYYRes;          // Ptr to the result
-    APLNELM           aplNELMRes;       // Result NELM
-    APLCHAR           wszTemp[512];     // Temporary APLCHARs
-    UBOOL             bInit = FALSE;    // TRUE iff array properties have been initialized
+                      lpMemHdrRes = NULL;   // ...    result    ...
+    LPVOID            lpMemRes;             // Ptr to result global memory
+    LPPL_YYSTYPE      lpYYRes;              // Ptr to the result
+    APLNELM           aplNELMRes;           // Result NELM
+    APLCHAR           wszTemp[512];         // Temporary APLCHARs
+    UBOOL             bInit = FALSE;        // TRUE iff array properties have been initialized
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -1569,6 +1571,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
                         L"%I64u ",
                          uCommPrec);
         } else
+            // Mark as Mixed
             MyStrcatW (wszTemp, sizeof (wszTemp), L" " AP_FPC L"-Mixed");
     } // End IF
 
@@ -1597,7 +1600,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
     // Lock the memory to get a ptr to it
     lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemHdrRes)
+#define lpHeader        lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
@@ -1758,8 +1761,10 @@ HGLOBAL SysFnDR_IntFloatToChar_EM
                       hGlbRes = NULL;       // Result    ...
     LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg array header
                       lpMemHdrRes = NULL;   // ...    result    ...
-    LPVOID            lpMemRht,             // Ptr to right arg global memory
-                      lpMemRes;             // Ptr to result    ...
+    LPAPLDIM          lpMemDimRht,          // Ptr to right arg dimensions
+                      lpMemDimRes;          // ...    result    ...
+    LPVOID            lpMemRht;             // Ptr to right arg global memory
+    LPAPLCHAR         lpMemRes;             // Ptr to result    ...
     APLLONGEST        aplLongestRht;        // Immediate value
     UBOOL             bRet = TRUE;          // TRUE iff the result is valid
 
@@ -1788,7 +1793,7 @@ HGLOBAL SysFnDR_IntFloatToChar_EM
     // Lock the memory to get a ptr to it
     lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemHdrRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
@@ -1803,30 +1808,36 @@ HGLOBAL SysFnDR_IntFloatToChar_EM
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // Skip over the header to the dimensions
-    lpMemRes = VarArrayBaseToDim (lpMemHdrRes);
+    lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
     if (lpMemHdrRht NE NULL)
     {
         // Skip over the header to the dimensions
-        lpMemRht = VarArrayBaseToDim (lpMemHdrRht);
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
 
         //***************************************************************
         // Copy the dimensions from the right arg
         //   to the result's dimension
         //***************************************************************
         for (uRes = 0; uRes < aplRankRht; uRes++)
-            *((LPAPLDIM) lpMemRes)++ = *((LPAPLDIM) lpMemRht)++;
+            *lpMemDimRes++ = *lpMemDimRht++;
     } // End IF
 
     // The last dimension is 16
-    *((LPAPLDIM) lpMemRes)++ = 16;
+    *lpMemDimRes++ = 16;
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // lpMemRes now points to the result's data
 
     // If the right arg is not an immediate, ...
     if (lpMemHdrRht NE NULL)
     {
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+
         // Loop through the right arg converting it to the result
-        for (uRes = 0; bRet && uRes < aplNELMRht; uRes++, ((LPAPLCHAR) lpMemRes += 16))
+        for (uRes = 0; bRet && uRes < aplNELMRht; uRes++, lpMemRes += 16)
         {
             // Get the next value from the right arg
             GetNextValueMem (lpMemRht,      // Ptr to item global memory data
@@ -1843,9 +1854,6 @@ HGLOBAL SysFnDR_IntFloatToChar_EM
     // The right arg is an immediate
         // Convert to APLCHARs
         (*lpConvertToChar) (lpMemRes, aplTypeRht, aplLongestRht, &bRet);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
     // Check for error
     if (bRet)
@@ -1864,7 +1872,7 @@ WSFULL_EXIT:
 ERROR_EXIT:
     if (hGlbRes NE NULL)
     {
-        if (lpMemRes NE NULL)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -1874,6 +1882,12 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    if (lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+    } // End IF
+
     // If the right arg is not an immediate, ...
     if (lpMemHdrRht NE NULL)
     {
@@ -1951,9 +1965,11 @@ HGLOBAL SysFnDR_CharToIntFloat_EM
                       hGlbRes = NULL;       // Result    ...
     LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg array header
                       lpMemHdrRes = NULL;   // ...    result    ...
+    LPAPLDIM          lpMemDimRht,          // Ptr to right arg dimensions
+                      lpMemDimRes;          // ...    result    ...
     LPAPLCHAR         lpMemRht,             // Ptr to right arg global memory
                       lpMemDataRht;         // Ptr to right arg global memory
-    LPVOID            lpMemRes = NULL;      // Ptr to result    ...
+    LPVOID            lpMemRes;             // Ptr to result    ...
     APLLONGEST        aplLongestRht;        // Right arg accumulator
 
     // Get the attributes (Type, NELM, and Rank)
@@ -2013,7 +2029,7 @@ HGLOBAL SysFnDR_CharToIntFloat_EM
     // Lock the memory to get a ptr to it
     lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -2025,20 +2041,23 @@ HGLOBAL SysFnDR_CharToIntFloat_EM
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    (LPAPLDIM) lpMemRes = VarArrayBaseToDim (lpMemHdrRes);
+    lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
 
     // Skip over the header to the dimensions
-    (LPAPLDIM) lpMemRht = VarArrayBaseToDim (lpMemHdrRht);
+    lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
 
     //***************************************************************
     // Copy the dimensions from the right arg (except for the last one)
     //   to the result's dimension
     //***************************************************************
     for (uRes = 0; uRes < aplRankRes; uRes++)
-        *((LPAPLDIM) lpMemRes)++ = *((LPAPLDIM) lpMemRht)++;
+        *lpMemDimRes++ = *lpMemDimRht++;
 
     // Skip over the right arg last dimension
-    Assert (16 EQ *(LPAPLDIM) lpMemRht); ((LPAPLDIM) lpMemRht)++;
+    Assert (16 EQ *lpMemDimRht); lpMemDimRht++;
+
+    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Convert the char representation of an integer/float to an integer/float
 
@@ -2102,7 +2121,7 @@ WSFULL_EXIT:
 ERROR_EXIT:
     if (hGlbRes NE NULL)
     {
-        if (lpMemRes NE NULL)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -2112,13 +2131,13 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRes NE NULL && lpMemRes NE NULL)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
-    if (hGlbRht NE NULL && lpMemRht NE NULL)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;

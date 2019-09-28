@@ -1,6 +1,17 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2251 -- Version 0.5.14.xx
+--------------------------------
+
+* Cleanup Code In []DR
+
+Directory branches/bsmith/NewTypes:
+
+QF_DR.C:
+  Cleanup code in []DR.
+
+
 Build #2249 -- Version 0.5.14.xx
 --------------------------------
 

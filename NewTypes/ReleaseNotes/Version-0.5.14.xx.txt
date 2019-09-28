@@ -1,10 +1,22 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2247 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix Random Bug With 1 & 2 []DR when A Uninitialized Stack Variable Is Mistakenly Used
+
+Directory branches/bsmith/NewTypes:
+
+QF_DR.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  The above change actually fixes a bug where I use <lpMemRht> instead of <lpMemHdrRht>.
+
+
 Build #2245 -- Version 0.5.14.xx
 --------------------------------
 
-* Cleanup Code When Displaying CRF/CR/LF
+* Cleanup Code When Displaying CR/CR/LF
 
 Directory branches/bsmith/NewTypes:
 

@@ -1823,7 +1823,7 @@ HGLOBAL SysFnDR_IntFloatToChar_EM
     // lpMemRes now points to the result's data
 
     // If the right arg is not an immediate, ...
-    if (lpMemRht NE NULL)
+    if (lpMemHdrRht NE NULL)
     {
         // Loop through the right arg converting it to the result
         for (uRes = 0; bRet && uRes < aplNELMRht; uRes++, ((LPAPLCHAR) lpMemRes += 16))
@@ -1874,9 +1874,10 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    // We no longer need this ptr
-    if (lpMemRht NE NULL)
+    // If the right arg is not an immediate, ...
+    if (lpMemHdrRht NE NULL)
     {
+        // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 

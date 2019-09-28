@@ -1,7 +1,7 @@
 Build #2245 -- Version 0.5.14.xx
 --------------------------------
 
-* Cleanup Code When Displaying CRF/CR/LF
+* Cleanup Code When Displaying CR/CR/LF
 
 Directory branches/bsmith/NewTypes:
 

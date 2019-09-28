@@ -1599,9 +1599,6 @@ LPAPLCHAR SavedWsFormGlbVar
                         &uCommPrec,                             // Ptr to common VFP array precision (0 if none) (may be NULL)
                          lpMemHdrObj,                           // Ptr to array header
                          lpMemObj);                             // Ptr to the data
-    // Skip over the header and dimensions to the data
-    lpMemObj = VarArrayDataFmBase (lpMemObj);
-
     // If the var is any ARB, ...
     lpaWsFeatureFlag[ENUM_FEATURE_BALLARITHMETIC] |= IsAnyArb (aplTypeObj);
 

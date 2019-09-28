@@ -1,6 +1,17 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2252 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug In )SAVE Of Ball Arithmetic Workspace
+
+Directory branches/bsmith/NanTypes:
+
+SC_SAVE.C:
+  Delete extra code mistakenly not deleted in an earlier merge.
+
+
 Build #2250 -- Version 0.6.2.xx
 -------------------------------
 

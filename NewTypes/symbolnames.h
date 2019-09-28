@@ -97,7 +97,8 @@ SYMBOLNAMES aSymbolNames[]
 //{UTF16_                     ,                         },  // Alt-'A' - (none)
 //{UTF16_                     ,                         },  // Alt-'B' - (none)
 //{UTF16_                     ,                         },  // Alt-'C' - (none)
-//{UTF16_                     ,                         },  // Alt-'D' - (none)
+  {UTF16_DERIV                , L"{curlyd}"             },  // Alt-'D' - Derivative operator  (curly-d)
+  {UTF16_DERIV                , L"{deriv}"              },  // ...
   {UTF16_EPSILONUNDERBAR      , L"{epsilonunderbar}"    },  // Alt-'E' - epsilon-underbar
   {UTF16_EPSILONUNDERBAR      , L"{epsilon_}"           },  // ...
   {UTF16_EPSILONUNDERBAR      , L"{find}"               },  // ...

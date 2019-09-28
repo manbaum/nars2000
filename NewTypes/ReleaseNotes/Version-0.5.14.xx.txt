@@ -1,6 +1,17 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2249 -- Version 0.5.14.xx
+--------------------------------
+
+* Include {deriv} in Symbol Names Table So It Appears In A Workspace That Way Instead Of As A Hex Constant
+
+Directory branches/bsmith/NewTypes:
+
+SYMBOLNAMES.H:
+  Include <UTF16_DERIV> in the table so it appears in a workspace as {deriv} instead of {\x2202}.
+
+
 Build #2247 -- Version 0.5.14.xx
 --------------------------------
 

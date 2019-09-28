@@ -1,0 +1,9 @@
+Build #2243 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix Bug In  1 []CR With Multiline AFOs
+
+Directory branches/bsmith/NewTypes:
+
+QF_CR.C:
+  Fix bug in 1 []CR with multiline AFOs.  This time, handle all the lines by using the UDFO code.

@@ -1,0 +1,12 @@
+Build #2245 -- Version 0.5.14.xx
+--------------------------------
+
+* Cleanup Code When Displaying CRF/CR/LF
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+  Define WS_CRCR for use in <CheckTermCodes> in <display.c>.
+
+DISPLAY.C:
+  In <CheckTermCodes>, handle CR/CR/LF by inserting CR/CR and then falling through to the following WC_LF code.

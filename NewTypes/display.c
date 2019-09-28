@@ -5624,35 +5624,29 @@ UBOOL CheckTermCodes
                 if (lpwc[1] EQ WC_CR
                  && lpwc[2] EQ WC_LF)
                 {
-                    UINT uCharPos,              // Current char position in the buffer
-                         uLineNum;              // Current line #
-
-                    // The previous line ends with CR/LF and we need to change it
-                    //   so that it ends with CR/CR/LF
+                    UINT uCharPos;              // Current char position in the buffer
 
                     // Get the indices of the selected text, and as
                     //   there is none, we need the leading position only
                     SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &uCharPos, 0);
 
-                    // Back up by 2 to the start of CR/LF
-                    SendMessageW (hWndEC, EM_SETSEL, uCharPos - 2, uCharPos - 2);
+                    // Insert the original text at <lpaplCharIni>
+                    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpaplCharIni);
 
-                    // Insert another CR
-                    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) WS_CR);
+                    // Zap the original line
+                    (*lpaplCharIni) = WC_EOS;
 
-                    // Reset the selection to the end
-                    SendMessageW (hWndEC, EM_SETSEL, uCharPos + 1, uCharPos + 1);
+                    // Get the current position
+                    SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &uCharPos, 0);
 
-                    // Get the current line # in the Edit Ctrl buffer
-                    uLineNum = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
-
-                    // Draw a Line Continuation marker
-                    DrawLineCont (hWndEC, uLineNum);
+                    // End the line with CR/CR
+                    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) WS_CRCR);
 
                     bRet = TRUE;
-                } // End IF
 
-                break;
+                    // Fall through to common code
+                } else
+                    break;
             } else
             {
                 // Fall through to common code

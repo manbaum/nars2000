@@ -585,6 +585,7 @@ default:        \
 #define WS_LC           L"\x27A5"   // 27A5:  Line Continuation marker
 
 #define WS_CRLF         L"\r\n"     // 0D0A:    CR/LF    (hard line-break)
+#define WS_CRCR         L"\r\r"     // 0D0D:    CR/CR    (???? line-break)
 #define WS_CRCRLF       L"\r\r\n"   // 0D0D0A:  CR/CR/LF (soft line-break)
 #define WS_WHITE        L" \r\n"    // 200D0A:  White space
 

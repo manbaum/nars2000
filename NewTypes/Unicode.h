@@ -59,6 +59,8 @@
 #define UTF16_GAMMA               0x03B3        // Gamma
 #define UTF16_LEFTSINGLEQUOTE     0x2018        // Left single quotation mark
 #define UTF16_RIGHTSINGLEQUOTE    0x2019        // Right ...
+#define UTF16_DAGGER              0x2020        // Dagger
+#define UTF16_DOUBLEDAGGER        0x2021        // Double Dagger
 #define UTF16_HORIZELLIPSIS       0x2026        // Horizontal ellipsis
 #define UTF16_EURO                0x20AC        // Euro
 #define UTF16_LEFTRIGHTARROWS     0x2194        // Left-right arrows
@@ -319,6 +321,8 @@
 #define WS_UTF16_GAMMA               L"\x03B3"  // Gamma
 #define WS_UTF16_LEFTSINGLEQUOTE     L"\x2018"  // Left single quotation mark
 #define WS_UTF16_RIGHTSINGLEQUOTE    L"\x2019"  // Right ...
+#define WS_UTF16_DAGGER              L"\x2020"  // Dagger
+#define WS_UTF16_DOUBLEDAGGER        L"\x2021"  // Double Dagger
 #define WS_UTF16_HORIZELLIPSIS       L"\x2026"  // Horizontal ellipsis
 #define WS_UTF16_EURO                L"\x20AC"  // Euro
 #define WS_UTF16_LEFTRIGHTARROWS     L"\x2194"  // Left-right arrows

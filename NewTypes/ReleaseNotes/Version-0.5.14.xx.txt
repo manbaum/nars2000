@@ -1,6 +1,26 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2241 -- Version 0.5.14.xx
+--------------------------------
+
+* Document Combinatorial Operator Internal Values
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+  Define ENUMs for Combinatorial operator Function Selectors and Count v. Generate values.
+
+PO_COMB.C:
+ Use ENUMs for Combinatorial operators values.
+
+REBAR.C:
+  Document Lexicographic/Gray Code/Genlex use in Combinatorial operator.
+
+UNICODE.H:
+  Define names for Dagger and DoubleDagger symbols.
+
+
 Build #2239 -- Version 0.5.14.xx
 --------------------------------
 

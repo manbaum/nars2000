@@ -1,6 +1,20 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2246 -- Version 0.6.2.xx
+-------------------------------
+
+* Cleanup Code When Displaying CR/CR/LF
+
+Directory branches/bsmith/NanTypes:
+
+DEFINES.H:
+  Define WS_CRCR for use in <CheckTermCodes> in <display.c>.
+
+DISPLAY.C:
+  In <CheckTermCodes>, handle CR/CR/LF by inserting CR/CR and then falling through to the following WC_LF code.
+
+
 Build #2244 -- Version 0.6.2.xx
 -------------------------------
 

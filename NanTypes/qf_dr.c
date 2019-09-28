@@ -1912,6 +1912,7 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
+    // If the right arg is not an immediate, ...
     if (lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr

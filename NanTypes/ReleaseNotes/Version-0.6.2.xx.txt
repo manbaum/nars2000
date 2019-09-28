@@ -1,7 +1,7 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
-Build #2248 -- Version 0.6.2.xx
+Build #2250 -- Version 0.6.2.xx
 -------------------------------
 
 * Include {deriv} in Symbol Names Table So It Appears In A Workspace That Way Instead Of As A Hex Constant
@@ -10,6 +10,18 @@ Directory branches/bsmith/NanTypes:
 
 SYMBOLNAMES.H:
   Include <UTF16_DERIV> in the table so it appears in a workspace as {deriv} instead of {\x2202}.
+
+
+Build #2248 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Random Bug With 1 & 2 []DR when A Uninitialized Stack Variable Is Mistakenly Used
+
+Directory branches/bsmith/NanTypes:
+
+QF_DR.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  The above change actually fixes a bug where I use <lpMemRht> instead of <lpMemHdrRht>.
 
 
 Build #2246 -- Version 0.6.2.xx

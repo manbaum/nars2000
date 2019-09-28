@@ -1,0 +1,9 @@
+Build #2250 -- Version 0.6.2.xx
+-------------------------------
+
+* Include {deriv} in Symbol Names Table So It Appears In A Workspace That Way Instead Of As A Hex Constant
+
+Directory branches/bsmith/NanTypes:
+
+SYMBOLNAMES.H:
+  Include <UTF16_DERIV> in the table so it appears in a workspace as {deriv} instead of {\x2202}.

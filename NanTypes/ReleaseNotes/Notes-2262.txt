@@ -1,0 +1,9 @@
+Build #2262 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug When Displaying An Empty Matrix Or Higher Rank Array
+
+Directory branches/bsmith/NanTypes:
+
+PF_DTACKJOT.C:
+  In <FormatArrSimple>, check for empty matrix or higher rank array and do not display an empty line.

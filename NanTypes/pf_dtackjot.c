@@ -3622,8 +3622,10 @@ LPAPLCHAR FormatArrSimple
             bMoreCols = FALSE;
         } else
         {
-            // If this is raw output, ...
-            if (bRawOutput)
+            // If this is raw output of a scalar, vector, or non-empty matrix+, ...
+            if (bRawOutput
+             && (!IsRank2P (aplRank)
+              ||  IsRank2P (aplRank) && !IsEmpty (aplDimNRows)))
                 // Append an empty line with trailing CRLF
                 //   to end the current line
                 AppendLine (L"", FALSE, TRUE);

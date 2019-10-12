@@ -146,6 +146,14 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     ALLTYPES          atLft = {0},          // Left arg as ALLTYPES
                       atStp = {0},          // Step  ...
                       atRht = {0};          // Right ...
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // 2..7   == 2 3 4 5 6 7
     // 2 2..7 == 2 4 6
@@ -488,7 +496,13 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
         case ARRAY_FLOAT:
             // Loop through the result items
             for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 *((LPAPLFLOAT) lpMemRes)++ = atLft.aplFloat + uCnt * atStp.aplFloat;
+            } // End FOR
 
             break;
 
@@ -496,6 +510,10 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
             // Loop through the result items
             for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 mpq_init_set (((LPAPLRAT) lpMemRes)++, &atLft.aplRat);
                 mpq_add (&atLft.aplRat, &atLft.aplRat, &atStp.aplRat);
             } // End FOR
@@ -506,6 +524,10 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
             // Loop through the result items
             for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 mpfr_init_set (((LPAPLVFP) lpMemRes)++, &atLft.aplVfp, MPFR_RNDN);
                 mpfr_add (&atLft.aplVfp, &atLft.aplVfp, &atStp.aplVfp, MPFR_RNDN);
             } // End FOR

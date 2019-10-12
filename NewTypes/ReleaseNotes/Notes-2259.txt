@@ -1,0 +1,9 @@
+Build #2259 -- Version 0.5.14.xx
+--------------------------------
+
+* Allow The DotDot Function To Be Interrupted
+
+Directory branches/bsmith/NewTypes:
+
+PF_DOTDOT.C:
+  In various places, check for Ctrl-Break.

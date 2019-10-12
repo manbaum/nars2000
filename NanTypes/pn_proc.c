@@ -8281,6 +8281,9 @@ UBOOL PN_VectorAcc
 
     // Accumulate the number
 
+    // Turn off the BasePoint Notation flag
+    lppnLocalVars->bBasePoint = FALSE;
+
     // If the global handle has not been allocated as yet, ...
     if (lppnLocalVars->hGlbVector EQ NULL)
     {

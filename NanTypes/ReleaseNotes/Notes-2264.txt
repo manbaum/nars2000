@@ -1,0 +1,11 @@
+Build #2264 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug When Parsing BasePoint Notation
+
+Directory branches/bsmith/NanTypes:
+
+PN_PARSE.H:
+PN_PARSE.Y:
+PN_PROC.C:
+  Fix bug when parsing BasePoint Notation as it can be confused with Complex Angle Notation.

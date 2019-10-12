@@ -3957,6 +3957,30 @@ void DispVar1
 #endif
 
 
+#ifdef DEBUG
+//***************************************************************************
+//  $DispVarName
+//***************************************************************************
+
+void DispVarName
+    (LPPL_YYSTYPE lpplYYCurObj)
+
+{
+    if (IsTknNamed (&lpplYYCurObj->tkToken))
+    {
+        WCHAR wszTemp[1024];
+
+        FormatSTE (lpplYYCurObj->tkToken.tkData.tkSym,
+                   wszTemp,
+                   sizeof (wszTemp));
+        dprintfWL0 (L"DispVarName:  STE = %s\r\n", wszTemp);
+    } else
+        dprintfWL0 (L"DispVarName:  token not named, type = %s\r\n",
+                     GetTokenTypeName (lpplYYCurObj->tkToken.tkFlags.TknType));
+} // End DispVarName
+#endif
+
+
 //***************************************************************************
 //  End of File: dispdbg.c
 //***************************************************************************

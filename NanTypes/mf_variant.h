@@ -35,7 +35,8 @@
 static LPAPLCHAR DydVOFactBody[] =
 {L"⎕PRO:",
  L"⎕IO←0",
- L"→(2=≢"S L"X)/"S L"L1 ⋄ "S L"X←"S L"X,1",
+ L"→(2=≢"S L"X)/"S L"L0 ⋄ "S L"X←"S L"X,1",
+ L""S L"L0:→(" S L"X[0]≠0)/"S L"L1 ⋄ "S L"X[0]←(-×"S L"R)×⌈|"S L"R÷"S L"X[1]",
  L""S L"L1:"S L"Z←×/¨"S L"R+((×"S L"X[0])×|"S L"X[1])×⊂⍳|"S L"X[0]",
 };
 

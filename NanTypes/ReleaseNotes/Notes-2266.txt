@@ -1,0 +1,18 @@
+Build #2266 -- Version 0.6.2.xx
+-------------------------------
+
+* Miscellaneous Changes
+
+Directory branches/bsmith/NewTypes:
+
+PO_COMB.C:
+  In <PrimOpMonCombinatorial_EM_YY>, simplify setting of valid state of # Balls & Boxes.
+
+PO_DERIV.C:
+  Fix erroneous comment in <PrimOpDerivNewCentral_EM_YY>.
+
+QF_AT.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+
+TOKENIZE.C:
+  Comment out DEBUG statements which need to be re-evaluated to improve them.  At the moment, they are just unhelpful noise.

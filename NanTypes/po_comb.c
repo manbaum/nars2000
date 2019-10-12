@@ -335,15 +335,15 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
 
     // Get the # Balls as an INT
     combArgs.aplIntBalls = ConvertToInteger_SCT (aplTypeRht, lpMemRht,    0, &bRet);
-    if (bRet)
-        // Mark as valid
-        combArgs.bIntBalls = TRUE;
+
+    // Mark as valid/invalid
+    combArgs.bIntBalls = bRet;
 
     // Get the # Boxes as an INT
     combArgs.aplIntBoxes = ConvertToInteger_SCT (aplTypeRht, lpMemRht, uRht, &bRet);
-    if (bRet)
-        // Mark as valid
-        combArgs.bIntBoxes = TRUE;
+
+    // Mark as valid/invalid
+    combArgs.bIntBoxes = bRet;
 
     // Get the # Balls as a RAT
     combArgs.aplRatBalls = ConvertToRAT_SCT     (aplTypeRht, lpMemRht,    0, &bRet);

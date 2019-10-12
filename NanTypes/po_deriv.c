@@ -421,7 +421,7 @@ LPPL_YYSTYPE PrimOpDerivNewCentral_EM_YY
                    iDegree,         // Degree of derivative (1st, 2nd, etc.)
                    iOrder,          // Sample size (0 = use default)
                    iSFE,            // Sampling Frequency Exponent (0 = use default)
-                   ARB_PREC_FPC);   // Rounding mode
+                   ARB_PREC_FPC);   // Precision
 
                 // We no longer need this storage
 ////            arb_clear (abserrArb);

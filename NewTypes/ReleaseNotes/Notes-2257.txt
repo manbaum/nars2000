@@ -1,0 +1,9 @@
+Build #2257 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix Bug In Magic Function For Pochhammer Symbol
+
+Directory branches/bsmith/NewTypes:
+
+MF_VARIANT.H:
+  Fix bug in Magic Function for Pochhammer symbol.

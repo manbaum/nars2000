@@ -23,7 +23,6 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
-#include "nameclass.h"
 
 
 //***************************************************************************
@@ -376,8 +375,10 @@ UBOOL IsValid1stCharInName
 {
     return (wch NE WC_EOS
          && (FALSE
-///////// || wch EQ UTF16_DELTA
-///////// || wch EQ UTF16_DELTAUNDERBAR
+#if UTF16_DERIV != UTF16_DELTA
+          || wch EQ UTF16_DELTA
+          || wch EQ UTF16_DELTAUNDERBAR
+#endif
           || wch EQ UTF16_UNDERBAR
           || strchrW (WQUADa, wch) NE NULL
           || strchrW (WQUADA, wch) NE NULL
@@ -509,15 +510,16 @@ LPSYMENTRY GetSymDel
 //    0 = Available name
 //    1 = User label
 //    2 = User variable
-//    3 = User-defined function (any # args:  0, 1, or 2)
-//    4 = User-defined operator (either # operands:  1 or 2)
+//    3 = User-defined function   (any # args:  0, 1, or 2)
+//    4 = User-defined operator   (either # operands:  1 or 2)
 //    5 = System variable
-//    6 = System function       (any # args:  0, 1, or 2)
-// 7-20 = (Unused)
+//    6 = System function         (any # args:  0, 1, or 2)
+//    7 = System operator         (either # operands:  1 or 2)
+// 8-20 = (Unused)
 //   21 = System label
 //   22 = (Unused)
-//   23 = Magic function        (any # args:  0, 1, or 2)
-//   24 = Magic operator        (either # operands:  1 or 2)
+//   23 = Magic function          (any # args:  0, 1, or 2)
+//   24 = Magic operator          (either # operands:  1 or 2)
 //
 //  Note that the left shifts (BIT0 <<) in <SysFnDydNL_EM_YY>
 //    assume that the name class values are <= 63.  If you add
@@ -529,10 +531,26 @@ APLINT CalcNameClass
     (LPSYMENTRY lpSymEntry)
 
 {
+    size_t     uLen;
+    LPSYMENTRY lpSymEntry2;
+
     // Split cases based upon the Name Type
     switch (lpSymEntry->stFlags.stNameType)
     {
         case NAMETYPE_UNK:
+            // If this is a {del}, ...
+            if (IsSymDelLen (lpSymEntry, &uLen))
+            {
+                // Get a ptr to the SYMENTRY of the suspended/pendant function
+                lpSymEntry2 = GetSymDel (lpSymEntry);
+
+                if (lpSymEntry2 NE NULL)
+                    return
+                      TranslateNameTypeToNameClass (lpSymEntry2->stFlags.stNameType,
+                                                    lpSymEntry2->stFlags.ObjName,
+                                                    uLen);
+            } // End IF
+
             return NAMECLASS_AVL;
 
         case NAMETYPE_VAR:

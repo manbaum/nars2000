@@ -20,6 +20,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#ifndef HEADERS_H
+#define HEADERS_H
+
 #ifdef _WIN64
   #pragma pack(push,8)
 #else
@@ -84,6 +87,7 @@
 #include "editctrl.h"
 #include "qf.h"
 #include "fmtspec.h"
+#include "nameclass.h"
 #ifndef REAL_MPIFNS
   #include "mpifns.h"
 #endif
@@ -137,6 +141,8 @@
 #ifndef PROTO
 #include "compro.h"
 #endif
+
+#endif  /* HEADERS_H */
 
 
 //***************************************************************************

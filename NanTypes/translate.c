@@ -355,6 +355,134 @@ SO_ENUM TranslateTknTypeToSOType
 
 
 //***************************************************************************
+//  $TranslateNameTypeToNameClass
+//
+//  Translate a name type (see NAME_TYPES) to
+//    a nameclass (see NAME_CLASS).
+//***************************************************************************
+
+NAME_CLASS TranslateNameTypeToNameClass
+    (NAME_TYPES nameType,
+     OBJ_NAMES  objName,
+     size_t     uLen)
+
+{
+    Assert (1 <= uLen && uLen <= 2);
+
+    // Split cases based upon the name type
+    switch (nameType)
+    {
+        case NAMETYPE_VAR:
+            // Split cases based upon the object name
+            switch (objName)
+            {
+                case OBJNAME_USR:
+                    return NAMECLASS_USRVAR;
+
+                case OBJNAME_SYS:
+                    return NAMECLASS_SYSVAR;
+
+                case OBJNAME_MFO:
+                case OBJNAME_NONE:
+                defstop
+                    break;
+            } // End SWITCH
+
+            return NAMECLASS_INV;
+
+        case NAMETYPE_FN0:
+        case NAMETYPE_FN12:
+        case NAMETYPE_TRN:
+            // If there's a single {del}, ...
+            if (uLen EQ 1)
+            // Split cases based upon the object name
+            switch (objName)
+            {
+                case OBJNAME_USR:
+                    return NAMECLASS_USRFCN;
+
+                case OBJNAME_SYS:
+                    return NAMECLASS_SYSFCN;
+
+                case OBJNAME_MFO:
+                    return NAMECLASS_MAGFCN;
+
+                case OBJNAME_NONE:
+                defstop
+                    break;
+            } // End SWITCH
+
+            return NAMECLASS_INV;
+
+        case NAMETYPE_OP1:
+        case NAMETYPE_OP2:
+        case NAMETYPE_OP3:
+            // Split cases based upon the object name
+            switch (objName)
+            {
+                case OBJNAME_USR:
+                    // Split cases based upon the # {del}s
+                    switch (uLen)
+                    {
+                        case 1:
+                            return NAMECLASS_USRFCN;
+
+                        case 2:
+                            return NAMECLASS_USROPR;
+
+                        case 3:
+                        default:
+                            return NAMECLASS_INV;
+                    } // End SWITCH
+
+                case OBJNAME_SYS:
+                    // Split cases based upon the # {del}s
+                    switch (uLen)
+                    {
+                        case 1:
+                            return NAMECLASS_SYSFCN;
+
+                        case 2:
+                            return NAMECLASS_SYSOPR;
+
+                        case 3:
+                        default:
+                            return NAMECLASS_INV;
+                    } // End SWITCH
+
+                case OBJNAME_MFO:
+                    // Split cases based upon the # {del}s
+                    switch (uLen)
+                    {
+                        case 1:
+                            return NAMECLASS_MAGFCN;
+
+                        case 2:
+                            return NAMECLASS_MAGOPR;
+
+                        case 3:
+                        default:
+                            return NAMECLASS_INV;
+                    } // End SWITCH
+
+                case OBJNAME_NONE:
+                defstop
+                    break;
+            } // End SWITCH
+
+            return NAMECLASS_INV;
+
+        case NAMETYPE_UNK:
+            return NAMECLASS_AVL;
+
+        case NAMETYPE_LST:
+        defstop
+            return NAMECLASS_INV;   // To keep the compiler happy
+    } // End SWITCH
+} // End TranslateNameTypeToNameClass
+
+
+//***************************************************************************
 //  $TranslateTknTypeToTknTypeNamed
 //
 //  Translate a token type (see TOKEN_TYPES) to
@@ -398,7 +526,7 @@ TOKEN_TYPES TranslateTknTypeToTknTypeNamed
 //***************************************************************************
 //  $TranslateNameTypeToTknTypeNamed
 //
-//  Translate a token type (see TOKEN_TYPES) to
+//  Translate a name type (see NAME_TYPES) to
 //    a named token type (see TOKEN_TYPES).
 //***************************************************************************
 
@@ -406,6 +534,7 @@ TOKEN_TYPES TranslateNameTypeToTknTypeNamed
     (NAME_TYPES nameType)
 
 {
+    // Split cases based upon the name type
     switch (nameType)
     {
         case NAMETYPE_VAR:

@@ -1,6 +1,17 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2261 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix Bug When Displaying An Empty Matrix Or Higher Rank Array
+
+Directory branches/bsmith/NewTypes:
+
+PF_DTACKJOT.C:
+  In <FormatArrSimple>, check for empty matrix or higher rank array and do not display an empty line.
+
+
 Build #2259 -- Version 0.5.14.xx
 --------------------------------
 

@@ -280,7 +280,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
                                       1,
                                      &stFlags);
             // If found, ...
-            if (lpSymEntry)
+            if (lpSymEntry NE NULL)
                 lpMemDataRes =
                   AttributeCommon (lpMemDataRes,        // Ptr to result global memory
                                    lpSymEntry,          // Ptr to object SYMENTRY
@@ -349,7 +349,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
                                            (APLU3264) (aplColsRht - uCol),
                                           &stFlags);
                 // If found, ...
-                if (lpSymEntry)
+                if (lpSymEntry NE NULL)
                     lpMemDataRes =
                       AttributeCommon (lpMemDataRes,        // Ptr to result global memory
                                        lpSymEntry,          // Ptr to object SYMENTRY
@@ -968,7 +968,7 @@ APLINT CalcSymEntrySize
         aplSize = sizeof (SYMENTRY);
 
         // If the caller wants the data size, ...
-        if (lpDataSize)
+        if (lpDataSize NE NULL)
         switch (lpSymEntry->stFlags.ImmType)
         {
             case IMMTYPE_BOOL:
@@ -1057,7 +1057,7 @@ APLINT CalcSymEntrySize
             lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
             // If the caller wants the data size, ...
-            if (lpDataSize)
+            if (lpDataSize NE NULL)
                 *lpDataSize += uNumFcnLines * sizeof (FCNLINE);
 
             // Initialize
@@ -1066,10 +1066,10 @@ APLINT CalcSymEntrySize
             // Loop through the function lines
             for (uLine = 0; uLine < uNumFcnLines; uLine++)
             {
-                if (lpFcnLines->hGlbTxtLine)
+                if (lpFcnLines->hGlbTxtLine NE NULL)
                     aplGlbSize += MyGlobalSize (lpFcnLines->hGlbTxtLine);
 
-                if (lpFcnLines->offTknLine)
+                if (lpFcnLines->offTknLine NE 0)
                 {
                     LPTOKEN_HEADER lpTokenHdr;      // Ptr to token header
 
@@ -1096,7 +1096,7 @@ APLINT CalcSymEntrySize
             aplSize += aplGlbSize;
 
             // If the caller wants the data size, ...
-            if (lpDataSize)
+            if (lpDataSize NE NULL)
                 *lpDataSize += aplGlbSize;
 
             // Add in the size of the function Undo buffer
@@ -1157,7 +1157,7 @@ APLUINT CalcGlbVarSize
 #undef  lpHeader
 
     // If the caller wants the data size, ...
-    if (lpDataSize)
+    if (lpDataSize NE NULL)
         *lpDataSize += aplSize - (sizeof (VARARRAY_HEADER) + aplRank * sizeof (APLDIM));
 
     // Skip over the header and dimensions to the data
@@ -1386,7 +1386,7 @@ APLUINT CalcGlbFcnSize
         aplSize += MyGlobalSize (hGlbTxtLine);
 
     // If the caller wants the data size, ...
-    if (lpDataSize)
+    if (lpDataSize NE NULL)
         *lpDataSize += aplSize - sizeof (FCNARRAY_HEADER);
 
     // We no longer need this ptr

@@ -5238,23 +5238,23 @@ __try
         tkLocalVars.colIndex = colIndex;
 
 #ifdef DEBUG
-    if (bDebugExecTrace)
-    {
-        WCHAR wszTemp[1024];
-
-        MySprintfW (wszTemp,
-                    sizeof (wszTemp),
-                   L"wchO = %c (%04X), wchT = %-12s (%04X), CS = %-12s, NS = %-12s, Act1 = %p, Act2 = %p",
-                    wchOrig ? wchOrig : UTF16_HORIZELLIPSIS,
-                    wchOrig,
-                    GetColName (colIndex),
-                    colIndex,
-                    GetRowName (tkLocalVars.State[0]),
-                    GetRowName (fsaActTableTK[tkLocalVars.State[0]][colIndex].iNewState),
-                    fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction1,
-                    fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction2);
-        DbgMsgW (wszTemp);
-    } // End IF
+////if (bDebugExecTrace)
+////{
+////    WCHAR wszTemp[1024];
+////
+////    MySprintfW (wszTemp,
+////                sizeof (wszTemp),
+////               L"wchO = %c (%04X), wchT = %-12s (%04X), CS = %-12s, NS = %-12s, Act1 = %p, Act2 = %p",
+////                wchOrig ? wchOrig : UTF16_HORIZELLIPSIS,
+////                wchOrig,
+////                GetColName (colIndex),
+////                colIndex,
+////                GetRowName (tkLocalVars.State[0]),
+////                GetRowName (fsaActTableTK[tkLocalVars.State[0]][colIndex].iNewState),
+////                fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction1,
+////                fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction2);
+////    DbgMsgW (wszTemp);
+////} // End IF
 #endif
 
         // Get primary action and new state

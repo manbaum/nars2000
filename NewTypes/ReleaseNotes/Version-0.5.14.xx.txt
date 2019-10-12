@@ -1,6 +1,23 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2265 -- Version 0.5.14.xx
+--------------------------------
+
+* Miscellaneous Changes
+
+Directory branches/bsmith/NewTypes:
+
+PO_COMB.C:
+  In <PrimOpMonCombinatorial_EM_YY>, simplify setting of valid state of # Balls & Boxes.
+
+QF_AT.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+
+TOKENIZE.C:
+  Comment out DEBUG statements which need to be re-evaluated to improve them.  At the moment, they are just unhelpful noise.
+
+
 Build #2263 -- Version 0.5.14.xx
 --------------------------------
 

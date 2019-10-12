@@ -1,6 +1,17 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2260 -- Version 0.6.2.xx
+-------------------------------
+
+* Allow The DotDot Function To Be Interrupted
+
+Directory branches/bsmith/NanTypes:
+
+PF_DOTDOT.C:
+  In various places, check for Ctrl-Break.
+
+
 Build #2258 -- Version 0.6.2.xx
 -------------------------------
 

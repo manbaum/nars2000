@@ -4540,8 +4540,12 @@ PARSELINE_SCAN1:
             // Check for VALUE ERROR
             if (curSynObj EQ soVALR
              || (curSynObj EQ soNVAL && lftSynObj NE soEOS))
+            {
+#ifdef DEBUG
+                DispVarName (lpplYYCurObj);
+#endif
                 goto PARSELINE_VALUEERR;
-
+            } // End IF
             // Check for left & right EOS
             if (lftSynObj EQ soEOS && rhtSynObj EQ soEOS)
                 goto PARSELINE_MP_DONE;
@@ -5522,6 +5526,7 @@ PARSELINE_DONE:
 
                 Assert (plLocalVars.lptkNext[-1].tkFlags.TknType EQ TKT_EOS
                      || plLocalVars.lptkNext[-1].tkFlags.TknType EQ TKT_EOL
+                     || plLocalVars.lptkNext[-1].tkFlags.TknType EQ TKT_SOS         // e.g., :elseif
                      || plLocalVars.lptkNext[-1].tkFlags.TknType EQ TKT_LABELSEP);
 
                 // If we're at the end of the line, ...
@@ -5614,8 +5619,12 @@ PARSELINE_DONE:
             } else
             // Check for VALUE ERROR
             if (curSynObj EQ soVALR)
+            {
+#ifdef DEBUG
+                DispVarName (lpplYYCurObj);
+#endif
                 goto PARSELINE_VALUEERR;
-            else
+            } else
                 goto PARSELINE_SYNTERR;
 
             //***************************************************************************
@@ -8380,6 +8389,13 @@ UBOOL SplitStrandLast
         //   (Booleans NOT rounded up to DWORD boundary)
         ByteSize = CalcDataSize (arrType, arrNELM, NULL);
 
+        // If the split off head is a Global Numeric singleton,...
+        if (IsGlbNum (arrType)
+         && IsSingleton (arrNELM))
+            // Increment the RefCnt as it is decremented elsewhere
+            //   as if it had been incremented on allocation/usage
+            DbgIncrRefCntDir_PTB (hGlbRht);
+
         // Split cases based upon the array storage type
         switch (arrType)
         {
@@ -8709,6 +8725,13 @@ UBOOL SplitStrandFirst
         // Calculate the size of the data portion (excluding the header)
         //   (Booleans NOT rounded up to DWORD boundary)
         ByteSize = CalcDataSize (arrType, arrNELM, NULL);
+
+        // If the split off tail is a Global Numeric singleton,...
+        if (IsGlbNum (arrType)
+         && IsSingleton (arrNELM))
+            // Increment the RefCnt as it is decremented elsewhere
+            //   as if it had been incremented on allocation/usage
+            DbgIncrRefCntDir_PTB (hGlbRht);
 
         // Split cases based upon the array storage type
         switch (arrType)

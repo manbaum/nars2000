@@ -1,0 +1,15 @@
+Build #2254 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix A RefCnt Bug When Splitting A Two-Element Global Numeric Strand
+
+Directory branches/bsmith/NanTypes:
+
+DISPDBG.C:
+  Define helper DEBUG function <DispVarName>.
+
+PARSELINE.C:
+  When encountering a VALUE ERROR, use <DispVarName> to display the var's name for debugging purposes.
+  After <PARSELINE_DONE:>, handle SOS as the next token.
+  In both <SplitStrandFirst> and <SplitStrandLast>, fix a RefCnt bug when the part remaining after
+    splitting is a Global Numeric singleton.

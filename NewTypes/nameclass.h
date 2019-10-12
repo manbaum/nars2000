@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#ifndef NAMECLASS_H
+#define NAMECLASS_H
+
 // Name classes used in []NC and []NL
 typedef enum tagNAME_CLASS
 {
@@ -31,7 +34,8 @@ typedef enum tagNAME_CLASS
     NAMECLASS_USROPR,       //  4 = User-defined operator   (either # operands:  1 or 2)
     NAMECLASS_SYSVAR,       //  5 = System variable
     NAMECLASS_SYSFCN,       //  6 = System function         (any # args:  0, 1, or 2)
-    NAMECLASS_UNUSED1,      //  7 = Start of unused area
+    NAMECLASS_SYSOPR,       //  7 = System operator         (either # operands:  1 or 2)
+    NAMECLASS_UNUSED1,      //  8 = Start of unused area
     NAMECLASS_UNUSED2 = 20, // 20 = End   ...
     NAMECLASS_SYSLBL,       // 21 = System label
     NAMECLASS_UNUSED3,      // 22 = (Unused)
@@ -43,6 +47,12 @@ typedef enum tagNAME_CLASS
 //    assume that the name class values are <= 63.  If you add
 //    nameclasses to invalidate that assumption, be sure to
 //    make <SysFnDydNL_EM_YY> work, too.
+
+// N.B.:  Whenever changing the above enum (NAME_CLASS),
+//   be sure to make a corresponding change to
+//   <bNameClassValid> in <qf_nl.c>.
+
+#endif  /* NAMECLASS_H */
 
 
 //***************************************************************************

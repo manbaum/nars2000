@@ -23,7 +23,6 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
-#include "nameclass.h"
 
 // List of valid nameclasses
 UBOOL bNameClassValid [NAMECLASS_LENp1] =
@@ -34,7 +33,7 @@ UBOOL bNameClassValid [NAMECLASS_LENp1] =
  TRUE  ,        //  4 = User-defined operator   (either # operands:  1 or 2)
  TRUE  ,        //  5 = System variable
  TRUE  ,        //  6 = System function         (any # args:  0, 1, or 2)
- FALSE ,        //  7 = (Unused)
+ TRUE  ,        //  7 = System operator         (either # operands:  1 or 2)
  FALSE ,        //  8 = (Unused)
  FALSE ,        //  9 = (Unused)
  FALSE ,        // 10 = (Unused)

@@ -1,0 +1,26 @@
+Build #2255 -- Version 0.5.14.xx
+--------------------------------
+
+* Handle One Or More {del}s As A Name
+
+Directory branches/bsmith/NewTypes:
+
+HEADERS.H:
+  Include <nameclass.h> as a global header file instead of local to just a couple of functions.
+
+NAMECLASS.H:
+  For future use, define <NAMECLASS_SYSOPR>.
+  Noter dependency if this enum is changed.
+
+QF_NC.C:
+  Remove <nameclass.h> from a local #include as it is now global.
+  Fix missing #if/#endif in <IsValid1stCharInName>.
+  For future use, define <NAMECLASS_SYSOPR>.
+  In <CalcNameClass>. handle one or more {del}s as a name and figure out the proper name class.
+
+QF_NL.C:
+  Remove <nameclass.h> from a local #include as it is now global.
+  For future use, define <NAMECLASS_SYSOPR>.
+
+TRANSLATE.C:
+  Define new function <TranslateNameTypeToNameClass> to help with determining the name class of a name consisting of one or more {del}s.

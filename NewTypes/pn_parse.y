@@ -1263,8 +1263,15 @@ int pn_yylex
     // Get the current char
     uChar = lpYYLval->chCur;
 
-    // If the current char is a HC separator, ...
-    if (uChar NE AC_EOS
+    // If the current char is a 'b' as in BasePoint Notation, ...
+    if (uChar EQ L'b')
+        // Mark as parsing BasePoint Notation
+        lppnLocalVars->bBasePoint = TRUE;
+
+    // If we're not parsing BasePoint Notation, and
+    //    the current char is a HC separator, ...
+    if (!lppnLocalVars->bBasePoint
+     && uChar NE AC_EOS
      && strchr (HC_SEPS, uChar) NE NULL)
     {
         LPCHAR lpChar;

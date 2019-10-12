@@ -1,6 +1,19 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2263 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix Bug When Parsing BasePoint Notation
+
+Directory branches/bsmith/NewTypes:
+
+PN_PARSE.H:
+PN_PARSE.Y:
+PN_PROC.C:
+  Fix bug when parsing BasePoint Notation as it can be confused with Complex Angle Notation.
+
+
 Build #2261 -- Version 0.5.14.xx
 --------------------------------
 

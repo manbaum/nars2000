@@ -156,7 +156,8 @@ typedef struct tagPNLOCALVARS       // Point Notation Local Vars
                   bNeedEOT:1,       //      00000002:  TRUE iff we need an EOT
                   bEOT:1,           //      00000004:  TRUE iff we just returned an EOT
                   bEOS:1,           //      00000008:  TRUE iff the EOT we returned was an EOS
-                  :28;              //      FFFFFFF0:  Available bits
+                  bBasePoint:1,     //      00000010:  TRUE iff we're parsing BasePoint Notation
+                  :27;              //      FFFFFFE0:  Available bits
     LPPN_YYSTYPE  lpCoeff[8];       // 98:  Ptrs to the possible coefficients (32 bytes)
                                     // B8:  Length
 } PNLOCALVARS, *LPPNLOCALVARS;

@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -5957,6 +5957,9 @@ UBOOL PN_VectorAcc
                 bNeg0;                  // ...      bFltN0 || bVfpN0
 
     // Accumulate the number
+
+    // Turn off the BasePoint Notation flag
+    lppnLocalVars->bBasePoint = FALSE;
 
     // If the global handle has not been allocated as yet, ...
     if (lppnLocalVars->hGlbVector EQ NULL)

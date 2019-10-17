@@ -871,13 +871,16 @@ UBOOL EqualHCxRvHCxR
 {
     APLVFP aplMagLft,                   // Magnitude of left arg
            aplMagRht,                   // ...          right ...
-           aplMagMax,                   // Magnitude of larger
+           aplMagMax = {0},             // Magnitude of larger
            aplDist;                     // Distance between left and right args
     UBOOL  bRet;                        // The result
     int    i;                           // Loop counter
 
     __try
     {
+        // Initialize
+        mpfr_init0 (&aplMagMax);
+
         // Split cases based upon the Dimension
         switch (iHCDim)
         {
@@ -926,9 +929,9 @@ UBOOL EqualHCxRvHCxR
 
         // Calculate the larger magnitude
         if (mpfr_cmp (&aplMagLft, &aplMagRht) < 0)
-            mpfr_init_set (&aplMagMax, &aplMagRht, MPFR_RNDN);
+            mpfr_set (&aplMagMax, &aplMagRht, MPFR_RNDN);
         else
-            mpfr_init_set (&aplMagMax, &aplMagLft, MPFR_RNDN);
+            mpfr_set (&aplMagMax, &aplMagLft, MPFR_RNDN);
 
         // Multiply it by []CT
         mpfr_mul_d (&aplMagMax, &aplMagMax, fQuadCT, MPFR_RNDN);
@@ -1075,13 +1078,16 @@ UBOOL EqualHCxVvHCxV
 {
     APLVFP aplMagLft,                   // Magnitude of left arg
            aplMagRht,                   // ...          right ...
-           aplMagMax,                   // Magnitude of larger
+           aplMagMax = {0},             // Magnitude of larger
            aplDist;                     // Distance between left and right args
     UBOOL  bRet;                        // The result
     int    i;                           // Loop counter
 
     __try
     {
+        // Initialize
+        mpfr_init0 (&aplMagMax);
+
         // Split cases based upon the Dimension
         switch (iHCDim)
         {
@@ -1130,9 +1136,9 @@ UBOOL EqualHCxVvHCxV
 
         // Calculate the larger magnitude
         if (mpfr_cmp (&aplMagLft, &aplMagRht) < 0)
-            mpfr_init_set (&aplMagMax, &aplMagRht, MPFR_RNDN);
+            mpfr_set (&aplMagMax, &aplMagRht, MPFR_RNDN);
         else
-            mpfr_init_set (&aplMagMax, &aplMagLft, MPFR_RNDN);
+            mpfr_set (&aplMagMax, &aplMagLft, MPFR_RNDN);
 
         // Multiply it by []CT
         mpfr_mul_d (&aplMagMax, &aplMagMax, fQuadCT, MPFR_RNDN);

@@ -29,6 +29,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "headers.h"
+#include <gsl/gsl_sf_zeta.h>
 
 //#define DEBUG_FMT
 
@@ -5994,6 +5995,380 @@ LPPN_YYSTYPE PN_MakeGammaPoint
 
 
 //***************************************************************************
+//  $PN_MakeZetaPoint
+//
+//  Merge the Multiplier and Argument part to form a number
+//***************************************************************************
+
+LPPN_YYSTYPE PN_MakeZetaPoint
+    (LPPN_YYSTYPE  lpYYMultiplier,      // The Multiplier part
+     LPPN_YYSTYPE  lpYYArgument,        // The Argument part
+     LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
+
+{
+    PNNUMTYPE pnTypeRes;                // Result type
+    ALLTYPES  atArg = {0},              // Argument as ALLTYPES
+              atMul = {0};              // Multiplier ...
+
+    // If there's been a YYERROR, ...
+    if (lppnLocalVars->bYYERROR)
+        return NULL;
+
+    // If this is the first time through, ...
+    if (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT)
+    {
+        // Promote the Multiplier and Argument to a common format
+        pnTypeRes = aNumTypePromote[lpYYMultiplier->chType][lpYYArgument->chType];
+
+        // If the result is BOOL, ...
+        if (IsPnNumTypeBool (pnTypeRes))
+            // Make it FLT
+            pnTypeRes = PN_NUMTYPE_FLT;
+        else
+        // If the result is INT, ...
+        if (IsPnNumTypeInt (pnTypeRes))
+            // Make it FLT
+            pnTypeRes++;
+        else
+        // If the result is RAT, ...
+        if (IsPnNumTypeRat (pnTypeRes))
+            // Make it VFP
+            pnTypeRes++;
+    } else
+        // Use common type
+        pnTypeRes = lppnLocalVars->chComType;
+
+    // If the Multiplier must be promoted, ...
+    if (pnTypeRes NE lpYYMultiplier->chType
+     && aNumTypeAction[lpYYMultiplier->chType][pnTypeRes] NE NULL)
+        (*aNumTypeAction[lpYYMultiplier->chType][pnTypeRes]) (lpYYMultiplier, lppnLocalVars);
+
+    // If the Argument must be promoted, ...
+    if (pnTypeRes NE lpYYArgument->chType
+     && aNumTypeAction[lpYYArgument->chType  ][pnTypeRes] NE NULL)
+        (*aNumTypeAction[lpYYArgument->chType  ][pnTypeRes]) (lpYYArgument, lppnLocalVars);
+
+    // Set the result type
+    lpYYMultiplier->chType =
+    lpYYArgument->chType   = pnTypeRes;
+
+    // Split cases based upon the numeric type
+    switch (pnTypeRes)
+    {
+        case PN_NUMTYPE_FLT:
+            // If the argument is 1, ...
+            if (lpYYArgument->at.aplHC1F EQ 1.0)
+                // Set the Zeta (1) value to {infinity}
+                lpYYMultiplier->at.aplHC1F  = fltPosInfinity;
+            else
+                // The result is Multiplier x Zeta (Argument)
+                lpYYMultiplier->at.aplHC1F *= gsl_sf_zeta (lpYYArgument->at.aplHC1F);
+
+            break;
+
+        case PN_NUMTYPE_HC2F:
+            // If any of the imaginary parts are non-zero, ...
+            if (IzitImaginary (TranslateNumTypeToArrayType (pnTypeRes), &lpYYArgument->at.aplHC8F))
+                goto NONCE_EXIT;
+
+            // If the argument is 1, ...
+            if (lpYYArgument->at.aplHC1F EQ 1.0)
+                // Set the Zeta (1) value to {infinity}
+                atArg.aplHC1F = fltPosInfinity;
+            else
+                // Calculate Zeta (Argument)
+                atArg.aplHC1F = gsl_sf_zeta(lpYYArgument->at.aplHC1F);
+
+            // The result is Multiplier x Zeta (Argument)
+            lpYYMultiplier->at.aplHC2F = MulHC2F_RE (lpYYMultiplier->at.aplHC2F, atArg.aplHC2F);
+
+            break;
+
+        case PN_NUMTYPE_HC4F:
+            // If any of the imaginary parts are non-zero, ...
+            if (IzitImaginary (TranslateNumTypeToArrayType (pnTypeRes), &lpYYArgument->at.aplHC8F))
+                goto NONCE_EXIT;
+
+            // If the argument is 1, ...
+            if (lpYYArgument->at.aplHC1F EQ 1.0)
+                // Set the Zeta (1) value to {infinity}
+                atArg.aplHC1F = fltPosInfinity;
+            else
+                // Calculate Zeta (Argument)
+                atArg.aplHC1F = gsl_sf_zeta(lpYYArgument->at.aplHC1F);
+
+            // The result is Multiplier x Zeta (Argument)
+            lpYYMultiplier->at.aplHC4F = MulHC4F_RE (lpYYMultiplier->at.aplHC4F, atArg.aplHC4F);
+
+            break;
+
+        case PN_NUMTYPE_HC8F:
+            // If any of the imaginary parts are non-zero, ...
+            if (IzitImaginary (TranslateNumTypeToArrayType (pnTypeRes), &lpYYArgument->at.aplHC8F))
+                goto NONCE_EXIT;
+
+            // If the argument is 1, ...
+            if (lpYYArgument->at.aplHC1F EQ 1.0)
+                // Set the Zeta (1) value to {infinity}
+                atArg.aplHC1F = fltPosInfinity;
+            else
+                // Calculate Zeta (Argument)
+                atArg.aplHC1F = gsl_sf_zeta(lpYYArgument->at.aplHC1F);
+
+            // The result is Multiplier x Zeta (Argument)
+            lpYYMultiplier->at.aplHC8F = MulHC8F_RE (lpYYMultiplier->at.aplHC8F, atArg.aplHC8F);
+
+            break;
+
+        case PN_NUMTYPE_VFP:
+            mphc1v_init0 (&atArg.aplHC1V);
+
+            // If the argument is 1, ...
+            if (IsMpf1 (&lpYYArgument->at.aplHC1V))
+                // Set the Zeta (1) value to {infinity}
+                mpfr_set_inf (&atArg.aplHC1V, 1);
+            else
+                // Calculate Zeta (Argument)
+                mpfr_zeta (&atArg.aplHC1V, &lpYYArgument->at.aplHC1V, MPFR_RNDN);
+
+            // Accumulate in the Multiplier
+            mpfr_mul  (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &atArg.aplHC1V, MPFR_RNDN);
+
+            // We no longer need this storage
+            Myf_clear (&atArg.aplVfp);
+            Myf_clear (&lpYYArgument->at.aplVfp);
+
+            break;
+
+        case PN_NUMTYPE_HC2V:
+            // If any of the imaginary parts are non-zero, ...
+            if (IzitImaginary (TranslateNumTypeToArrayType (pnTypeRes), &lpYYArgument->at.aplHC8V))
+                goto NONCE_EXIT;
+
+            mphc2v_init0 (&atArg.aplHC2V);
+
+            // If the argument is 1, ...
+            if (IsMpf1 (&lpYYArgument->at.aplHC1V))
+                // Set the Zeta (1) value to {infinity}
+                mpfr_set_inf (&atArg.aplHC1V, 1);
+            else
+                // Calculate Zeta (Argument)
+                mpfr_zeta (&atArg.aplHC1V, &lpYYArgument->at.aplHC1V, MPFR_RNDN);
+
+            // The result is Multiplier x Zeta (Argument)
+            atMul.aplHC2V = MulHC2V_RE (lpYYMultiplier->at.aplHC2V, atArg.aplHC2V);
+
+            // Save in the result
+            mphc2v_set (&lpYYMultiplier->at.aplHC2V, &atMul.aplHC2V);
+
+            // We no longer need this storage
+            Myhc2v_clear (&atMul.aplHC2V);
+            Myhc2v_clear (&atArg.aplHC2V);
+
+            break;
+
+        case PN_NUMTYPE_HC4V:
+            // If any of the imaginary parts are non-zero, ...
+            if (IzitImaginary (TranslateNumTypeToArrayType (pnTypeRes), &lpYYArgument->at.aplHC8V))
+                goto NONCE_EXIT;
+
+            mphc4v_init0 (&atArg.aplHC4V);
+
+            // If the argument is 1, ...
+            if (IsMpf1 (&lpYYArgument->at.aplHC1V))
+                // Set the Zeta (1) value to {infinity}
+                mpfr_set_inf (&atArg.aplHC1V, 1);
+            else
+                // Calculate Zeta (Argument)
+                mpfr_zeta (&atArg.aplHC1V, &lpYYArgument->at.aplHC1V, MPFR_RNDN);
+
+            // The result is Multiplier x Zeta (Argument)
+            atMul.aplHC4V = MulHC4V_RE (lpYYMultiplier->at.aplHC4V, atArg.aplHC4V);
+
+            // Save in the result
+            mphc4v_set (&lpYYMultiplier->at.aplHC4V, &atMul.aplHC4V);
+
+            // We no longer need this storage
+            Myhc4v_clear (&atMul.aplHC4V);
+            Myhc4v_clear (&atArg.aplHC4V);
+
+            break;
+
+        case PN_NUMTYPE_HC8V:
+            // If any of the imaginary parts are non-zero, ...
+            if (IzitImaginary (TranslateNumTypeToArrayType (pnTypeRes), &lpYYArgument->at.aplHC8V))
+                goto NONCE_EXIT;
+
+            mphc8v_init0 (&atArg.aplHC8V);
+
+            // If the argument is 1, ...
+            if (IsMpf1 (&lpYYArgument->at.aplHC1V))
+                // Set the Zeta (1) value to {infinity}
+                mpfr_set_inf (&atArg.aplHC1V, 1);
+            else
+                // Calculate Zeta (Argument)
+                mpfr_zeta (&atArg.aplHC1V, &lpYYArgument->at.aplHC1V, MPFR_RNDN);
+
+            // The result is Multiplier x Zeta (Argument)
+            atMul.aplHC8V = MulHC8V_RE (lpYYMultiplier->at.aplHC8V, atArg.aplHC8V);
+
+            // Save in the result
+            mphc8v_set (&lpYYMultiplier->at.aplHC8V, &atMul.aplHC8V);
+
+            // We no longer need this storage
+            Myhc8v_clear (&atMul.aplHC8V);
+            Myhc8v_clear (&atArg.aplHC8V);
+
+            break;
+
+        case PN_NUMTYPE_ARB:
+        {
+            mp_limb_signed_t prec = ARB_PREC_FPC;
+
+            arb2f_init (&atArg.aplBA2F);
+
+            // If the argument is 1, ...
+            if (IsArb1 (&lpYYArgument->at.aplBA1F))
+                // Set the Zeta (1) value to {infinity}
+                arb_pos_inf (&atArg.aplBA1F);
+            else
+                // Calculate Zeta (Argument)
+                arb_zeta (&atArg.aplBA1F, &lpYYArgument->at.aplBA1F, prec);
+
+            // The result is Multiplier x Zeta (Argument)
+            atMul.aplBA2F = MulBA2F_RE (lpYYMultiplier->at.aplBA2F, atArg.aplBA2F);
+
+            // Save in the result
+            arb2f_set (&lpYYMultiplier->at.aplBA2F, &atMul.aplBA2F);
+
+            // We no longer need this storage
+            arb2f_clear (&atMul.aplBA2F);
+            arb2f_clear (&atArg.aplBA2F);
+
+            break;
+        } // End PN_NUMTYPE_ARB
+
+        case PN_NUMTYPE_BA2F:
+        {
+////        // If any of the imaginary parts are non-zero, ...
+////        if (IzitImaginary (TranslateNumTypeToArrayType (pnTypeRes), &lpYYArgument->at.aplBA8F))
+////            goto NONCE_EXIT;
+////
+            mp_limb_signed_t prec = ARB_PREC_FPC;
+
+            arb2f_init (&atArg.aplBA2F);
+
+            // If the argument is 1, ...
+            if (IsArb1 (&lpYYArgument->at.aplBA2F.parts[2])
+             && IsArb0 (&lpYYArgument->at.aplBA2F.parts[0]))
+                // Set the Zeta (1) value to {infinity}
+                arb_pos_inf (acb_realref ((acb_ptr) &atArg.aplBA2F));
+            else
+                // Calculate Zeta (Argument)
+                acb_zeta ((acb_ptr) &atArg.aplBA2F, (acb_ptr) &lpYYArgument->at.aplBA2F, prec);
+
+            // The result is Multiplier x Zeta (Argument)
+            atMul.aplBA2F = MulBA2F_RE (lpYYMultiplier->at.aplBA2F, atArg.aplBA2F);
+
+            // Save in the result
+            arb2f_set (&lpYYMultiplier->at.aplBA2F, &atMul.aplBA2F);
+
+            // We no longer need this storage
+            arb2f_clear (&atMul.aplBA2F);
+            arb2f_clear (&atArg.aplBA2F);
+
+            break;
+        } // End PN_NUMTYPE_BA2F
+
+        case PN_NUMTYPE_BA4F:
+        {
+            // If any of the high-order imaginary parts are non-zero, ...
+            if (IzitImaginary (ARRAY_BA2F, &lpYYArgument->at.aplBA8F.partsHi))
+                goto NONCE_EXIT;
+
+            mp_limb_signed_t prec = ARB_PREC_FPC;
+
+            arb4f_init (&atArg.aplBA4F);
+
+            // If the argument is 1, ...
+            if (IsArb1 (&lpYYArgument->at.aplBA2F.parts[2])
+             && IsArb0 (&lpYYArgument->at.aplBA2F.parts[0]))
+                // Set the Zeta (1) value to {infinity}
+                arb_pos_inf (&atArg.aplBA1F);
+            else
+                // Calculate Zeta (Argument)
+                acb_zeta ((acb_ptr) &atArg.aplBA2F, (acb_ptr) &lpYYArgument->at.aplBA2F, prec);
+
+            // The result is Multiplier x Zeta (Argument)
+            atMul.aplBA4F = MulBA4F_RE (lpYYMultiplier->at.aplBA4F, atArg.aplBA4F);
+
+            // Save in the result
+            arb4f_set (&lpYYMultiplier->at.aplBA4F, &atMul.aplBA4F);
+
+            // We no longer need this storage
+            arb4f_clear (&atMul.aplBA4F);
+            arb4f_clear (&atArg.aplBA4F);
+
+            break;
+        } // End PN_NUMTYPE_BA4F
+
+        case PN_NUMTYPE_BA8F:
+        {
+            // If any of the high-order imaginary parts are non-zero, ...
+            if (IzitImaginary (ARRAY_BA2F, &lpYYArgument->at.aplBA8F.partsLo.partsHi)
+             || IzitImaginary (ARRAY_BA4F, &lpYYArgument->at.aplBA8F.partsHi))
+                goto NONCE_EXIT;
+
+            mp_limb_signed_t prec = ARB_PREC_FPC;
+
+            arb8f_init (&atArg.aplBA8F);
+
+            // If the argument is 1, ...
+            if (IsArb1 (&lpYYArgument->at.aplBA2F.parts[2])
+             && IsArb0 (&lpYYArgument->at.aplBA2F.parts[0]))
+                // Set the Zeta (1) value to {infinity}
+                arb_pos_inf (&atArg.aplBA1F);
+            else
+                // Calculate Zeta (Argument)
+                acb_zeta ((acb_ptr) &atArg.aplBA2F, (acb_ptr) &lpYYArgument->at.aplBA2F, prec);
+
+            // The result is Multiplier x Zeta (Argument)
+            atMul.aplBA8F = MulBA8F_RE (lpYYMultiplier->at.aplBA8F, atArg.aplBA8F);
+
+            // Save in the result
+            arb8f_set (&lpYYMultiplier->at.aplBA8F, &atMul.aplBA8F);
+
+            // We no longer need this storage
+            arb8f_clear (&atMul.aplBA8F);
+            arb8f_clear (&atArg.aplBA8F);
+
+            break;
+        } // End PN_NUMTYPE_BA8F
+
+////////case PN_NUMTYPE_BOOL:               // Can't happen w/ZetaPoint
+////////case PN_NUMTYPE_INT:                // ...
+////////case PN_NUMTYPE_RAT:                // ...
+////////case PN_NUMTYPE_HC2I:               // ...
+////////case PN_NUMTYPE_HC2R:               // ...
+////////case PN_NUMTYPE_HC4I:               // ...
+////////case PN_NUMTYPE_HC4R:               // ...
+////////case PN_NUMTYPE_HC8I:               // ...
+////////case PN_NUMTYPE_HC8R:               // ...
+        defstop
+            break;
+    } // End SWITCH
+
+    return lpYYMultiplier;
+
+NONCE_EXIT:
+    // Mark as a NONCE ERROR
+    lppnLocalVars->lptkLocalVars->State[0] = TKROW_NONCE;
+
+    return NULL;        // Keep the compiler happy
+} // End PN_MakeZetaPoint
+
+
+//***************************************************************************
 //  $PN_MakePiPoint
 //
 //  Merge the Multiplier and Exponential part to form a number
@@ -6674,7 +7049,8 @@ PN_YYSTYPE PN_MakeHc2Point
                   mpq_init_set_str2 (&lpC0->at.aplRat,                              // Ptr to result
                                      &lppnLocalVars->lpszStart[lpC0->uNumStart],    // Ptr to incoming line
                                       10);                                          // Base of number system
-            Assert (crRetCode EQ CR_SUCCESS);
+            Assert (crRetCode EQ CR_SUCCESS
+                 || crRetCode EQ CR_RESULT_NEG0);
 
             lpC0->chType = PN_NUMTYPE_RAT;
         } // End IF
@@ -6699,7 +7075,8 @@ PN_YYSTYPE PN_MakeHc2Point
                   mpq_init_set_str2 (&lpC1->at.aplRat,                              // Ptr to result
                                      &lppnLocalVars->lpszStart[lpC1->uNumStart],    // Ptr to incoming line
                                       10);                                          // Base of number system
-            Assert (crRetCode EQ CR_SUCCESS);
+            Assert (crRetCode EQ CR_SUCCESS
+                 || crRetCode EQ CR_RESULT_NEG0);
 
             lpC1->chType = PN_NUMTYPE_RAT;
         } // End IF

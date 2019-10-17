@@ -827,7 +827,7 @@ ExtPoint:
                                     }
     ;
 
-// Euler/Pi/Gamma left and right arguments
+// Euler/Pi/Gamma/Zeta left and right arguments
 EPGArgs:
       DecPoint                      {DbgMsgWP (L"EPGArgs:  DecPoint");}
     | ExpPoint                      {DbgMsgWP (L"EPGArgs:  ExpPoint");}
@@ -848,6 +848,23 @@ GammaPoint:
     | EPGArgs   'g' ExtPoint        {DbgMsgWP (L"%%GammaPoint:  EPGArgs 'g' ExtPoint");
                                      // Make it into a GammaPoint number
                                      lppnLocalVars->lpYYRes = PN_MakeGammaPoint (&$1, &$3,  lppnLocalVars);
+                                     if (lppnLocalVars->lpYYRes EQ NULL)
+                                         YYERROR2;
+                                     $$ = *lppnLocalVars->lpYYRes;
+                                    }
+    ;
+
+ZetaPoint:
+      EPGArgs   'z' EPGArgs         {DbgMsgWP (L"%%ZetaPoint:  EPGArgs 'z' EPGArgs");
+                                     // Make it into a ZetaPoint number
+                                     lppnLocalVars->lpYYRes = PN_MakeZetaPoint  (&$1, &$3,  lppnLocalVars);
+                                     if (lppnLocalVars->lpYYRes EQ NULL)
+                                         YYERROR2;
+                                     $$ = *lppnLocalVars->lpYYRes;
+                                    }
+    | EPGArgs   'z' ExtPoint        {DbgMsgWP (L"%%ZetaPoint:  EPGArgs 'z' ExtPoint");
+                                     // Make it into a ZetaPoint number
+                                     lppnLocalVars->lpYYRes = PN_MakeZetaPoint  (&$1, &$3,  lppnLocalVars);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;
@@ -990,6 +1007,7 @@ BaseArgs:
       EPGArgs                       {DbgMsgWP (L"BaseArgs:  EPGArgs");}
     | EulerPoint                    {DbgMsgWP (L"BaseArgs:  EulerPoint");}
     | GammaPoint                    {DbgMsgWP (L"BaseArgs:  GammaPoint");}
+    | ZetaPoint                     {DbgMsgWP (L"BaseArgs:  ZetaPoint");}
     | PiPoint                       {DbgMsgWP (L"BaseArgs:  PiPoint");}
     ;
 
@@ -1141,9 +1159,10 @@ UBOOL ParsePointNotation
       || strstr (lppnLocalVars->lpszStart, "x ") NE NULL
       || lppnLocalVars->lpszStart[lppnLocalVars->uNumLen - 1] EQ 'x'))
     {
-        // Weed out non-RAT expressions such as 2g3 and 2p3
-        if (strchr (lppnLocalVars->lpszStart, 'g' ) EQ NULL
-         && strchr (lppnLocalVars->lpszStart, 'p' ) EQ NULL)
+        // Weed out non-RAT expressions such as 2g3, 2p3, and 2z3
+        if (strchr (lppnLocalVars->lpszStart, 'g' ) EQ NULL     // Gamma
+         && strchr (lppnLocalVars->lpszStart, 'p' ) EQ NULL     // Pi
+         && strchr (lppnLocalVars->lpszStart, 'z' ) EQ NULL)    // Zeta
         {
             LPCHAR p;
 
@@ -1177,6 +1196,13 @@ UBOOL ParsePointNotation
                 // Mark as in error
                 bRet = FALSE;
                 ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                                           NULL);
+                break;
+
+            case EXCEPTION_DOMAIN_ERROR:
+                // Mark as in error
+                bRet = FALSE;
+                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                            NULL);
                 break;
 

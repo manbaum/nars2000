@@ -47,38 +47,39 @@ function wfAPLExtension (Parser $parser)
     $parser->sethook( '_oi'  , 'pn_oi_Notation'   );
     $parser->sethook( '_oj'  , 'pn_oj_Notation'   );
     $parser->sethook( '_ok'  , 'pn_ok_Notation'   );
-    $parser->sethook( '_p'   , 'pn_p_Notation'    );
+    $parser->sethook( '_pi'  , 'pn_pi_Notation'   );
     $parser->sethook( '_pom' , 'pn_pom_Notation'  );
     $parser->sethook( '_r'   , 'pn_r_Notation'    );
     $parser->sethook( '_s'   , 'pn_s_Notation'    );
     $parser->sethook( '_v'   , 'pn_v_Notation'    );
     $parser->sethook( '_x'   , 'pn_x_Notation'    );
+    $parser->sethook( '_z'   , 'pn_z_Notation'    );
 
-    $parser->sethook( 'ad'   , 'pn_ad_Notation'   );
-    $parser->sethook( 'ar'   , 'pn_ar_Notation'   );
-    $parser->sethook( 'au'   , 'pn_au_Notation'   );
-    $parser->sethook( 'bn'   , 'pn_b_Notation'    );
-    $parser->sethook( 'e'    , 'pn_e1_Notation'   );
-    $parser->sethook( 'E'    , 'pn_E2_Notation'   );
-    $parser->sethook( 'g'    , 'pn_g_Notation'    );
-    $parser->sethook( 'in'   , 'pn_i_Notation'    );
-    $parser->sethook( 'j'    , 'pn_j1_Notation'   );
-    $parser->sethook( 'J'    , 'pn_J2_Notation'   );
-    $parser->sethook( 'k'    , 'pn_k_Notation'    );
-    $parser->sethook( 'l'    , 'pn_l_Notation'    );
-    $parser->sethook( 'ij'   , 'pn_ij_Notation'   );
-    $parser->sethook( 'jk'   , 'pn_jk_Notation'   );
-    $parser->sethook( 'kl'   , 'pn_kl_Notation'   );
-    $parser->sethook( 'os'   , 'pn_os_Notation'   );
-    $parser->sethook( 'oi'   , 'pn_oi_Notation'   );
-    $parser->sethook( 'oj'   , 'pn_oj_Notation'   );
-    $parser->sethook( 'ok'   , 'pn_ok_Notation'   );
-    $parser->sethook( 'pi'   , 'pn_p_Notation'    );
-    $parser->sethook( 'pom'  , 'pn_pom_Notation'  );
-    $parser->sethook( 'r'    , 'pn_r_Notation'    );
-    $parser->sethook( 's'    , 'pn_s_Notation'    );
-    $parser->sethook( 'v'    , 'pn_v_Notation'    );
-    $parser->sethook( 'x'    , 'pn_x_Notation'    );
+////$parser->sethook( 'ad'   , 'pn_ad_Notation'   );
+////$parser->sethook( 'ar'   , 'pn_ar_Notation'   );
+////$parser->sethook( 'au'   , 'pn_au_Notation'   );
+////$parser->sethook( 'bn'   , 'pn_b_Notation'    );
+////$parser->sethook( 'e'    , 'pn_e1_Notation'   );
+////$parser->sethook( 'E'    , 'pn_E2_Notation'   );
+////$parser->sethook( 'g'    , 'pn_g_Notation'    );
+////$parser->sethook( 'in'   , 'pn_i_Notation'    );
+////$parser->sethook( 'j'    , 'pn_j1_Notation'   );
+////$parser->sethook( 'J'    , 'pn_J2_Notation'   );
+////$parser->sethook( 'k'    , 'pn_k_Notation'    );
+////$parser->sethook( 'l'    , 'pn_l_Notation'    );
+////$parser->sethook( 'ij'   , 'pn_ij_Notation'   );
+////$parser->sethook( 'jk'   , 'pn_jk_Notation'   );
+////$parser->sethook( 'kl'   , 'pn_kl_Notation'   );
+////$parser->sethook( 'os'   , 'pn_os_Notation'   );
+////$parser->sethook( 'oi'   , 'pn_oi_Notation'   );
+////$parser->sethook( 'oj'   , 'pn_oj_Notation'   );
+////$parser->sethook( 'ok'   , 'pn_ok_Notation'   );
+////$parser->sethook( 'pi'   , 'pn_pi_Notation'   );
+////$parser->sethook( 'pom'  , 'pn_pom_Notation'  );
+////$parser->sethook( 'r'    , 'pn_r_Notation'    );
+////$parser->sethook( 's'    , 'pn_s_Notation'    );
+////$parser->sethook( 'v'    , 'pn_v_Notation'    );
+////$parser->sethook( 'x'    , 'pn_x_Notation'    );
 
     return true;
 } // End wfAPLExtension
@@ -181,110 +182,114 @@ function renderAPLcom ($input, array $argv, Parser $parser, $iLargeSize, $bBoldW
     $input = preg_replace ('#<_mark>(.*?)</_mark>#', '<span style="' . $md_style . '">$1</span>', $input);
 
     // Handle <_ad/> within $input
-    $input = preg_replace ('#<ad */>#',   '<span style="color:blue;">ad</span>', $input);
+////$input = preg_replace ('#<ad */>#',   '<span style="color:blue;">ad</span>', $input);
     $input = preg_replace ('#<_ad */>#',  '<span style="color:blue;">ad</span>', $input);
 
     // Handle <_ah/> within $input
     $input = preg_replace ('#<_ah */>#',  '<span style="color:blue;">ah</span>', $input);
 
     // Handle <_ar/> within $input
-    $input = preg_replace ('#<ar */>#',   '<span style="color:blue;">ar</span>', $input);
+////$input = preg_replace ('#<ar */>#',   '<span style="color:blue;">ar</span>', $input);
     $input = preg_replace ('#<_ar */>#',  '<span style="color:blue;">ar</span>', $input);
 
     // Handle <_au/> within $input
-    $input = preg_replace ('#<au */>#',   '<span style="color:blue;">au</span>', $input);
+////$input = preg_replace ('#<au */>#',   '<span style="color:blue;">au</span>', $input);
     $input = preg_replace ('#<_au */>#',  '<span style="color:blue;">au</span>', $input);
 
     // Handle <_b/> within $input
-    $input = preg_replace ('#<bn */>#',   '<span style="color:red;">b</span>', $input);
+////$input = preg_replace ('#<bn */>#',   '<span style="color:red;">b</span>', $input);
     $input = preg_replace ('#<_b */>#',   '<span style="color:red;">b</span>', $input);
 
     // Handle <_e/> within $input
-    $input = preg_replace ('#<e */>#',    '<span style="color:red;">e</span>', $input);
+////$input = preg_replace ('#<e */>#',    '<span style="color:red;">e</span>', $input);
     $input = preg_replace ('#<_e */>#',   '<span style="color:red;">e</span>', $input);
 
     // Handle <_E/> within $input
-    $input = preg_replace ('#<E */>#',    '<span style="color:red;">E</span>', $input);
+////$input = preg_replace ('#<E */>#',    '<span style="color:red;">E</span>', $input);
     $input = preg_replace ('#<_E */>#',   '<span style="color:red;">E</span>', $input);
 
     // Handle <_g/> within $input
-    $input = preg_replace ('#<g */>#',    '<span style="color:red;">g</span>', $input);
+////$input = preg_replace ('#<g */>#',    '<span style="color:red;">g</span>', $input);
     $input = preg_replace ('#<_g */>#',   '<span style="color:red;">g</span>', $input);
 
     // Handle <_i/> within $input
-    $input = preg_replace ('#<in */>#',   '<span style="color:blue;">i</span>', $input);
+////$input = preg_replace ('#<in */>#',   '<span style="color:blue;">i</span>', $input);
     $input = preg_replace ('#<_i */>#',   '<span style="color:blue;">i</span>', $input);
 
     // Handle <_j/> within $input
-    $input = preg_replace ('#<j */>#',    '<span style="color:blue;">j</span>', $input);
+////$input = preg_replace ('#<j */>#',    '<span style="color:blue;">j</span>', $input);
     $input = preg_replace ('#<_j */>#',   '<span style="color:blue;">j</span>', $input);
 
     // Handle <_J/> within $input
-    $input = preg_replace ('#<J */>#',    '<span style="color:blue;">J</span>', $input);
+////$input = preg_replace ('#<J */>#',    '<span style="color:blue;">J</span>', $input);
     $input = preg_replace ('#<_J */>#',   '<span style="color:blue;">J</span>', $input);
 
     // Handle <_k/> within $input
-    $input = preg_replace ('#<k */>#',    '<span style="color:blue;">k</span>', $input);
+////$input = preg_replace ('#<k */>#',    '<span style="color:blue;">k</span>', $input);
     $input = preg_replace ('#<_k */>#',   '<span style="color:blue;">k</span>', $input);
 
     // Handle <_l/> within $input
-    $input = preg_replace ('#<l */>#',    '<span style="color:blue;">l</span>', $input);
+////$input = preg_replace ('#<l */>#',    '<span style="color:blue;">l</span>', $input);
     $input = preg_replace ('#<_l */>#',   '<span style="color:blue;">l</span>', $input);
 
     // Handle <_lc/> within $input
     $input = preg_replace ('#<_lc */>#',  '<span style="color:blue;">&#x27A5;</span>', $input);
 
     // Handle <_ij/> within $input
-    $input = preg_replace ('#<ij */>#',   '<span style="color:blue;">ij</span>', $input);
+////$input = preg_replace ('#<ij */>#',   '<span style="color:blue;">ij</span>', $input);
     $input = preg_replace ('#<_ij */>#',  '<span style="color:blue;">ij</span>', $input);
 
     // Handle <_jk/> within $input
-    $input = preg_replace ('#<jk */>#',   '<span style="color:blue;">jk</span>', $input);
+////$input = preg_replace ('#<jk */>#',   '<span style="color:blue;">jk</span>', $input);
     $input = preg_replace ('#<_jk */>#',  '<span style="color:blue;">jk</span>', $input);
 
     // Handle <_kl/> within $input
-    $input = preg_replace ('#<kl */>#',   '<span style="color:blue;">kl</span>', $input);
+////$input = preg_replace ('#<kl */>#',   '<span style="color:blue;">kl</span>', $input);
     $input = preg_replace ('#<_kl */>#',  '<span style="color:blue;">kl</span>', $input);
 
     // Handle <_os/> within $input
-    $input = preg_replace ('#<os */>#',   '<span style="color:blue;">os</span>', $input);
+////$input = preg_replace ('#<os */>#',   '<span style="color:blue;">os</span>', $input);
     $input = preg_replace ('#<_os */>#',  '<span style="color:blue;">os</span>', $input);
 
     // Handle <_oi/> within $input
-    $input = preg_replace ('#<oi */>#',   '<span style="color:blue;">oi</span>', $input);
+////$input = preg_replace ('#<oi */>#',   '<span style="color:blue;">oi</span>', $input);
     $input = preg_replace ('#<_oi */>#',  '<span style="color:blue;">oi</span>', $input);
 
     // Handle <_oj/> within $input
-    $input = preg_replace ('#<oj */>#',   '<span style="color:blue;">oj</span>', $input);
+////$input = preg_replace ('#<oj */>#',   '<span style="color:blue;">oj</span>', $input);
     $input = preg_replace ('#<_oj */>#',  '<span style="color:blue;">oj</span>', $input);
 
     // Handle <_ok/> within $input
-    $input = preg_replace ('#<ok */>#',   '<span style="color:blue;">ok</span>', $input);
+////$input = preg_replace ('#<ok */>#',   '<span style="color:blue;">ok</span>', $input);
     $input = preg_replace ('#<_ok */>#',  '<span style="color:blue;">ok</span>', $input);
 
-    // Handle <_p/> within $input
-    $input = preg_replace ('#<pi */>#',   '<span style="color:red;">p</span>', $input);
-    $input = preg_replace ('#<_p */>#',   '<span style="color:red;">p</span>', $input);
+    // Handle <_pi/> within $input
+////$input = preg_replace ('#<pi */>#',   '<span style="color:red;">p</span>', $input);
+    $input = preg_replace ('#<_pi */>#',  '<span style="color:red;">p</span>', $input);
 
     // Handle <_pom/> within $input
-    $input = preg_replace ('#<pom */>#',  '<span style="color:red;">&#x00B1;</span>', $input);
+////$input = preg_replace ('#<pom */>#',  '<span style="color:red;">&#x00B1;</span>', $input);
     $input = preg_replace ('#<_pom */>#', '<span style="color:red;">&#x00B1;</span>', $input);
 
     // Handle <_r/> within $input
-    $input = preg_replace ('#<r */>#',    '<span style="color:red;">r</span>', $input);
+////$input = preg_replace ('#<r */>#',    '<span style="color:red;">r</span>', $input);
     $input = preg_replace ('#<_r */>#',   '<span style="color:red;">r</span>', $input);
 
     // Handle <_s/> within $input
-    $input = preg_replace ('#<s */>#',    '<span style="color:blue;">s</span>', $input);
+////$input = preg_replace ('#<s */>#',    '<span style="color:blue;">s</span>', $input);
     $input = preg_replace ('#<_s */>#',   '<span style="color:blue;">s</span>', $input);
 
     // Handle <_v/> within $input
-    $input = preg_replace ('#<v */>#',    '<span style="color:red;">v</span>', $input);
+////$input = preg_replace ('#<v */>#',    '<span style="color:red;">v</span>', $input);
     $input = preg_replace ('#<_v */>#',   '<span style="color:red;">v</span>', $input);
 
     // Handle <_x/> within $input
-    $input = preg_replace ('#<x */>#',    '<span style="color:red;">x</span>', $input);
+////$input = preg_replace ('#<x */>#',    '<span style="color:red;">x</span>', $input);
     $input = preg_replace ('#<_x */>#',   '<span style="color:red;">x</span>', $input);
+
+    // Handle <_z/> within $input
+////$input = preg_replace ('#<z */>#',    '<span style="color:red;">z</span>', $input);
+    $input = preg_replace ('#<_z */>#',   '<span style="color:red;">z</span>', $input);
 
     return '<span ' . $class . 'style="' . $style . '">' . $input . '</span>';
 } // End renderAPLcom
@@ -315,7 +320,7 @@ function hcNotation ($input, array $args, Parser $parser, PPFrame $frame)
     return '<span style="color:blue;">' . $input . '</span>';
 } // End hcNotation
 
-// The callback function for converting <ad/> input text to HTML output
+// The callback function for converting <_ad/> input text to HTML output
 function pn_ad_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('ad', $args, $parser, $frame);
@@ -327,85 +332,85 @@ function pn_ah_Notation ($input, array $args, Parser $parser, PPFrame $frame)
     return hcNotation ('ah', $args, $parser, $frame);
 } // End pn_ah_Notation
 
-// The callback function for converting <ar/> input text to HTML output
+// The callback function for converting <_ar/> input text to HTML output
 function pn_ar_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('ar', $args, $parser, $frame);
 } // End pn_ar_Notation
 
-// The callback function for converting <au/> input text to HTML output
+// The callback function for converting <_au/> input text to HTML output
 function pn_au_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('au', $args, $parser, $frame);
 } // End pn_au_Notation
 
-// The callback function for converting <bn/> input text to HTML output
+// The callback function for converting <_b/> input text to HTML output
 function pn_bn_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return pnNotation ('b', $args, $parser, $frame);
 } // End pn_bn_Notation
 
-// The callback function for converting <e/> input text to HTML output
+// The callback function for converting <_e/> input text to HTML output
 function e1Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return pnNotation ('e', $args, $parser, $frame);
 } // End e1Notation
 
-// The callback function for converting <E/> input text to HTML output
+// The callback function for converting <_E/> input text to HTML output
 function E2Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return pnNotation ('E', $args, $parser, $frame);
 } // End E2Notation
 
-// The callback function for converting <g/> input text to HTML output
+// The callback function for converting <_g/> input text to HTML output
 function pn_g_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return pnNotation ('g', $args, $parser, $frame);
 } // End pn_g_Notation
 
-// The callback function for converting <in/> input text to HTML output
+// The callback function for converting <_i/> input text to HTML output
 function pn_in_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('i', $args, $parser, $frame);
 } // End pn_in_Notation
 
-// The callback function for converting <ij/> input text to HTML output
+// The callback function for converting <_ij/> input text to HTML output
 function pn_ij_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('ij', $args, $parser, $frame);
 } // End pn_ij_Notation
 
-// The callback function for converting <jk/> input text to HTML output
+// The callback function for converting <_jk/> input text to HTML output
 function pn_jk_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('jk', $args, $parser, $frame);
 } // End pn_jk_Notation
 
-// The callback function for converting <kl/> input text to HTML output
+// The callback function for converting <_kl/> input text to HTML output
 function pn_kl_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('kl', $args, $parser, $frame);
 } // End pn_kl_Notation
 
-// The callback function for converting <j/> input text to HTML output
+// The callback function for converting <_j/> input text to HTML output
 function j1Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('j', $args, $parser, $frame);
 } // End j1Notation
 
-// The callback function for converting <J/> input text to HTML output
+// The callback function for converting <_J/> input text to HTML output
 function J2Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('J', $args, $parser, $frame);
 } // End J2Notation
 
-// The callback function for converting <k/> input text to HTML output
+// The callback function for converting <_k/> input text to HTML output
 function pn_k_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('k', $args, $parser, $frame);
 } // End pn_k_Notation
 
-// The callback function for converting <l/> input text to HTML output
+// The callback function for converting <_l/> input text to HTML output
 function pn_l_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('l', $args, $parser, $frame);
@@ -417,65 +422,71 @@ function pn_lc_Notation ($input, array $args, Parser $parser, PPFrame $frame)
     return lcNotation ('lc', $args, $parser, $frame);
 } // End pn_lc_Notation
 
-// The callback function for converting <pi/> input text to HTML output
+// The callback function for converting <_pi/> input text to HTML output
 function pn_pi_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return pnNotation ('p', $args, $parser, $frame);
 } // End pn_pi_Notation
 
-// The callback function for converting <os/> input text to HTML output
+// The callback function for converting <_os/> input text to HTML output
 function pn_os_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('os', $args, $parser, $frame);
 } // End pn_os_Notation
 
-// The callback function for converting <oi/> input text to HTML output
+// The callback function for converting <_oi/> input text to HTML output
 function pn_oi_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('oi', $args, $parser, $frame);
 } // End pn_oi_Notation
 
-// The callback function for converting <oj/> input text to HTML output
+// The callback function for converting <_oj/> input text to HTML output
 function pn_oj_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('oj', $args, $parser, $frame);
 } // End pn_oj_Notation
 
-// The callback function for converting <ok/> input text to HTML output
+// The callback function for converting <_ok/> input text to HTML output
 function pn_ok_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return hcNotation ('ok', $args, $parser, $frame);
 } // End pn_ok_Notation
 
-// The callback function for converting <pom/> input text to HTML output
+// The callback function for converting <_pom/> input text to HTML output
 function pn_pom_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return pnNotation ('&#x00B1;', $args, $parser, $frame);
 } // End pn_pom_Notation
 
-// The callback function for converting <r/> input text to HTML output
+// The callback function for converting <_r/> input text to HTML output
 function pn_r_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return pnNotation ('r', $args, $parser, $frame);
 } // End pn_r_Notation
 
-// The callback function for converting <s/> input text to HTML output
+// The callback function for converting <_s/> input text to HTML output
 function pn_s_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return pnNotation ('s', $args, $parser, $frame);
 } // End pn_s_Notation
 
-// The callback function for converting <v/> input text to HTML output
+// The callback function for converting <_v/> input text to HTML output
 function pn_v_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return pnNotation ('v', $args, $parser, $frame);
 } // End pn_v_Notation
 
-// The callback function for converting <x/> input text to HTML output
+// The callback function for converting <_x/> input text to HTML output
 function pn_x_Notation ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return pnNotation ('x', $args, $parser, $frame);
 } // End pn_x_Notation
+
+// The callback function for converting <_z/> input text to HTML output
+function pn_z_Notation ($input, array $args, Parser $parser, PPFrame $frame)
+{
+    return pnNotation ('z', $args, $parser, $frame);
+} // End pn_z_Notation
 
 
 ?>

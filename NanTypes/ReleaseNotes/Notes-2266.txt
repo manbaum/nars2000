@@ -3,7 +3,7 @@ Build #2266 -- Version 0.6.2.xx
 
 * Miscellaneous Changes
 
-Directory branches/bsmith/NewTypes:
+Directory branches/bsmith/NanTypes:
 
 PO_COMB.C:
   In <PrimOpMonCombinatorial_EM_YY>, simplify setting of valid state of # Balls & Boxes.

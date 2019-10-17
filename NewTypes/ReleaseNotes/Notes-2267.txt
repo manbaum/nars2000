@@ -1,0 +1,28 @@
+Build #2267 -- Version 0.5.14.xx
+--------------------------------
+
+* Implement Zeta Point Notation
+
+Directory branches/bsmith/NewTypes:
+
+PN_PARSE.Y:
+  Define parsing code for Zeta Point Notation.
+
+PN_PROC.C:
+  Implement Zeta Point Notation.
+  In <PN_MakeHc2Point>, allow a result of <CR_RESULT_NEG0> from <mpq_init_set_str2>.
+
+REBAR.C:
+  Document in Zeta Point Notation Language Bar.
+
+TOKENIZE.C:
+  Include 'z' in Point Notation Syntax Coloring.
+
+UNICODE.H:
+  Define Unicode Code point for Zeta.
+
+
+Directory branches/bsmith/NewTypes/MediaWiki/extensions:
+
+RENDERAPL.PHP:
+  Implement Zeta Point Notation.

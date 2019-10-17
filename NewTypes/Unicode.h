@@ -56,7 +56,8 @@
 #define UTF16_SMALL_C_CEDILLA     0X00E7        // Small letter c with cedilla
 #define UTF16_SMALL_E_GRAVE       0X00E8        // Small letter e with grave
 #define UTF16_SMALL_E_ACUTE       0X00E9        // Small letter e with acute
-#define UTF16_GAMMA               0x03B3        // Gamma
+#define UTF16_GAMMA               0x03B3        // Greek small letter Gamma
+#define UTF16_ZETA                0x03B6        // ...                Zeta
 #define UTF16_LEFTSINGLEQUOTE     0x2018        // Left single quotation mark
 #define UTF16_RIGHTSINGLEQUOTE    0x2019        // Right ...
 #define UTF16_DAGGER              0x2020        // Dagger
@@ -318,7 +319,8 @@
 #define WS_UTF16_SMALL_C_CEDILLA     L"\x00E7"  // Small letter c with cedilla
 #define WS_UTF16_SMALL_E_GRAVE       L"\x00E8"  // Small letter e with grave
 #define WS_UTF16_SMALL_E_ACUTE       L"\x00E9"  // Small letter e with acute
-#define WS_UTF16_GAMMA               L"\x03B3"  // Gamma
+#define WS_UTF16_GAMMA               L"\x03B3"  // Greek small letter Gamma
+#define WS_UTF16_ZETA                L"\x03B6"  // ...                Zeta
 #define WS_UTF16_LEFTSINGLEQUOTE     L"\x2018"  // Left single quotation mark
 #define WS_UTF16_RIGHTSINGLEQUOTE    L"\x2019"  // Right ...
 #define WS_UTF16_DAGGER              L"\x2020"  // Dagger

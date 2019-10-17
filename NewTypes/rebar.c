@@ -3059,6 +3059,10 @@ typedef struct tagLANGCHARS
                                            L"As a suffix notation, \"x\" following an integer constant such as " WS_UTF16_OVERBAR L"123x indicates "
                                            L"that the constant is a multi-precision Rational integer identical to " WS_UTF16_OVERBAR L"123r1."
                                            },
+        {L"z"                       , {0}, L"Zeta Point Notation",
+                                           L"This infix notation allows you to enter numbers of the form M" WS_UTF16_TIMES WS_UTF16_ZETA L"(E) "
+                                           L"as in 3z2 for three times " WS_UTF16_ZETA L"(2) where " WS_UTF16_ZETA L"(x) is the Riemann Zeta function."
+                                           },
     };
 
 #define LANGCHARS_LENGTH        countof (langChars)

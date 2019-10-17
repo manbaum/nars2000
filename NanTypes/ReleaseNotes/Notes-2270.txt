@@ -1,0 +1,9 @@
+Build #2270 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug In Equal Function When DOMAIN ERROR Occurs
+
+Directory branches/bsmith/NanTypes:
+
+PF_EQUAL.C:
+  Fix bug in <EqualHCxRvHCxR> and <EqualHCxVvHCxV> when the Distance function signals a DOMAIN ERROR.

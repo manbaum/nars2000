@@ -921,6 +921,9 @@ UBOOL EqualHCxRvHCxR
 
     __try
     {
+        // Initialize
+        mpfr_init0 (&aplMagMax);
+
         // Split cases based upon the Dimension
         switch (iHCDim)
         {
@@ -969,9 +972,9 @@ UBOOL EqualHCxRvHCxR
 
         // Calculate the larger magnitude
         if (mpfr_cmp (&aplMagLft, &aplMagRht) < 0)
-            mpfr_init_set (&aplMagMax, &aplMagRht, MPFR_RNDN);
+            mpfr_set (&aplMagMax, &aplMagRht, MPFR_RNDN);
         else
-            mpfr_init_set (&aplMagMax, &aplMagLft, MPFR_RNDN);
+            mpfr_set (&aplMagMax, &aplMagLft, MPFR_RNDN);
 
         // Multiply it by []CT
         mpfr_mul_d (&aplMagMax, &aplMagMax, fQuadCT, MPFR_RNDN);
@@ -1125,6 +1128,9 @@ UBOOL EqualHCxVvHCxV
 
     __try
     {
+        // Initialize
+        mpfr_init0 (&aplMagMax);
+
         // Split cases based upon the Dimension
         switch (iHCDim)
         {
@@ -1173,9 +1179,9 @@ UBOOL EqualHCxVvHCxV
 
         // Calculate the larger magnitude
         if (mpfr_cmp (&aplMagLft, &aplMagRht) < 0)
-            mpfr_init_set (&aplMagMax, &aplMagRht, MPFR_RNDN);
+            mpfr_set (&aplMagMax, &aplMagRht, MPFR_RNDN);
         else
-            mpfr_init_set (&aplMagMax, &aplMagLft, MPFR_RNDN);
+            mpfr_set (&aplMagMax, &aplMagLft, MPFR_RNDN);
 
         // Multiply it by []CT
         mpfr_mul_d (&aplMagMax, &aplMagMax, fQuadCT, MPFR_RNDN);

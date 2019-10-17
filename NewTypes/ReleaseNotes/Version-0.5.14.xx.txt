@@ -1,6 +1,17 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2271 -- Version 0.5.14.xx
+--------------------------------
+
+* Handle More Special Cases In Complex Exponential Function
+
+Directory branches/bsmith/NewTypes:
+
+PF_STAR.C:
+  Handle more special cases in Exponential function for HC2F and HC2V.
+
+
 Build #2269 -- Version 0.5.14.xx
 --------------------------------
 

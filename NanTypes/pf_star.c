@@ -742,12 +742,93 @@ APLHC2F ExpHC2F_RE
         // Get the ptr to the Ctrl-Break flag
         lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
-    // Check for special case:  ^-_
-    if (!IsFltNegInfinity (aplRht.parts[0]))
+    /* The design  for the following special cases was taken from
+          the code for <mpc_exp> in \mpc\src\exp.c  */
+
+    // Check for special case:  NaNs
+    if (IsFltNaN (aplRht.parts[0])
+     || IsFltNaN (aplRht.parts[1]))
     {
-        // Handle via macro
+        /* NaNs
+           exp(nan +i*y) = nan -i*0   if y = -0,
+                           nan +i*0   if y = +0,
+                           nan +i*nan otherwise
+           exp(x+i*nan) =   +/-0 +/-i*0 if x=-inf,
+                          +/-inf +i*nan if x=+inf,
+                             nan +i*nan otherwise */
+        if (aplRht.parts[1] EQ 0.0)
+            // Copy right arg to result
+            aplRes = aplRht;
+        else
+        if (IsFltInfinity (aplRes.parts[0]))
+        {
+            if (SIGN_APLFLOAT (aplRht.parts[0]))
+                aplRes.parts[0] =
+                aplRes.parts[1] = 0.0;
+        } else
+        {
+            aplRes.parts[0] = fltPosInfinity;
+            aplRes.parts[1] = fltNaN;
+        } // End IF/ELSE
+    } else
+    if (aplRht.parts[1] EQ 0.0)
+    {
+        /* special case when the input is real
+           exp(x-i*0) = exp(x) -i*0, even if x is NaN
+           exp(x+i*0) = exp(x) +i*0, even if x is NaN */
+        aplRes.parts[0] = exp (aplRht.parts[0]);
+        aplRes.parts[1] = aplRht.parts[1];
+    } else
+    if (aplRht.parts[0] EQ 0.0)
+    {
+        /* special case when the input is imaginary  */
+        aplRes.parts[0] = cos (aplRht.parts[1]);
+        aplRes.parts[1] = sin (aplRht.parts[1]);
+    } else
+    if (IsFltInfinity (aplRht.parts[0]))
+    {
+        APLFLOAT n;
+
+        /* real part is an infinity,
+           exp(-inf +i*y) = 0*(cos y +i*sin y)
+           exp(+inf +i*y) = +/-inf +i*nan         if y = +/-inf
+                            +inf*(cos y +i*sin y) if 0 < |y| < inf */
+        if (SIGN_APLFLOAT (aplRht.parts[0]))
+            n = 0;
+        else
+            n = fltPosInfinity;
+        if (IsFltInfinity (aplRht.parts[1]))
+        {
+            if (SIGN_APLFLOAT (aplRht.parts[0]))
+            {
+                aplRes.parts[0] =
+                aplRes.parts[1] = n;
+            } else
+            {
+                aplRes.parts[0] = n;
+                aplRes.parts[1] = fltNaN;
+            } // End IF/ELSE
+        } else
+        {
+            if (cos (aplRht.parts[1]) < 0)
+                aplRes.parts[0] = -n;
+            else
+                aplRes.parts[0] =  n;
+
+            if (sin (aplRht.parts[1]) < 0)
+                aplRes.parts[1] = -n;
+            else
+                aplRes.parts[1] =  n;
+        } // End IF/ELSE
+    } else
+    if (IsFltInfinity (aplRht.parts[1]))
+    {
+        /* real part is finite non-zero number, imaginary part is an infinity */
+        aplRes.parts[0] =
+        aplRes.parts[1] = fltNaN;
+    } else
+        // Handle via subroutine
         aplRes = PrimMonStarHCxF ((LPAPLHC8F) &aplRht, 2).partsLo[0].partsLo[0];
-    } // End IF
 
     return aplRes;
 } // End ExpHC2F_RE
@@ -1017,6 +1098,9 @@ APLHC2V ExpHC2V_RE
     APLHC2V       aplRes = {0};         // The result
     UBOOL         bCtrlBreak = FALSE;   // Temp var for Ctrl-Break
 
+    // Initialize
+    mphc2v_init0 (&aplRes);
+
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars); // Assert (lpplLocalVars NE NULL);
 
@@ -1028,15 +1112,113 @@ APLHC2V ExpHC2V_RE
         // Get the ptr to the Ctrl-Break flag
         lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
-    // Check for special case:  ^-_
-    if (IsMpfNegInfinity (&aplRht.parts[0]))
-        // Initialize the result to 0
-        mphc2v_init0 (&aplRes);
-    else
+    /* The design  for the following special cases was taken from
+          the code for <mpc_exp> in \mpc\src\exp.c  */
+
+    // Check for special case:  NaNs
+    if (IsMpfNaN (&aplRht.parts[0])
+     || IsMpfNaN (&aplRht.parts[1]))
     {
-        // Handle via macro
+        /* NaNs
+           exp(nan +i*y) = nan -i*0   if y = -0,
+                           nan +i*0   if y = +0,
+                           nan +i*nan otherwise
+           exp(x+i*nan) =   +/-0 +/-i*0 if x=-inf,
+                          +/-inf +i*nan if x=+inf,
+                             nan +i*nan otherwise */
+        if (IsMpf0 (&aplRht.parts[1]))
+        {
+            // Copy right arg to result
+            mpfr_set (&aplRes.parts[0], &aplRht.parts[0], MPFR_RNDN);
+            mpfr_set (&aplRes.parts[0], &aplRht.parts[1], MPFR_RNDN);
+        } else
+        if (IsMpfInfinity (&aplRes.parts[0]))
+        {
+            if (SIGN_APLVFP (&aplRht.parts[0]))
+            {
+                mpfr_set_zero (&aplRes.parts[0], +1);
+                mpfr_set_zero (&aplRes.parts[1], +1);
+            } // End IF
+        } else
+        {
+            mpfr_set_inf (&aplRes.parts[0], +1);
+            mpfr_set_nan (&aplRes.parts[1]);
+        } // End IF/ELSE
+    } else
+    if (IsMpf0 (&aplRht.parts[1]))
+    {
+        /* special case when the input is real
+           exp(x-i*0) = exp(x) -i*0, even if x is NaN
+           exp(x+i*0) = exp(x) +i*0, even if x is NaN */
+        mpfr_exp (&aplRes.parts[0], &aplRht.parts[0], MPFR_RNDN);
+        mpfr_set (&aplRes.parts[1], &aplRht.parts[1], MPFR_RNDN);
+    } else
+    if (IsMpf0 (&aplRht.parts[0]))
+    {
+        /* special case when the input is imaginary  */
+        mpfr_sin_cos (&aplRes.parts[1], &aplRes.parts[0], &aplRht.parts[1], MPFR_RNDN);
+////////mpfr_cos (&aplRes.parts[0], &aplRht.parts[1], MPFR_RNDN);
+////////mpfr_sin (&aplRes.parts[1], &aplRht.parts[1], MPFR_RNDN);
+    } else
+    if (IsMpfInfinity (&aplRht.parts[0]))
+    {
+        APLVFP n = {0};
+
+        /* real part is an infinity,
+           exp(-inf +i*y) = 0*(cos y +i*sin y)
+           exp(+inf +i*y) = +/-inf +i*nan         if y = +/-inf
+                            +inf*(cos y +i*sin y) if 0 < |y| < inf */
+        mpfr_init0 (&n);
+
+        if (SIGN_APLVFP (&aplRht.parts[0]))
+            mpfr_set_zero (&n, +1);
+        else
+            mpfr_set_inf (&n, +1);
+        if (IsMpfInfinity (&aplRht.parts[1]))
+        {
+            if (SIGN_APLVFP (&aplRht.parts[0]))
+            {
+                mpfr_set     (&aplRes.parts[0], &n, MPFR_RNDN);
+                mpfr_set     (&aplRes.parts[1], &n, MPFR_RNDN);
+            } else
+            {
+                mpfr_set     (&aplRes.parts[0], &n, MPFR_RNDN);
+                mpfr_set_nan (&aplRes.parts[1]);
+            } // End IF/ELSE
+        } else
+        {
+            mpfr_t c, s;
+            mpfr_init2 (c, 2);
+            mpfr_init2 (s, 2);
+
+            mpfr_sin_cos (s, c, &aplRht.parts[1], MPFR_RNDN);
+
+            mpfr_set (&aplRes.parts[0], &n, MPFR_RNDN);
+            if (SIGN_APLVFP (c))
+                mpfr_neg (&aplRes.parts[0], &aplRes.parts[0], MPFR_RNDN);
+
+            mpfr_set (&aplRes.parts[1], &n, MPFR_RNDN);
+            if (SIGN_APLVFP (s))
+                mpfr_neg (&aplRes.parts[1], &aplRes.parts[1], MPFR_RNDN);
+
+            mpfr_clear (s);
+            mpfr_clear (c);
+        } // End IF/ELSE
+
+        mpfr_clear (&n);
+    } else
+    if (IsMpfInfinity (&aplRht.parts[1]))
+    {
+        /* real part is finite non-zero number, imaginary part is an infinity */
+        mpfr_set_nan (&aplRes.parts[0]);
+        mpfr_set_nan (&aplRes.parts[1]);
+    } else
+    {
+        Myhc2v_clear (&aplRes);
+
+        // Handle via subroutine
         aplRes = PrimMonStarHCxV ((LPAPLHC8V) &aplRht, 2).partsLo.partsLo;
-    } // End IF
+    } // End IF/ELSE/...
 
     return aplRes;
 } // End ExpHC2V_RE
@@ -1223,6 +1405,7 @@ APLBA2F ExpBA2F_RE
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     APLBA2F       aplRes = {0};         // The result
     UBOOL         bCtrlBreak = FALSE;   // Temp var for Ctrl-Break
+    mp_limb_signed_t prec = prec = ARB_PREC_FPC;
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars); // Assert (lpplLocalVars NE NULL);
@@ -1235,15 +1418,115 @@ APLBA2F ExpBA2F_RE
         // Get the ptr to the Ctrl-Break flag
         lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
-    // Check for special case:  ^-_
-    if (IsArbNegInfinity (&aplRht.parts[0]))
-        // Initialize the result to 0/0
-        arb2f_init (&aplRes);
-    else
+    /* The design  for the following special cases was taken from
+          the code for <mpc_exp> in \mpc\src\exp.c  */
+
+#define IsArbNaN(a)     arb_nan_p (a)
+
+    // Check for special case:  NaNs
+    if (IsArbNaN (&aplRht.parts[0])
+     || IsArbNaN (&aplRht.parts[1]))
     {
-        // Handle via macro
+        /* NaNs
+           exp(nan +i*y) = nan -i*0   if y = -0,
+                           nan +i*0   if y = +0,
+                           nan +i*nan otherwise
+           exp(x+i*nan) =   +/-0 +/-i*0 if x=-inf,
+                          +/-inf +i*nan if x=+inf,
+                             nan +i*nan otherwise */
+        if (IsArb0 (&aplRht.parts[1]))
+        {
+            // Copy right arg to result
+            arb_set (&aplRes.parts[0], &aplRht.parts[0]);
+            arb_set (&aplRes.parts[0], &aplRht.parts[1]);
+        } else
+        if (IsArbInfinity (&aplRes.parts[0]))
+        {
+            if (SIGN_APLARB (&aplRht.parts[0]))
+            {
+                arb_zero (&aplRes.parts[0]);
+                arb_zero (&aplRes.parts[1]);
+            } // End IF
+        } else
+        {
+            arb_set_inf (&aplRes.parts[0], +1);
+            arb_set_nan (&aplRes.parts[1]);
+        } // End IF/ELSE
+    } else
+    if (IsArb0 (&aplRht.parts[1]))
+    {
+        /* special case when the input is real
+           exp(x-i*0) = exp(x) -i*0, even if x is NaN
+           exp(x+i*0) = exp(x) +i*0, even if x is NaN */
+        arb_exp (&aplRes.parts[0], &aplRht.parts[0], prec);
+        arb_set (&aplRes.parts[1], &aplRht.parts[1]);
+    } else
+    if (IsArb0 (&aplRht.parts[0]))
+    {
+        /* special case when the input is imaginary  */
+        arb_sin_cos (&aplRes.parts[1], &aplRes.parts[0], &aplRht.parts[1], prec);
+////////arb_cos (&aplRes.parts[0], &aplRht.parts[1], prec);
+////////arb_sin (&aplRes.parts[1], &aplRht.parts[1], prec);
+    } else
+    if (IsArbInfinity (&aplRht.parts[0]))
+    {
+        APLARB n = {0};
+
+        /* real part is an infinity,
+           exp(-inf +i*y) = 0*(cos y +i*sin y)
+           exp(+inf +i*y) = +/-inf +i*nan         if y = +/-inf
+                            +inf*(cos y +i*sin y) if 0 < |y| < inf */
+        arb_init (&n);
+
+        if (SIGN_APLARB (&aplRht.parts[0]))
+            arb_zero (&n);
+        else
+            arb_set_inf (&n, +1);
+        if (IsArbInfinity (&aplRht.parts[1]))
+        {
+            if (SIGN_APLARB (&aplRht.parts[0]))
+            {
+                arb_set     (&aplRes.parts[0], &n);
+                arb_set     (&aplRes.parts[1], &n);
+            } else
+            {
+                arb_set     (&aplRes.parts[0], &n);
+                arb_set_nan (&aplRes.parts[1]);
+            } // End IF/ELSE
+        } else
+        {
+            arb_t c, s;
+            arb_init (c);
+            arb_init (s);
+
+            arb_sin_cos (s, c, &aplRht.parts[1], prec);
+
+            arb_set (&aplRes.parts[0], &n);
+            if (SIGN_APLARB (c))
+                arb_neg (&aplRes.parts[0], &aplRes.parts[0]);
+
+            arb_set (&aplRes.parts[1], &n);
+            if (SIGN_APLARB (s))
+                arb_neg (&aplRes.parts[1], &aplRes.parts[1]);
+
+            arb_clear (s);
+            arb_clear (c);
+        } // End IF/ELSE
+
+        arb_clear (&n);
+    } else
+    if (IsArbInfinity (&aplRht.parts[1]))
+    {
+        /* real part is finite non-zero number, imaginary part is an infinity */
+        arb_set_nan (&aplRes.parts[0]);
+        arb_set_nan (&aplRes.parts[1]);
+    } else
+    {
+        arb2f_clear (&aplRes);
+
+        // Handle via subroutine
         aplRes = PrimMonStarBAxF ((LPAPLBA8F) &aplRht, 2).partsLo.partsLo;
-    } // End IF/ELSE
+    } // End IF/ELSE/...
 
     return aplRes;
 } // End ExpBA2F_RE

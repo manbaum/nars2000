@@ -1,0 +1,9 @@
+Build #2272 -- Version 0.6.2.xx
+-------------------------------
+
+* Handle More Special Cases In Complex Exponential Function
+
+Directory branches/bsmith/NanTypes:
+
+PF_STAR.C:
+  Handle more special cases in Exponential function for HC2F and HC2V.

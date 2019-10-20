@@ -1,6 +1,17 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2276 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug When Assigning []FEATURE With {Zilde}
+
+Directory branches/bsmith/NanTypes:
+
+SYSVARS.C:
+  In <ValidSetFEATURE_EM> when assigning {zilde} to []FEATURE, call <SetCurrentFeature> so as to set the values in lpMemPTD->aplCurrentFEATURE.
+
+
 Build #2274 -- Version 0.6.2.xx
 -------------------------------
 

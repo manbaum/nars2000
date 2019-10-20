@@ -3038,6 +3038,9 @@ UBOOL ValidSetFEATURE_EM
         // Mark as no need to display
         lptkNamArg->tkFlags.NoDisplay = TRUE;
 
+        // Set the current FEATURE in lpMemPTD
+        SetCurrentFeature (GetMemPTD (),
+                           lptkNamArg->tkData.tkSym->stData.stGlbData);
         return TRUE;
     } // End IF
 

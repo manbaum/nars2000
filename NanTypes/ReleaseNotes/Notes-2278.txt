@@ -1,0 +1,10 @@
+Build #2278 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug In Point Notation When Mixing RATs & VFPs
+
+Directory branches/bsmith/NanTypes:
+
+PN_PROC.C:
+  In <PN_MakeRatPoint> when changing the result from RAT to VFP, clear the bRatSep flag.
+  In <PN_MakeHc2Point>, if the incoming storage type is VFP, don't process the result as a RAT.

@@ -3883,6 +3883,9 @@ LPPN_YYSTYPE PN_MakeRatPoint
             // Set the result type
             lpYYNum->chType = PN_NUMTYPE_VFP;
 
+            // Clear the RatSep flag
+            lppnLocalVars->bRatSep = FALSE;
+
             break;
 
         defstop
@@ -7002,6 +7005,7 @@ PN_YYSTYPE PN_MakeHc2Point
     APLARB           aplArb0 = {0};     // ...
     APLBA2F          aplBA2F = {0};     // ...
     UBOOL            bRet;              // TRUE iff the result is valid
+    APLSTYPE         aplTypeCom;        // Common storage types
     mp_limb_signed_t prec;              // Precision
 
     // Get ptr to PerTabData global memory
@@ -7013,15 +7017,16 @@ PN_YYSTYPE PN_MakeHc2Point
     // Promote to a common type
     chType = aNumTypePromote[lpC0->chType][lpC1->chType];
 
-    // If the result is to be some form of RAT, ...
-    if (lppnLocalVars->bRatSep)
+    // Convert to array type
+    aplTypeCom = TranslateNumTypeToArrayType (chType);
+
+    // If the result is to be some form of RAT, and
+    //    we're not any form of VFP, ...
+    if (lppnLocalVars->bRatSep
+     && !IsAnyVfp (aplTypeCom))
     {
-        APLSTYPE    aplTypeCom;             // Common storage types
         int         iHCDimIndex;            // HC Dimension index (0, 1, 2, 3)
         CR_RETCODES crRetCode;              // Return code
-
-        // Convert to array type
-        aplTypeCom = TranslateNumTypeToArrayType (chType);
 
         // Get the HC Dimension Index (0, 1, 2, 3)
         iHCDimIndex = aArrayTypeToHCDimIndex[aplTypeCom];

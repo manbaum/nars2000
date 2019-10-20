@@ -1315,9 +1315,19 @@ APLINT PrimFnGradeCompare
                                        ((LPAPLFLOAT) lpMemRht)[aplUIntRht * aplNELMRest + uRest]);
             } else
             {
+                APLFLOAT fLft = ((LPAPLFLOAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                         fRht = ((LPAPLFLOAT) lpMemRht)[aplUIntRht * aplNELMRest + uRest];
+
+                UBOOL bLft = SIGN_APLFLOAT (fLft),
+                      bRht = SIGN_APLFLOAT (fRht);
+
+                // If we are distinguishing between -0 and 0, ...
+                if (bLft || bRht)
+                    // Return -1 if bLft, or 1 if bRht
+                    return  (bLft - bRht) * lpGradeData->iMul;
+                else
                 // Split cases based upon the signum of the difference
-                switch (signumflt (((LPAPLFLOAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest]
-                                 - ((LPAPLFLOAT) lpMemRht)[aplUIntRht * aplNELMRest + uRest]))
+                switch (signumflt (fLft - fRht))
                 {
                     case 1:
                         return  1 * lpGradeData->iMul;

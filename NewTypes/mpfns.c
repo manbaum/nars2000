@@ -1209,7 +1209,10 @@ int mpq_cmp_ct
      UBOOL    bIntegerTest)         // TRUE iff this is an integer test
 
 {
-    int iRet;                       // Result of mpq_cmp
+    int   iRet;                     // Result of mpq_cmp
+
+    // Note that we don't distinguish between -0 and 0 because MPIR
+    //   has no way to represent -0.
 
 ////#define CT_DEBUG
 
@@ -1697,7 +1700,7 @@ APLINT _mpfr_get_ctsx
     else
     // Handle special case of infinity as <mpfr_get_sx> fails
     if (mpfr_inf_p (src))
-        longjmp (heapFull, 3);
+        *lpbRet = FALSE;
     else
     {
         // Initialize the temps to 0
@@ -1908,7 +1911,18 @@ int mpfr_cmp_ct
      UBOOL    bIntegerTest)         // TRUE iff this is an integer test
 
 {
-    int iRet;                       // Result of mpfr_cmp
+    int   iRet;                     // Result of mpfr_cmp
+    UBOOL bLft = SIGN_APLVFP (lpaplLft),    // TRUE iff Lft is -0
+          bRht = SIGN_APLVFP (lpaplRht);    // ...      Rht ...
+
+    // If we are distinguishing between -0 and 0, ...
+    if (IsMpf0 (lpaplLft)
+     && IsMpf0 (lpaplRht)
+     && gAllowNeg0
+     && gAllowNeg0NE0
+     && (bLft NE bRht))
+        // Return -1 if bLft, or 1 if bRht
+        return bRht - bLft;
 
     // Compare 'em without tolerance
     iRet = mpfr_cmp (lpaplLft, lpaplRht);

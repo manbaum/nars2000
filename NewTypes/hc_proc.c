@@ -28,10 +28,10 @@
 
 
 //***************************************************************************
-//  $Myhcxr_clear
+//  $MyhcXr_clear
 //***************************************************************************
 
-void Myhcxr_clear
+void MyhcXr_clear
     (LPVOID mphcrVal,           // Ptr to item to clear
      int    iHCDimVal)          // HC Dimension of item (1, 2, 4, 8)
 
@@ -62,7 +62,7 @@ void Myhcxr_clear
         defstop
             break;
     } // End SWITCH
-} // End Myhcxr_clear
+} // End MyhcXr_clear
 
 
 //***************************************************************************
@@ -132,10 +132,10 @@ void Myhc8r_clear
 
 
 //***************************************************************************
-//  $Myhcxv_clear
+//  $MyhcXv_clear
 //***************************************************************************
 
-void Myhcxv_clear
+void MyhcXv_clear
     (LPVOID mphcvVal,           // Ptr to item to clear
      int    iHCDimVal)          // HC Dimension of item (1, 2, 4, 8)
 
@@ -166,7 +166,7 @@ void Myhcxv_clear
         defstop
             break;
     } // End SWITCH
-} // End Myhcxv_clear
+} // End MyhcXv_clear
 
 
 //***************************************************************************

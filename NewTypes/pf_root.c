@@ -462,8 +462,8 @@ APLHC8F SqrtHCxF_RE
     if (aplIMag EQ 0 || _isnan (aplIMag))
     {
         // If the real part of the right arg is negative, ...
-        if (signumflt (aplRht.parts[0]) < 0)
-        {
+        if (aplRht.parts[0] < 0)    // Not SIGN_APLFLOAT as -0 is handled
+        {                           //   in the "else" clause
             // If it's not a Complex result as yet, ...
             if (iHCDimRes < 2)
                 // Make it so
@@ -478,52 +478,9 @@ APLHC8F SqrtHCxF_RE
             } // End IF/ELSE
         } else
         {
-            // If the imaginary parts are all 0, ...
-            if (aplIMag EQ 0)
-            {
-                // Calculate v = r_atan2 (g, h) / 2
-                aplV = atan2 (aplIMag, aplRht.parts[0]) / 2;
-
-                // Calculate the real part
-                aplRes.parts[0] = aplU * cos (aplV);                    // p
-
-                // Loop through all but the 1st of the imaginary parts
-                for (i = 2; i < iHCDimRes; i++)
-                    // Initialize to 0
-                    aplRes.parts[i] = 0.0;
-
-                // If the real part is negative, ...
-                if (aplRht.parts[0] < 0)
-                {
-                    // Set the real part to 0
-                    aplRes.parts[0] = 0;
-
-                    // Set the 1st imaginary part to aplU
-                    aplRes.parts[1] = aplU;
-                } else
-                    // Set the 1st imaginary part to 0
-                    aplRes.parts[1] = 0;
-            } else
-            {
-                // Calculate v = r_atan2 (g, h) / 2
-                aplV   = atan2 (aplIMag, aplRht.parts[0]) / 2;              // v
-
-                // Calculate sin (v)
-                aplV   = sin (aplV);
-
-                // Calculate u * sin (v)
-                aplMul = MulHC1F_RE (aplU, aplV);
-
-                // Calculate u * sin (v) / g
-                aplMul = DivHC1F_RE (aplMul, aplIMag);                      // q
-
-                // Calculate the real Sqrt of the right arg real & imag parts
-                aplRes.parts[0] = sqrt (aplRht.parts[0]);
-
-                // Loop through the imaginary parts
-                for (i = 1; i < iHCDimRes; i++)
-                    aplRes.parts[i] = aplMul * aplRht.parts[i];
-            } // End IF/ELSE
+            // Calculate the real Sqrt of the right arg real & imag parts
+            aplRes.parts[0] = sqrt (aplRht.parts[0]);
+            aplRes.parts[1] = sqrt (aplIMag        );
         } // End IF/ELSE
     } else
     {
@@ -782,11 +739,14 @@ APLHC8V SqrtHCxV_RE
         mphcXv_init0 (&aplRes, iHCDimRes);
 
         // If the real part of the right arg is negative, ...
-        if (mpfr_sgn (&aplRht.parts[0]) < 0)
-        {
+        if (mpfr_sgn (&aplRht.parts[0]) < 0)    // Not SIGN_APLVFP as -0 is handled
+        {                                       //   in the "else" clause
             // If it's not a Complex result as yet, ...
             if (iHCDimRes < 2)
             {
+                // Free the storage
+                MyhcXv_clear (&aplRes, iHCDimRes);
+
                 // Mark as in error
                 bError = TRUE;
 

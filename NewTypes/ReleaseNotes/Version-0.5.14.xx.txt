@@ -1,6 +1,52 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2273 -- Version 0.5.14.xx
+--------------------------------
+
+* Define FEATURE Bit To Distinguish -0 And 0
+
+Directory branches/bsmith/NewTypes:
+
+COMMON.C:
+  Define new functions to compare FLT/VFP against +0.
+
+CONVERT.C:
+  In <flt_cmp_ct>, distinguish between -0 and 0 if requested.
+
+EXTERNS.H:
+  Define new bit in []FEATURE to distinguish between -0 and 0.
+
+FPCHO_COM.C:
+  In <fpXf_scale>, handle {inf} x 0 differently from NaN x 0.
+
+FPCHO_COM.MAC:
+  In macro <fpXf_mag_imag8> handle non-finite case.
+
+HC_PROC.C:
+PF_DOMINO.C:
+  Rename <Myhcxr_clewar> and <Myhcxv_clear> to be more consistent.
+
+MACROS.H:
+  Define macreos to test for NEG0_NE0.
+
+MPFNS.C:
+  In <mpfr_get_ctsx> handle {inf}{ as FALSE in result rather than longjmp.
+
+PF_DELTASTILE.C:
+  In <mpfr_cmp_ct>, distinguish between -0 and 0 if requested.
+
+PF_ROOT.C:
+  In <SqrtHCxF_RE>, remove redundant code.
+  In <SqrtHCxV_RE>, fix memory leak.
+
+PF_STAR.C:
+  In <ExpHC2F_RE> and <ExpHC2V_RE> handle missing case.
+
+TYPEMOTE.C:
+  In <TypeDemote>, distinguish between -0 and 0 if requested.
+
+
 Build #2271 -- Version 0.5.14.xx
 --------------------------------
 

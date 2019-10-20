@@ -52,7 +52,7 @@ void fpXf_sin
 
     // Calculate the magnitude of the imaginary parts in the arg
 ////fpXf_mag_imag (fpfIMag, op        );                        // g
-    fpXf_mag_imag8(fpfIMag, op, fpfAbs);                        // g
+    fpXf_mag_imag8(fpfIMag, op, fpfAbs, iHCDim);                // g
 
     // Construct a complex number from h and g
     fprf_set (Z.dat[0], op->parts[0]);
@@ -105,7 +105,7 @@ void fpXf_cos
 
     // Calculate the magnitude of the imaginary parts in the arg
 ////fpXf_mag_imag (fpfIMag, op        );                        // g
-    fpXf_mag_imag8(fpfIMag, op, fpfAbs);                        // g
+    fpXf_mag_imag8(fpfIMag, op, fpfAbs, iHCDim);                // g
 
     // Construct a complex number from h and g
     fprf_set (Z.dat[0], op->parts[0]);
@@ -158,7 +158,7 @@ void fpXf_tan
 
     // Calculate the magnitude of the imaginary parts in the arg
 ////fpXf_mag_imag (fpfIMag, op        );                        // g
-    fpXf_mag_imag8(fpfIMag, op, fpfAbs);                        // g
+    fpXf_mag_imag8(fpfIMag, op, fpfAbs, iHCDim);                // g
 
     // Construct a complex number from h and g
     fprf_set (Z.dat[0], op->parts[0]);
@@ -211,7 +211,7 @@ void fpXf_asin
 
     // Calculate the magnitude of the imaginary parts in the arg
 ////fpXf_mag_imag (fpfIMag, op        );                        // g
-    fpXf_mag_imag8(fpfIMag, op, fpfAbs);                        // g
+    fpXf_mag_imag8(fpfIMag, op, fpfAbs, iHCDim);                // g
 
     // Construct a complex number from h and g
     fprf_set (Z.dat[0], op->parts[0]);
@@ -266,7 +266,7 @@ void fpXf_acos
 
     // Calculate the magnitude of the imaginary parts in the arg
 ////fpXf_mag_imag (fpfIMag, op        );                        // g
-    fpXf_mag_imag8(fpfIMag, op, fpfAbs);                        // g
+    fpXf_mag_imag8(fpfIMag, op, fpfAbs, iHCDim);                // g
 
     // Construct a complex number from h and g
     fprf_set (Z.dat[0], op->parts[0]);
@@ -320,7 +320,7 @@ void fpXf_atan
 
     // Calculate the magnitude of the imaginary parts in the arg
 ////fpXf_mag_imag (fpfIMag, op        );                        // g
-    fpXf_mag_imag8(fpfIMag, op, fpfAbs);                        // g
+    fpXf_mag_imag8(fpfIMag, op, fpfAbs, iHCDim);                // g
 
     // Construct a complex number from h and g
     fprf_set (Z.dat[0], op->parts[0]);
@@ -392,7 +392,7 @@ void fpXf_sinh
 
     // Calculate the magnitude of the imaginary parts in the arg
 ////fpXf_mag_imag (fpfIMag, op        );                        // g
-    fpXf_mag_imag8(fpfIMag, op, fpfAbs);                        // g
+    fpXf_mag_imag8(fpfIMag, op, fpfAbs, iHCDim);                // g
 
     // Construct a complex number from h and g
     fprf_set (Z.dat[0], op->parts[0]);
@@ -445,7 +445,7 @@ void fpXf_cosh
 
     // Calculate the magnitude of the imaginary parts in the arg
 ////fpXf_mag_imag (fpfIMag, op        );                        // g
-    fpXf_mag_imag8(fpfIMag, op, fpfAbs);                        // g
+    fpXf_mag_imag8(fpfIMag, op, fpfAbs, iHCDim);                // g
 
     // Construct a complex number from h and g
     fprf_set (Z.dat[0], op->parts[0]);
@@ -498,7 +498,7 @@ void fpXf_tanh
 
     // Calculate the magnitude of the imaginary parts in the arg
 ////fpXf_mag_imag (fpfIMag, op        );                        // g
-    fpXf_mag_imag8(fpfIMag, op, fpfAbs);                        // g
+    fpXf_mag_imag8(fpfIMag, op, fpfAbs, iHCDim);                // g
 
     // Construct a complex number from h and g
     fprf_set (Z.dat[0], op->parts[0]);
@@ -551,7 +551,7 @@ void fpXf_asinh
 
     // Calculate the magnitude of the imaginary parts in the arg
 ////fpXf_mag_imag (fpfIMag, op        );                        // g
-    fpXf_mag_imag8(fpfIMag, op, fpfAbs);                        // g
+    fpXf_mag_imag8(fpfIMag, op, fpfAbs, iHCDim);                // g
 
     // Construct a complex number from h and g
     fprf_set (Z.dat[0], op->parts[0]);
@@ -596,14 +596,56 @@ void fpXf_asinh
 
 //***************************************************************************
 //  $fpXf_acosh     (-6)
+//
+//  The code below was translated to C from the original Javascript
+//    http://tamivox.org/redbear/qtrn_calc/index.html
+//  written by Dave Barber, Copyright 2015, Dave Barber.
 //***************************************************************************
 
 void fpXf_acosh
     (fpcho_t    rop,            // The result (as one of mpcf_/mphf_/mpof_)
-     fpcho_t    op,             // The argument (as oneof mpcf_/mphf_/mpof_)
+     fpcho_t    op,             // The argument (as one of mpcf_/mphf_/mpof_)
      int        iHCDim)         // HC Dimension (1, 2, 4, 8)
 
 {
+#if FALSE
+    fpcho_t     fpfAbs;         // ...
+    int         i;              // Loop counter
+    fprf_t      a,              // Temps
+                b,              // ...
+                g,              // ...
+                h,              // ...
+                v;              // ...
+
+/*
+    var h = pF (stack[0].h); var i = pF (stack[0].i); var j = pF (stack[0].j); var k = pF (stack[0].k);
+    var g = r_sqrt (i * i + j * j + k * k);
+
+    var a = alfa (h, g);
+    var b = beta (h, g);
+    var u = r_log (a + r_sqrt (a * a - 1));
+    var v = (g == 0) ? 0 : r_acos (b) / g;
+
+    stack[0].h = u; stack[0].i = v * i; stack[0].j = v * j; stack[0].k = v * k;
+ */
+
+    // Calculate the magnitude of the imaginary parts in the arg
+    fpXf_mag_imag8(g      , op, fpfAbs, iHCDim);                // g
+
+    h = op->parts[0];
+    a = flt_alpha (h, g);
+    b = flt_beta  (h, g);
+
+    rop->parts[0] = log (a + sqrt (a * a -1));                  // u
+    if (g EQ 0.0)
+        v = g;
+    else
+        v = acos (b) / g;
+
+    for (i = 1; i < iHCDim; i++)
+        rop->parts[i] = op->parts[i] * v;
+
+#else
     fprf_t      fpfIMag,        // Magnitude of imaginary parts in the arg
                 fpfTmp1;        // Temp var
     fpcho_t     fpfAbs;         // ...
@@ -611,11 +653,11 @@ void fpXf_acosh
 
     // Calculate the magnitude of the imaginary parts in the arg
 ////fpXf_mag_imag (fpfIMag, op        );                        // g
-    fpXf_mag_imag8(fpfIMag, op, fpfAbs);                        // g
+    fpXf_mag_imag8(fpfIMag, op, fpfAbs, iHCDim);                // g
 
     // Construct a complex number from h and g
-    fprf_set (Z.dat[0], op->parts[0]);
-    fprf_set (Z.dat[1], fpfIMag);
+    fprf_set (Z.dat[0], op->parts[0]);                          // h
+    fprf_set (Z.dat[1], fpfIMag);                               // g
 
     // Calculate the corresponding complex number
     Z = gsl_complex_arccosh (Z);
@@ -635,6 +677,7 @@ void fpXf_acosh
     // The imaginary part of the arg is zero
         // Save in first imaginary part of the result
         fprf_set (rop->parts[1], Z.dat[1]);
+#endif
 } // End fpXf_acosh
 
 
@@ -678,7 +721,7 @@ void fpXf_atanh
 
     // Calculate the magnitude of the imaginary parts in the arg
 ////fpXf_mag_imag (fpfIMag, op        );                        // g
-    fpXf_mag_imag8(fpfIMag, op, fpfAbs);                        // g
+    fpXf_mag_imag8(fpfIMag, op, fpfAbs, iHCDim);                // g
 
     // Construct a complex number from h and g
     fprf_set (Z.dat[0], op->parts[0]);
@@ -737,16 +780,15 @@ void fpXf_scale
 
     // Loop through the imaginary parts
     for (i = 1; i < iHCDim; i++)
-    {
+    // Handle special case of {inf} x 0
+    if ((_isinf (op->parts[i]) && fpfTmp1 EQ 0.0)
+     || (_isinf (fpfTmp1)      && op->parts[i] EQ 0.0))
+        // Set to zero
+        // We are deciding for this function that {inf} x 0 is 0
+        rop->parts[i] = 0.0;
+    else
         // Multiply the imaginary parts of the arg by the scale factor
         fprf_mul (rop->parts[i], op->parts[i], fpfTmp1);
-
-        // If the result is a NaN (really a Real Indefinite), ...
-        if (_isnan (rop->parts[i]))
-            // Set to zero
-            // We are deciding for this function that {inf} x 0 is 0
-            rop->parts[i] = 0.0;
-    } // End FOR
 } // End fpXf_scale
 
 

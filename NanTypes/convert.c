@@ -1905,7 +1905,9 @@ int ba8f_cmp
 //  $flt_cmp_ct
 //
 //  Compare two floating point values with a Comparison Tolerance
-//    returning -1, 0, 1
+//    returning +1 if Lft >  Rht
+//               0 if Lft EQ Rht
+//              -1 if Lft <  Rht
 //***************************************************************************
 
 int flt_cmp_ct
@@ -1918,10 +1920,21 @@ int flt_cmp_ct
     APLFLOAT aplLftAbs,
              aplRhtAbs,
              aplHoodLo;
+    UBOOL    bLft = SIGN_APLFLOAT (aplFloatLft),    // TRUE iff Lft is -0
+             bRht = SIGN_APLFLOAT (aplFloatRht);    // ...      Rht ...
 
     // If either arg is a NaN, ...
     if (_isnan (aplFloatLft) || _isnan (aplFloatRht))
         return CmpFltNaNs (aplFloatLft, aplFloatRht);
+
+    // If we are distinguishing between -0 and 0, ...
+    if (aplFloatLft EQ 0.0
+     && aplFloatRht EQ 0.0
+     && gAllowNeg0
+     && gAllowNeg0NE0
+     && (bLft NE bRht))
+        // Return -1 if bLft, or 1 if bRht
+        return bRht - bLft;
 
     // If Lft EQ Rht (absolutely), return 0 (equal)
     if (aplFloatLft EQ aplFloatRht)

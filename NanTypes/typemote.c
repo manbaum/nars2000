@@ -459,8 +459,9 @@ UNLOCK_EXIT:
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
                 // Loop through the dimension backwards looking for non-zero values
+                //   stopping on -0 if that's enabled
                 for (i = iHCDimRht - 1; i >= 0; i--)
-                if ((((LPAPLHC8F) &((LPBYTE) lpMemRht)[uRht * iSizeofRht])->parts[i]) NE 0.0)
+                if (!fltNeg0_EQ0 (((LPAPLHC8F) &((LPBYTE) lpMemRht)[uRht * iSizeofRht])->parts[i]))
                     break;
 
                 // Save the largest value
@@ -525,8 +526,9 @@ UNLOCK_EXIT:
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
                 // Loop through the dimension backwards looking for non-zero values
+                //   stopping on -0 if that's enabled
                 for (i = iHCDimRht - 1; i >= 0; i--)
-                if (!IsMpf0 (&((LPAPLHC8V) &((LPBYTE) lpMemRht)[uRht * iSizeofRht])->parts[i]))
+                if (!vfpNeg0_EQ0 (&((LPAPLHC8V) &((LPBYTE) lpMemRht)[uRht * iSizeofRht])->parts[i]))
                     break;
 
                 // Save the largest value

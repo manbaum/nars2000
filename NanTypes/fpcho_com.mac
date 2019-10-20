@@ -50,10 +50,10 @@
 //  This routine was copied mostly from GSL in .\sys\HYPOT.C
 //***************************************************************************
 
-#define fpXf_mag_imag8(rop,op,opAbs)                                \
+#define fpXf_mag_imag8(rop,op,opAbs,iHCDim)                         \
 {                                                                   \
-    int      i;                     /* Loop counter               */\
-    APLFLOAT w, x;                                                  \
+    int    i;                       /* Loop counter               */\
+    fprf_t w, x;                                                  \
                                                                     \
     /* Loop through all of the imag parts                         */\
     for (i = 1; i < iHCDim; i++)                                    \
@@ -62,6 +62,7 @@
                                                                     \
     /* Find the maximum abs                                       */\
     w = opAbs->parts[0];                                            \
+                                                                    \
     /* Loop through all of the imag parts                         */\
     for (i = 1; i < iHCDim; i++)                                    \
         /* Calculate the maximum value                            */\
@@ -69,6 +70,9 @@
                                                                     \
     if (w EQ 0.0)                                                   \
         rop = 0.0;                                                  \
+    else                                                            \
+    if (!_finite (w))                                               \
+        rop = w;                                                    \
     else                                                            \
     {                                                               \
         /* Loop through all of the imag parts                     */\
@@ -80,9 +84,9 @@
             /* Calculate the sum of the squares                   */\
             x += opAbs->parts[i] * opAbs->parts[i];                 \
         } /* End FOR                                              */\
-    } /* End IF/ELSE                                              */\
                                                                     \
-     rop = w * sqrt (x);                                            \
+        rop = w * sqrt (x);                                         \
+    } /* End IF/ELSE/...                                          */\
 } /* End fpXf_mag_imag8                                           */
 
 

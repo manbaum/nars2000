@@ -2406,7 +2406,7 @@ void PN_actHC2R_BA2F
 
     // Free the temps
     fmpq_clear (fmpq);
-    Myhcxr_clear (&aplRat, 2);
+    MyhcXr_clear (&aplRat, 2);
 
     lpSrc->chType = PN_NUMTYPE_BA2F;
 } // End PN_actHC2R_BA2F
@@ -2437,7 +2437,7 @@ void PN_actHC2V_BA2F
         arb_set_mpfr (&lpSrc->at.aplBA8F.parts[i], &aplVfp.parts[i]);
 
     // Free the temps
-    Myhcxv_clear (&aplVfp, 2);
+    MyhcXv_clear (&aplVfp, 2);
 
     lpSrc->chType = PN_NUMTYPE_BA2F;
 } // End PN_actHC2V_BA2F
@@ -2504,7 +2504,7 @@ void PN_actHC2R_BA4F
 
     // Free the temps
     fmpq_clear (fmpq);
-    Myhcxr_clear (&aplRat, 2);
+    MyhcXr_clear (&aplRat, 2);
 
     lpSrc->chType = PN_NUMTYPE_BA4F;
 } // End PN_actHC2R_BA4F
@@ -2535,7 +2535,7 @@ void PN_actHC2V_BA4F
         arb_set_mpfr (&lpSrc->at.aplBA8F.parts[i], &aplVfp.parts[i]);
 
     // Free the temps
-    Myhcxv_clear (&aplVfp, 2);
+    MyhcXv_clear (&aplVfp, 2);
 
     lpSrc->chType = PN_NUMTYPE_BA4F;
 } // End PN_actHC2V_BA4F
@@ -2602,7 +2602,7 @@ void PN_actHC2R_BA8F
 
     // Free the temps
     fmpq_clear (fmpq);
-    Myhcxr_clear (&aplRat, 2);
+    MyhcXr_clear (&aplRat, 2);
 
     lpSrc->chType = PN_NUMTYPE_BA8F;
 } // End PN_actHC2R_BA8F
@@ -2633,7 +2633,7 @@ void PN_actHC2V_BA8F
         arb_set_mpfr (&lpSrc->at.aplBA8F.parts[i], &aplVfp.parts[i]);
 
     // Free the temps
-    Myhcxv_clear (&aplVfp, 2);
+    MyhcXv_clear (&aplVfp, 2);
 
     lpSrc->chType = PN_NUMTYPE_BA8F;
 } // End PN_actHC2V_BA8F
@@ -2673,7 +2673,7 @@ void PN_actHC4R_BA4F
 
     // Free the temps
     fmpq_clear (fmpq);
-    Myhcxr_clear (&aplRat, 4);
+    MyhcXr_clear (&aplRat, 4);
 
     lpSrc->chType = PN_NUMTYPE_BA4F;
 } // End PN_actHC4R_BA4F
@@ -2704,7 +2704,7 @@ void PN_actHC4V_BA4F
         arb_set_mpfr (&lpSrc->at.aplBA8F.parts[i], &aplVfp.parts[i]);
 
     // Free the temps
-    Myhcxv_clear (&aplVfp, 4);
+    MyhcXv_clear (&aplVfp, 4);
 
     lpSrc->chType = PN_NUMTYPE_BA4F;
 } // End PN_actHC4V_BA4F
@@ -2744,7 +2744,7 @@ void PN_actHC4R_BA8F
 
     // Free the temps
     fmpq_clear (fmpq);
-    Myhcxr_clear (&aplRat, 4);
+    MyhcXr_clear (&aplRat, 4);
 
     lpSrc->chType = PN_NUMTYPE_BA8F;
 } // End PN_actHC4R_BA8F
@@ -2775,7 +2775,7 @@ void PN_actHC4V_BA8F
         arb_set_mpfr (&lpSrc->at.aplBA8F.parts[i], &aplVfp.parts[i]);
 
     // Free the temps
-    Myhcxv_clear (&aplVfp, 4);
+    MyhcXv_clear (&aplVfp, 4);
 
     lpSrc->chType = PN_NUMTYPE_BA8F;
 } // End PN_actHC4V_BA8F
@@ -2815,7 +2815,7 @@ void PN_actHC8R_BA8F
 
     // Free the temps
     fmpq_clear (fmpq);
-    Myhcxr_clear (&aplRat, 8);
+    MyhcXr_clear (&aplRat, 8);
 
     lpSrc->chType = PN_NUMTYPE_BA8F;
 } // End PN_actHC8R_BA8F
@@ -2846,7 +2846,7 @@ void PN_actHC8V_BA8F
         arb_set_mpfr (&lpSrc->at.aplBA8F.parts[i], &aplVfp.parts[i]);
 
     // Free the temps
-    Myhcxv_clear (&aplVfp, 8);
+    MyhcXv_clear (&aplVfp, 8);
 
     lpSrc->chType = PN_NUMTYPE_BA8F;
 } // End PN_actHC8V_BA8F

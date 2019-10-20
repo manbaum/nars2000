@@ -1858,7 +1858,7 @@ void FreeRatMat
             // Loop through the rows and cols
             for (uRow = 0; uRow < uNumRows; uRow++)
             for (uCol = 0; uCol < uNumCols; uCol++)
-                Myhcxr_clear (&lpMemTmp[(uRow * uNumRows + uCol) * iHCDimRht], iHCDimRht);
+                MyhcXr_clear (&lpMemTmp[(uRow * uNumRows + uCol) * iHCDimRht], iHCDimRht);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTmp); lpMemTmp = NULL;
@@ -2920,7 +2920,7 @@ NORMAL_EXIT:
             // Loop through the rows and cols
             for (uRow = 0; uRow < uNumRowsLft; uRow++)
             for (uCol = 0; uCol < uNumColsLft; uCol++)
-                Myhcxr_clear (ByteAddr (lpMemTmpLft, (uRow * uNumColsLft + uCol) * iSizeofTmp), iHCDimRes);
+                MyhcXr_clear (ByteAddr (lpMemTmpLft, (uRow * uNumColsLft + uCol) * iSizeofTmp), iHCDimRes);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTmpLft); lpMemTmpLft = NULL;
@@ -2937,7 +2937,7 @@ NORMAL_EXIT:
             // Loop through the rows and cols
             for (uRow = 0; uRow < uNumRowsRht; uRow++)
             for (uCol = 0; uCol < uNumColsRht; uCol++)
-                Myhcxr_clear (ByteAddr (lpMemTmpRht, (uRow * uNumColsRht + uCol) * iSizeofTmp), iHCDimRes);
+                MyhcXr_clear (ByteAddr (lpMemTmpRht, (uRow * uNumColsRht + uCol) * iSizeofTmp), iHCDimRes);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTmpRht); lpMemTmpRht = NULL;

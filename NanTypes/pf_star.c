@@ -765,6 +765,9 @@ APLHC2F ExpHC2F_RE
             if (SIGN_APLFLOAT (aplRht.parts[0]))
                 aplRes.parts[0] =
                 aplRes.parts[1] = 0.0;
+            else
+                aplRes.parts[0] =
+                aplRes.parts[1] = fltNaN;
         } else
         {
             aplRes.parts[0] = fltPosInfinity;
@@ -1138,7 +1141,11 @@ APLHC2V ExpHC2V_RE
             {
                 mpfr_set_zero (&aplRes.parts[0], +1);
                 mpfr_set_zero (&aplRes.parts[1], +1);
-            } // End IF
+            } else
+            {
+                mpfr_set_nan (&aplRes.parts[0]);
+                mpfr_set_nan (&aplRes.parts[1]);
+            } // End IF/ELSE
         } else
         {
             mpfr_set_inf (&aplRes.parts[0], +1);

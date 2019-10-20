@@ -1648,5 +1648,55 @@ void MyCopyMemoryW
 
 
 //***************************************************************************
+//  $fltNeg0_EQ0
+//
+//  Compare the arg against +0 where if we support -0 and
+//    are distinguishing between those two, do so now
+//***************************************************************************
+
+UBOOL fltNeg0_EQ0
+    (APLFLOAT aplArg)
+
+{
+    if (aplArg EQ 0.0)
+    {
+        if (gAllowNeg0
+         && gAllowNeg0NE0)
+            // If the arg is -0, return FALSE;
+            //    otherwise, return TRUE;
+            return !SIGN_APLFLOAT (aplArg);
+        else
+            return TRUE;
+    } else
+        return FALSE;
+} // End fltNeg0_EQ0
+
+
+//***************************************************************************
+//  $vfpNeg0_EQ0
+//
+//  Compare the arg against +0 where if we support -0 and
+//    are distinguishing between those two, do so now
+//***************************************************************************
+
+UBOOL vfpNeg0_EQ0
+    (LPAPLVFP lpaplArg)
+
+{
+    if (IsMpf0 (lpaplArg))
+    {
+        if (gAllowNeg0
+         && gAllowNeg0NE0)
+            // If the arg is -0, return FALSE;
+            //    otherwise, return TRUE;
+            return !SIGN_APLVFP (lpaplArg);
+        else
+            return TRUE;
+    } else
+        return FALSE;
+} // End vfpNeg0_EQ0
+
+
+//***************************************************************************
 //  End of File: common.c
 //***************************************************************************

@@ -241,7 +241,7 @@ typedef enum tagFEATURE_INDICES
     FEATURENDX_NEGINDICES   ,           // 00:  Allow negative indices
     FEATURENDX_NEG0         ,           // 01:  Allow -0
     FEATURENDX_HURWITZ      ,           // 02:  Use Hurwitz's Floor v. McDonnell
-    FEATURENDX_UNK          ,           // 03:  ***UNUSED***
+    FEATURENDX_NEG0_NE0     ,           // 03:  -0 != 0
     FEATURENDX_IP2          ,           // 04:  Use APL2's definition of Inner Product
     FEATURENDX_LENGTH                   // 05:  # entries in this enum
 } FEATURE_INDICES, *LPFEATURE_INDICES;
@@ -259,7 +259,7 @@ typedef enum tagFEATURE_INDICES
 #define DEF_FEATURE_NEGINDICES  FALSE
 #define DEF_FEATURE_NEG0        FALSE
 #define DEF_FEATURE_HURWITZ     FALSE
-#define DEF_FEATURE_UNK         FALSE
+#define DEF_FEATURE_NEG0_NE0    FALSE
 #define DEF_FEATURE_IP2         FALSE
 
 typedef struct tagFEATURE_NAMES
@@ -274,7 +274,7 @@ APLINT aplDefaultFEATURE[FEATURENDX_LENGTH]  // []FEATURE default values
  = {DEF_FEATURE_NEGINDICES  ,           // 00:  Allow negative indices
     DEF_FEATURE_NEG0        ,           // 01:  Allow -0
     DEF_FEATURE_HURWITZ     ,           // 02:  Use Hurwitz's Floor v. McDonnell
-    DEF_FEATURE_UNK         ,           // 03:  ***UNUSED***
+    DEF_FEATURE_NEG0_NE0    ,           // 03:  -0 != 0
     DEF_FEATURE_IP2         ,           // 04:  Use APL2's definition of Inner Product
    }
 #endif
@@ -286,7 +286,7 @@ FEATURE_NAMES featNames[FEATURENDX_LENGTH]
  = {{FEATURENDX_NEGINDICES  , L"Allow Negative Indices"           },
     {FEATURENDX_NEG0        , L"Allow " WS_UTF16_OVERBAR L"0"     },
     {FEATURENDX_HURWITZ     , L"Use Hurwitz's Floor v. McDonnell" },
-    {FEATURENDX_UNK         , L"***UNUSED***"                     },
+    {FEATURENDX_NEG0_NE0    , $NEG L"0 " $NE L" 0"                },
     {FEATURENDX_IP2         , L"Use APL2's defn of Inner Product" },
    }
 #endif

@@ -1323,14 +1323,15 @@ APLINT PrimFnGradeCompare
             {
                 APLFLOAT fLft = ((LPAPLFLOAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
                          fRht = ((LPAPLFLOAT) lpMemRht)[aplUIntRht * aplNELMRest + uRest];
-
-                UBOOL bLft = SIGN_APLFLOAT (fLft),
-                      bRht = SIGN_APLFLOAT (fRht);
+                // N.B.:  The following datatype must be signed, not unsigned so as
+                //          to return the correctly signed result from (bRht - bLft)
+                APLINT   bLft = SIGN_APLFLOAT (fLft),
+                         bRht = SIGN_APLFLOAT (fRht);
 
                 // If we are distinguishing between -0 and 0, ...
-                if (bLft || bRht)
+                if (bLft NE bRht)
                     // Return -1 if bLft, or 1 if bRht
-                    return  (bLft - bRht) * lpGradeData->iMul;
+                    return (bRht - bLft) * lpGradeData->iMul;
                 else
                 // Split cases based upon the signum of the difference
                 switch (signumflt (fLft - fRht))

@@ -1,6 +1,17 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2282 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Unsigned Bug In Grade Of FLTs
+
+Directory branches/bsmith/NanTypes:
+
+PF_DELTASTILE.C:
+  In <PrimFnGradeCompare>, fix bug of using Unsigned vars for calculations instead of signed vars.  This bug was introduced in Build #2273.
+
+
 Build #2280 -- Version 0.6.2.xx
 -------------------------------
 

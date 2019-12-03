@@ -730,6 +730,7 @@ UNLOCK_EXIT:
                     {
                         case ARRAY_BOOL:
                         case ARRAY_NESTED:
+                        case ARRAY_CHAR:
 
                         case ARRAY_INT:
                         case ARRAY_HC2I:
@@ -1615,7 +1616,36 @@ UBOOL DemoteData
                 case ARRAY_NESTED:  // Res = CHAR, Rht = NESTED
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
-                        *((LPAPLCHAR) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stChar;
+                    {
+                        LPVARARRAY_HEADER lpMemHdrGlb = NULL;
+                        LPVOID            lpMemSymGlb = *((LPAPLHETERO *) lpMemRht)++;
+
+                        // Split cases based upon the ptr type bits
+                        switch (GetPtrTypeDir (lpMemSymGlb))
+                        {
+                            case PTRTYPE_STCONST:
+                                // Copy the value to the result
+                                *((LPAPLCHAR) lpMemRes)++ = ((LPSYMENTRY) lpMemSymGlb)->stData.stChar;
+
+                                break;
+
+                            case PTRTYPE_HGLOBAL:
+                                // Lock the memory to get a ptr to it
+                                lpMemHdrGlb = MyGlobalLockVar (lpMemSymGlb);
+
+                                // Copy the value to the result
+                                *((LPAPLCHAR) lpMemRes)++ = *(LPAPLCHAR) VarArrayDataFmBase (lpMemHdrGlb);
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (lpMemSymGlb); lpMemHdrGlb = NULL;
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End FOR
+
                     break;
 
                 defstop

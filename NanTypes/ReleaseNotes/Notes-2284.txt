@@ -1,0 +1,9 @@
+Build #2284 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug When Demoting Global Nested Array Character Scalars
+
+Directory branches/bsmith/NanTypes:
+
+TYPEMOTE.C:
+  In <DemoteData> when demoting a Nested Array character scalar, handle both PTRTYPE_STCONST and PTRTYPE_HGLOBAL arrays.

@@ -1,0 +1,9 @@
+Build #2281 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix Unsigned Bug In Grade Of FLTs
+
+Directory branches/bsmith/NewTypes:
+
+PF_DELTASTILE.C:
+  In <PrimFnGradeCompare>, fix bug of using Unsigned vars for calculations instead of signed vars.  This bug was introduced in Build #2273.

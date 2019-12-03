@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -200,7 +200,8 @@ typedef struct tagHSHTABSTR
                bGlbHshSymTabs:1,        //      00000004:  TRUE iff the Sym & Hsh tabs are allocated from global (not virtual) memory
                bAFO:1,                  //      00000008:  TRUE iff these tables are for an AFO
                bMFO:1,                  //      00000010:  TRUE iff these tables are for an MFO
-               :27;                     //      FFFFFFE0:  Available bits
+               bSysVarsInit:1,          //      00000020:  TRUE iff SysVars in the HshTab have been initialized
+               :26;                     //      FFFFFFC0:  Available bits
     struct tagSYMENTRY
               *lpSymTab,                // 30:  Ptr to start of SymTab
               *lpSymTabNext,            // 34:  Ptr to next available STE

@@ -4407,6 +4407,10 @@ void CopySysVars
      LPHSHTABSTR lphtsSrc)          // Source      ...
 
 {
+    // If we have already initialized the system vars, ...
+    if (lphtsDst->bSysVarsInit)
+        // Don't do it again
+        return;
 
     // Copy scalar values
     lphtsDst->lpSymQuad[SYSVAR_CT      ]->stData.stLongest = lphtsSrc->lpSymQuad[SYSVAR_CT      ]->stData.stLongest;
@@ -4433,6 +4437,9 @@ void CopySysVars
 ////lphtsDst->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData);    // Not used in {}
     lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stFlags.Value = TRUE;  // Use by TabCtrl
 ////lphtsDst->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData);    // Local to {}
+
+    // Mark as done
+    lphtsDst->bSysVarsInit = TRUE;
 } // End CopySysVars
 
 

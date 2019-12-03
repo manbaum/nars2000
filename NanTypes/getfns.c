@@ -4245,6 +4245,10 @@ void RestPrimSpecRL
         for (lpSISCur = lpMemPTD->lpSISCur;
              lpSISCur NE NULL;
              lpSISCur = lpSISCur->lpSISPrv)
+        // If this is an AFO, ...
+        if (lpSISCur->bAFO)
+            break;
+        else
         {
             // If this is a function or operator, ...
             if (lpSISCur->DfnType EQ DFNTYPE_OP1
@@ -4261,7 +4265,7 @@ void RestPrimSpecRL
                 } else
                     break;
             } // End IF
-        } // End FOR
+        } // End FOR/IF/...
     } // End IF
 } // End RestPrimSpecRL
 

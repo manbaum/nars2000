@@ -1,6 +1,23 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2280 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug In AFOs Initializing SysVars Multiple Times
+
+Directory branches/bsmith/NanTypes:
+
+GETFNS.C:
+  In <RestPrimSpecRL> if we reach an AFO stop passing []RL upwards.
+
+SYMTAB.H:
+  In <HSHTABSTR>, define a new bit to indicate whether or not SysVars have been initialized in the HshTab.
+
+SYSVARS.C:
+  In <CopySysVars>, initialize the SysVars only once.
+
+
 Build #2278 -- Version 0.6.2.xx
 -------------------------------
 

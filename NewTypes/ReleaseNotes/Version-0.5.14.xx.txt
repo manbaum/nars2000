@@ -1,6 +1,17 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2283 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix Bug When Demoting Global Nested Array Character Scalars
+
+Directory branches/bsmith/NewTypes:
+
+TYPEMOTE.C:
+  In <DemoteData> when demoting a Nested Array character scalar, handle both PTRTYPE_STCONST and PTRTYPE_HGLOBAL arrays.
+
+
 Build #2281 -- Version 0.5.14.xx
 --------------------------------
 

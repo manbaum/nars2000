@@ -1,0 +1,9 @@
+Build #2288 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug In Error Caret When Splitting Strands
+
+Directory branches/bsmith/NanTypes:
+
+PARSELINE.C:
+  In <SplitStrandLast> and <SplitStrandFirst>, ensure the error caret is specified.

@@ -8225,8 +8225,10 @@ UBOOL SplitStrandLast
     iSizeofGlb = TranslateArrayTypeToSizeof (arrType);
 
     // Set the common header fields
-    tkLft.tkSynObj   =
-    tkRht.tkSynObj   = soA;
+    tkLft.tkSynObj    =
+    tkRht.tkSynObj    = soA;
+    tkLft.tkCharIndex =
+    tkRht.tkCharIndex = lpplYYCurObj->tkToken.tkCharIndex;
 
     // Split out the rightmost item into a TKT_VARIMMED
     switch (arrType)
@@ -8562,8 +8564,10 @@ UBOOL SplitStrandFirst
     iSizeofGlb = TranslateArrayTypeToSizeof (arrType);
 
     // Set the common header fields
-    tkLft.tkSynObj   =
-    tkRht.tkSynObj   = soA;
+    tkLft.tkSynObj    =
+    tkRht.tkSynObj    = soA;
+    tkLft.tkCharIndex =
+    tkRht.tkCharIndex = lpplYYCurObj->tkToken.tkCharIndex;
 
     // Split out the leftmost item into a TKT_VARIMMED
     switch (arrType)

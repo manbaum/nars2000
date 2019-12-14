@@ -1,6 +1,17 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2289 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix DEBUG Bug In Maximum/Minimum On Chars
+
+Directory branches/bsmith/NewTypes:
+
+PF_DSTILE.C:
+  When DEBUGging, fix a bug in Maximum/Minimum functions on chars.
+
+
 Build #2287 -- Version 0.5.14.xx
 --------------------------------
 

@@ -1,7 +1,7 @@
 Build #2285 -- Version 0.5.14.xx
 --------------------------------
 
- * Preliminary Support For Inverses
+* Preliminary Support For Inverses
 
 Directory branches/bsmith/NewTypes:
 

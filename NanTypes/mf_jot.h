@@ -84,6 +84,23 @@ MAGIC_FCNOPR MFO_DydMesh =
 };
 
 
+//***************************************************************************
+//  Magic function for Identity Function for Compose
+//
+//  Identity Function for Compose
+//***************************************************************************
+
+static LPAPLCHAR IdnJotBody[] =
+{
+ S L"Z←"S L"RO "S L"LO/0⍴"S L"R",    
+};    
+    
+MAGIC_FCNOPR MFO_IdnJot =
+{S L"Z←("S L"LO " MFON_IdnJot L" "S L"RO) "S L"R",
+ IdnJotBody,
+ countof (IdnJotBody),
+};
+
 #undef  S
 
 

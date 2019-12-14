@@ -1,6 +1,27 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2296 -- Version 0.6.2.xx
+-------------------------------
+
+* Implement Identity Function For Compose Operator
+
+Directory branches/bsmith/NanTypes:
+
+EXECMFN.C:
+EXECMFN.H:
+  Make room for a new Magic Function.
+
+INITDATA.C:
+  Include Jot in the table of Identity Functions.
+
+MF_JOT.H:
+  Define new Magic Function for Compose.
+
+PO_JOT.C:
+  Define new function to handle the Compose Identity Function.
+
+
 Build #2294 -- Version 0.6.2.xx
 -------------------------------
 

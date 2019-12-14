@@ -79,6 +79,7 @@ extern MAGIC_FCNOPR MFO_MonDomino2;
 extern MAGIC_FCNOPR MFO_DydDomino2;
 extern MAGIC_FCNOPR MFO_InvPJDRed;
 extern MAGIC_FCNOPR MFO_InvBV;
+extern MAGIC_FCNOPR MFO_IdnJot;
 
 
 //***************************************************************************
@@ -852,6 +853,7 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydDomino2       ]  = Init1MagicFunction (MFON_DydDomino2       , &MFO_DydDomino2       , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_InvPJDRed        ]  = Init1MagicFunction (MFON_InvPJDRed        , &MFO_InvPJDRed        , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_InvBV            ]  = Init1MagicFunction (MFON_InvBV            , &MFO_InvBV            , lpMemPTD, hWndEC, NULL));
+    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_IdnJot           ]  = Init1MagicFunction (MFON_IdnJot           , &MFO_IdnJot           , lpMemPTD, hWndEC, NULL));
 
     //***************************************************************
     //  N.B.:  If you define an additional MFO with a local

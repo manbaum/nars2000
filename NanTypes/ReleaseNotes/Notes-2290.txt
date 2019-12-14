@@ -1,0 +1,9 @@
+Build #2290 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix DEBUG Bug In Maximum/Minimum On Chars
+
+Directory branches/bsmith/NanTypes:
+
+PF_DSTILE.C:
+  When DEBUGging, fix a bug in Maximum/Minimum functions on chars.

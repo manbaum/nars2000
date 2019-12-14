@@ -39,8 +39,7 @@ LPPL_YYSTYPE PrimFnSlope_EM_YY
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UTF16_SLOPE
-         || lptkFunc->tkData.tkChar EQ UTF16_SLOPEBAR);
+    Assert (IsAPLCharSlope (lptkFunc->tkData.tkChar));
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)

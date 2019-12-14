@@ -40,8 +40,7 @@ LPPL_YYSTYPE PrimOpSlope_EM_YY
 {
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLOPE
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLOPEBAR
-         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPE         // For when we come in via TKT_OP3NAMED
-         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR);    // ...
+         || IsAPLCharSlope (lpYYFcnStrOpr->tkToken.tkData.tkChar));     // For when we come in via TKT_OP3NAMED
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)

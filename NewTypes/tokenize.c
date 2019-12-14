@@ -1774,7 +1774,7 @@ UBOOL fnDirIdent
         bRet = AppendNewToken_EM (lptkLocalVars,
                                  &tkFlags,
                                  &tkData,
-                                  0);
+                                  -lptkLocalVars->iStrLen);
     } // End IF/ELSE
 
     // We no longer need this ptr
@@ -2787,7 +2787,7 @@ UBOOL fnPointDone
             bRet = AppendNewToken_EM (lptkLocalVars,
                                      &tkFlags,
                                      &tkData,
-                                      0);
+                                      -lptkLocalVars->iNumLen);
         } else
         {
             // Get the attrs of a global
@@ -3052,10 +3052,8 @@ UBOOL fnOp1Done
     // Copy current WCHAR
     tkData.tkChar = *lptkLocalVars->lpwszCur;
 
-    if (tkData.tkChar EQ UTF16_SLASH
-     || tkData.tkChar EQ UTF16_SLOPE
-     || tkData.tkChar EQ UTF16_SLASHBAR
-     || tkData.tkChar EQ UTF16_SLOPEBAR)
+    if (IsAPLCharSlash (tkData.tkChar)
+     || IsAPLCharSlope (tkData.tkChar))
     {
         // Mark the data as an ambiguous primitive operator
         tkFlags.TknType = TKT_OP3IMMED;
@@ -3210,7 +3208,7 @@ UBOOL fnDelDone
           AppendNewToken_EM (lptkLocalVars,
                             &tkFlags,
                             &tkData,
-                             0);
+                             -1);
         // Skip over the next char
         lptkLocalVars->uChar++;
     } else

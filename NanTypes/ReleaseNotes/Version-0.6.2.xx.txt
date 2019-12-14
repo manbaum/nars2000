@@ -1,6 +1,17 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2300 -- Version 0.6.2.xx
+-------------------------------
+
+* Return Global Numeric Datatype From Identity Element
+
+Directory branches/bsmith/NanTypes:
+
+PO_SLASH.C:
+  In <PrimOpMonSlashCommon_EM_YY> when calculating the Identity Element, if the right arg is Global Numeric, then so is the Identity Element.
+
+
 Build #2298 -- Version 0.6.2.xx
 -------------------------------
 

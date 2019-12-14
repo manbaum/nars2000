@@ -451,9 +451,10 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             goto NONCE_EXIT;
 
         // If the reduction function is primitive scalar dyadic,
-        //   and the right arg is not nested, ...
+        //   and the right arg is neither nested nor Global Numeric, ...
         if (lpPrimFlagsLft->bDydScalar
-         && !IsNested (aplTypeRht))
+         && !IsNested (aplTypeRht)
+         && !IsGlbNum (aplTypeRht))
         {
             // If there's no identity element, or
             //   the right arg is character and is not Equal or NotEqual, ...

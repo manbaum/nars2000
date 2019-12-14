@@ -92,7 +92,7 @@ MAGIC_FCNOPR MFO_DydMesh =
 
 static LPAPLCHAR IdnJotBody[] =
 {
- S L"Z←"S L"RO "S L"LO/0⍴"S L"R",    
+ S L"Z←"S L"RO ⊃"S L"LO/0⍴⊂"S L"R",    
 };    
     
 MAGIC_FCNOPR MFO_IdnJot =

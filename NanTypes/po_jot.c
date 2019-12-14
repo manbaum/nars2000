@@ -59,9 +59,8 @@ LPPL_YYSTYPE PrimIdentOpJot_EM_YY
         goto AXIS_SYNTAX_EXIT;
 
     // The (right) identity function for dyadic Jot
-    //   (L f.g R) ("inner product") is
-    //   for +.{times} is
-    //   ({iota}{neg}1{take}{rho} R){jot}.={iota}{neg}1{take}{rho} R.
+    //   (f{jot}g R) ("compose") is
+    //   is g f/0{rho}{enclose}R
 
     // Check for axis operator
     lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);

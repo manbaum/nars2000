@@ -1,6 +1,20 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2298 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug In Identity Function For Compose Operator
+
+Directory branches/bsmith/NanTypes:
+
+MF_JOT.H:
+  Fix bug in Identity Function for Compose missing Enclose/Disclose.
+
+PO_JOT.C:
+  Correct old comments copied from PO_DOT.C.
+
+
 Build #2296 -- Version 0.6.2.xx
 -------------------------------
 

@@ -1,0 +1,9 @@
+Build #2294 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix DEBUG Bug In Trains That Contain A Global Numeric
+
+Directory branches/bsmith/NanTypes:
+
+YYFNS.C:
+  When DEBUGging, in <YYCopyFcnTrn>, fix bug in a Train with a Global Numeric.

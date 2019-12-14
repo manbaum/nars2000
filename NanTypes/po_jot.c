@@ -230,10 +230,8 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
             {
                 // Check for the right operand as / or \ or some Axis operator variant
                 if (lpYYFcnStrRht->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-                 && (lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_SLASH
-                  || lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_SLASHBAR
-                  || lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_SLOPE
-                  || lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR))
+                 && (IsAPLCharSlash (lpYYFcnStrRht->tkToken.tkData.tkChar)
+                  || IsAPLCharSlope (lpYYFcnStrRht->tkToken.tkData.tkChar)))
                 {
                     HGLOBAL           hGlbMFO;              // Magic function/operator global memory handle
                     LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
@@ -300,8 +298,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
                     } // End IF
 
                     // Is it Mask or Mesh?
-                    if (lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_SLASH
-                     || lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_SLASHBAR)
+                    if (IsAPLCharSlash (lpYYFcnStrRht->tkToken.tkData.tkChar))
                     {
                         // Check for errors In Mask
                         if (!IsScalar (aplRankLft)

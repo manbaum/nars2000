@@ -39,8 +39,7 @@ LPPL_YYSTYPE PrimFnSlash_EM_YY
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UTF16_SLASH
-         || lptkFunc->tkData.tkChar EQ UTF16_SLASHBAR);
+    Assert (IsAPLCharSlash (lptkFunc->tkData.tkChar));
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)

@@ -138,7 +138,7 @@ LPPL_YYSTYPE PrimOpDieresisStarCommon_EM_YY
 {
     LPPL_YYSTYPE      lpYYRes = NULL,           // Ptr to the result
                       lpYYRes2 = NULL,          // ...
-                      lpYYFcn;                  // Bound left operand
+                      lpYYFcn = NULL;           // Bound left operand
     LPPERTABDATA      lpMemPTD;                 // Ptr to PerTabData global memory
     LPPLLOCALVARS     lpplLocalVars;            // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;             // Ptr to Ctrl-Break flag
@@ -213,20 +213,24 @@ LPPL_YYSTYPE PrimOpDieresisStarCommon_EM_YY
         // Calculate the left operand's function inverse
         if (0 > (APLINT) aplLongestOprRht)
         {
+            // If the left operand is a Slash or UpTack, ...
+            if (IsAPLCharSlash (lpYYFcnStrLft->tkToken.tkData.tkChar)
+             ||                 lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_UPTACK)
+            {
+                // Call special inverse function
+                lpYYRes =
+                  PrimOpDieresisStarSpecInv_EM_YY (lptkLftArg,          // Ptr to left arg token (may be NULL if niladic/monadic derived function)
+                                                   lpYYFcnStrLft,       // Ptr to left operand function strand
+                                                   lpYYFcnStrOpr,       // Ptr to operator function strand
+                                                   lpYYFcnStrRht,       // Ptr to right operand function strand
+                                                   aplLongestOprRht,    // Signed value of right operand var
+                                                   lptkRhtArg,          // Ptr to right arg token (may be NULL if niladic)
+                                                   bPrototyping);       // TRUE iff protoyping
+                goto NORMAL_EXIT;
+            } // End IF
+
             // Use the absolute value as the loop limit
             aplLongestOprRht = abs64 ((APLINT) aplLongestOprRht);
-#ifdef DEBUG
-            DbgBrk ();                  // #ifdef DEBUG
-#endif
-
-
-
-
-
-
-
-
-
 
 
 
@@ -547,6 +551,291 @@ LPPL_YYSTYPE PrimOpDydDieresisStarCommon_EM_YY
                                       lptkRhtArg,           // Ptr to right arg token
                                       bPrototyping);        // TRUE iff protoyping
 } // End PrimOpDydDieresisStarCommon_EM_YY
+
+
+//***************************************************************************
+//  $PrimOpDieresisStarSpecInv_EM_YY
+//
+//  Handle Special Inverses
+//***************************************************************************
+
+LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic derived function)
+     LPPL_YYSTYPE lpYYFcnStrLft,        // Ptr to left operand function strand
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPPL_YYSTYPE lpYYFcnStrRht,        // Ptr to right operand function strand
+     APLLONGEST   aplLongestOprRht,     // Signed value of right operand var
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token (may be NULL if niladic)
+     UBOOL        bPrototyping)         // TRUE iff protoyping
+
+{
+    LPPL_YYSTYPE       lpYYRes = NULL;      // Ptr to the result
+    TOKEN              tkAxis = {0},        // Axis token
+                       tkFunc = {0};        // Function token
+    LPTOKEN            lptkAxis;            // Ptr to the left operand axis operator (NULL if not present)
+    HGLOBAL            hGlbMFO;             // Magic function/operator global memory handle
+    LPPERTABDATA       lpMemPTD;            // Ptr to PerTabData global memory
+    APLSTYPE           aplTypeLft,          // Left arg's storage type
+                       aplTypeRht;          // Right ...
+    APLRANK            aplRankLft,          // Left arg's rank
+                       aplRankRht;          // Right ...  rank
+    APLNELM            aplNELMLft,          // Left arg's NELM
+                       aplNELMRht;          // Right ...  NELM
+    HGLOBAL            hGlbLft = NULL;      // Left arg global memory handle
+    LPVARARRAY_HEADER  lpMemHdrLft = NULL;  // Ptr to left arg header
+    LPVOID             lpMemLft;            // Ptr to left arg global memory
+    APLLONGEST         aplLongestLft;       // Left arg as immediate
+    APLINT             aplIntLft;           // Left arg as integer
+    APLFLOAT           aplFltLft;           // ...         float
+    UBOOL              bRet;                // TRUE iff the result is valid
+
+    // If there's a left arg, ...
+    if (lptkLftArg NE NULL)
+        // Get the left arg's attributes (type, NELM, and Rank)
+        AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+
+    // Get the right arg's attributes (type, NELM, and Rank)
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    // Check for axis operator
+    lptkAxis = CheckAxisOper (lpYYFcnStrLft);
+
+    // If the axis is not present, ...
+    if (lptkAxis EQ NULL)
+    {
+        // If the operator is SLASHBAR, ...
+        if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_SLASHBAR)
+        {
+            // Point to tkAxis
+            lptkAxis = &tkAxis;
+
+            // Set the axis to []IO
+            lptkAxis->tkFlags.TknType  = TKT_VARIMMED;
+            lptkAxis->tkFlags.ImmType  = IMMTYPE_INT;
+            lptkAxis->tkData.tkInteger = GetQuadIO ();
+        } // End IF
+    } // End IF
+
+    // If the left operand is reduction, ...
+    if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_OP1IMMED
+     && IsAPLCharSlash (lpYYFcnStrLft->tkToken.tkData.tkChar))
+    {
+        // Check for left operand of +{jot}{divide}/
+        if (lpYYFcnStrLft->TknCount EQ 4
+         && lpYYFcnStrLft[1].tkToken.tkFlags.TknType EQ TKT_OP2IMMED
+         && lpYYFcnStrLft[1].tkToken.tkData.tkChar   EQ UTF16_JOT
+         && lpYYFcnStrLft[2].tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+         && lpYYFcnStrLft[2].tkToken.tkData.tkChar   EQ UTF16_COLONBAR
+         && lpYYFcnStrLft[3].tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+         && lpYYFcnStrLft[3].tkToken.tkData.tkChar   EQ UTF16_PLUS)
+        {
+            // Ensure called monadically
+            if (lptkLftArg NE NULL)
+                // That's an error
+                goto VALENCE_EXIT;
+
+            // Ensure the right arg is a numeric scalar
+            if (!IsNumeric (aplTypeRht)
+             || !IsScalar  (aplRankRht))
+                // That's an error
+                goto RIGHT_RANK_EXIT;
+
+            // We handle -1 as the right operand value only
+            if (aplLongestOprRht NE -1)
+                goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+            // Get the magic function/operator global memory handle
+            hGlbMFO = lpMemPTD->hGlbMFO[MFOE_InvPJDRed];
+        } else
+        // Check for left operand of {times}/
+        if (lpYYFcnStrLft->TknCount EQ 2
+         && lpYYFcnStrLft[1].tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+         && lpYYFcnStrLft[1].tkToken.tkData.tkChar   EQ UTF16_TIMES)
+        {
+            // Ensure called monadically
+            if (lptkLftArg NE NULL)
+                // That's an error
+                goto VALENCE_EXIT;
+
+            // Ensure the right arg is a numeric scalar
+            if (!IsNumeric (aplTypeRht)
+             || !IsScalar  (aplRankRht))
+                // That's an error
+                goto RIGHT_RANK_EXIT;
+
+            // We handle -1 as the right operand value only
+            if (aplLongestOprRht NE -1)
+                goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+            // Fill in function token
+            tkFunc.tkFlags.TknType = TKT_FCNIMMED;
+            tkFunc.tkFlags.ImmType = IMMTYPE_PRIMFCN;
+            tkFunc.tkData.tkChar   = UTF16_PI;
+
+            // Call internal function
+            lpYYRes =
+              PrimFnMonPi_EM_YY (&tkFunc,
+                                  lptkRhtArg,
+                                  lptkAxis);
+            goto NORMAL_EXIT;
+        } else
+            goto LEFT_OPERAND_NONCE_EXIT;
+    } else
+    // Check for left operand of {uptack}
+    if (lpYYFcnStrLft->TknCount EQ 1
+     && lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+     && lpYYFcnStrLft->tkToken.tkData.tkChar   EQ UTF16_UPTACK)
+    {
+        // Ensure called dyadically
+        if (lptkLftArg EQ NULL)
+            // That's an error
+            goto VALENCE_EXIT;
+
+        // Ensure the left arg is a numeric scalar
+        if (!IsNumeric (aplTypeLft)
+         || !IsScalar  (aplRankLft))
+            // That's an error
+            goto LEFT_RANK_EXIT;
+
+        // Ensure the right arg is a numeric
+        if (!IsNumeric (aplTypeRht))
+            // That's an error
+            goto RIGHT_RANK_EXIT;
+
+        // This special case allows other (negative) values for the right operand
+////////// We handle -1 as the right operand value only
+////////if (aplLongestOprRht NE -1)
+////////    goto RIGHT_OPERAND_DOMAIN_EXIT;
+////////
+        // Get left arg's global ptrs
+        aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+
+        // If the left arg is a global, ...
+        if (hGlbLft NE NULL)
+            // Skip over the header and dimensions to the data
+            lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
+        else
+            lpMemLft = (LPAPLCHAR) &aplLongestLft;
+
+        // Split cases based upon the left arg storage type
+        switch (aplTypeLft)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+            case ARRAY_HC2I:
+            case ARRAY_HC4I:
+            case ARRAY_HC8I:
+                // Attempt to convert the left arg to an integer
+                aplIntLft = ConvertToInteger_SCT (aplTypeLft, lpMemLft, 0, &bRet);
+
+                // Ensure the left arg is > 1
+                bRet &= aplIntLft > 1;
+
+                break;
+
+            case ARRAY_FLOAT:
+            case ARRAY_HC2F:
+            case ARRAY_HC4F:
+            case ARRAY_HC8F:
+            case ARRAY_HC2R:
+            case ARRAY_HC4R:
+            case ARRAY_HC8R:
+            case ARRAY_HC2V:
+            case ARRAY_HC4V:
+            case ARRAY_HC8V:
+                // Attempt to convert the left arg to a Flt
+                aplFltLft = ConvertToFloat (aplTypeLft, lpMemLft, 0, &bRet);
+
+                // Ensure the left arg is > 1.0
+                bRet &= aplFltLft > 1.0;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // If the left arg is a global, ...
+        if (hGlbLft NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+        } // End IF
+
+        // Ensure the left arg is > 1
+        if (!bRet)
+            // That's an error
+            goto LEFT_DOMAIN_EXIT;
+
+        // Get the magic function/operator global memory handle
+        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_InvBV];
+    } else
+        goto LEFT_OPERAND_NONCE_EXIT;
+
+
+
+
+
+
+
+
+    //  Use an internal magic function.
+    lpYYRes =
+      ExecuteMagicFunction_EM_YY (lptkLftArg,               // Ptr to left arg token
+                                 &lpYYFcnStrLft->tkToken,   // Ptr to function token
+                                  NULL,                     // Ptr to function strand
+                                  lptkRhtArg,               // Ptr to right arg token
+                                  lptkAxis,                 // Ptr to axis token
+                                  hGlbMFO,                  // Magic function/operator global memory handle
+                                  NULL,                     // Ptr to HSHTAB struc (may be NULL)
+                                  LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
+    goto NORMAL_EXIT;
+
+RIGHT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
+    goto ERROR_EXIT;
+
+LEFT_OPERAND_NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
+VALENCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALENCE_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    return lpYYRes;
+} // End PrimOpDieresisStarSpecInv_EM_YY
+
+
+//***************************************************************************
+//  Magic function/operator(s) for Power Operator
+//***************************************************************************
+
+#include "mf_distar.h"
 
 
 //***************************************************************************

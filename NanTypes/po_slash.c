@@ -41,8 +41,7 @@ LPPL_YYSTYPE PrimOpSlash_EM_YY
 {
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLASH       // For when we come in via TKT_OP3NAMED
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_OPSLASHBAR    // ...
-         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH         // For when we come in via TKT_OP3NAMED
-         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASHBAR);    // ...
+         || IsAPLCharSlash (lpYYFcnStrOpr->tkToken.tkData.tkChar));
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)

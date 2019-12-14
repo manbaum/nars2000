@@ -78,7 +78,9 @@ typedef enum tagMFO
     MFOE_DydMesh         ,      // 34:  ...                                  Mesh ...
     MFOE_MonDomino2      ,      // 35:  Monadic Domino for Underdetermined matrices
     MFOE_DydDomino2      ,      // 36:  Dyadic  ...
-    MFOE_LENGTH                 // 37:  # entries in this enum
+    MFOE_InvPJDRed       ,      // 37:  Inverse +{jot}{divide}/ (Continue Fractions)
+    MFOE_InvBV           ,      // 38:  Inverse Base Value
+    MFOE_LENGTH                 // 39:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -137,6 +139,8 @@ typedef enum tagMFO
 #define MFON_DydMesh            L"#DydMesh"
 #define MFON_MonDomino2         L"#MonDomino2"
 #define MFON_DydDomino2         L"#DydDomino2"
+#define MFON_InvPJDRed          L"#InvPJDRed"
+#define MFON_InvBV              L"#InvBV"
 
 // Magic Function/Operator Variables
 #define $ALPHA          WS_UTF16_ALPHA

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -157,8 +157,8 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
                       atRht = {0},          // Right ...
                       atAdd = {0},          // Temp        ...
                       atMul = {0},          // Temp        ...
-                      atAcc = {0},          // Accumulator ...
-                      atVal = {0};          // Value       ...
+                      atAcc      ,          // Accumulator ...
+                      atVal      ;          // Value       ...
     int               iHCDimRes,            // Result HC Dimension (1, 2, 4, 8)
                       i;                    // Loop counter
 
@@ -347,6 +347,10 @@ RESTART_EXCEPTION:
         // Calc result index
         uRes = 1 * uOutRht + aplRestRht * uOutLft;
 
+        // Initialize accumulator and weighting value
+        ZeroMemory (&atAcc, sizeof (atAcc));
+        ZeroMemory (&atVal, sizeof (atVal));
+
         // Split cases based upon the result storage type
         switch (aplTypeRes)
         {
@@ -384,7 +388,7 @@ RESTART_EXCEPTION:
             case ARRAY_HC2I:
             case ARRAY_HC4I:
                 // Initialize accumulator and weighting value
-////////////////ZeroMemory (&atAcc, sizeof (atAcc));        // Already zero from = {0}
+////////////////ZeroMemory (&atAcc, sizeof (atAcc));        // Already zero from above
 ////////////////ZeroMemory (&atVal, sizeof (atVal));        // ...
                 atVal.aplInteger = 1;
 
@@ -393,7 +397,7 @@ RESTART_EXCEPTION:
             case ARRAY_HC2F:
             case ARRAY_HC4F:
                 // Initialize accumulator and weighting value
-////////////////ZeroMemory (&atAcc, sizeof (atAcc));        // Already zero from = {0}
+////////////////ZeroMemory (&atAcc, sizeof (atAcc));        // Already zero from above
 ////////////////ZeroMemory (&atVal, sizeof (atVal));        // ...
                 atVal.aplFloat   = 1.0;
 

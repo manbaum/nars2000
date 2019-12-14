@@ -1,6 +1,17 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2291 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix Bug In Base Value Function On Multicolumn Matrices
+
+Directory branches/bsmith/NewTypes:
+
+PF_UTACK.C:
+  In <PrimFnDydUpTack_EM_YY>, fix bug on not re-initializing the accumulator between columns.
+
+
 Build #2289 -- Version 0.5.14.xx
 --------------------------------
 

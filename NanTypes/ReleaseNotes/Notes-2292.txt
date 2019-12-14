@@ -1,0 +1,9 @@
+Build #2292 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug In Base Value Function On Multicolumn Matrices
+
+Directory branches/bsmith/NanTypes:
+
+PF_UTACK.C:
+  In <PrimFnDydUpTack_EM_YY>, fix bug on not re-initializing the accumulator between columns.

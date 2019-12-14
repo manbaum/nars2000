@@ -16,4 +16,4 @@ MF_JOT.H:
   Define new Magic Function for Compose.
 
 PO_JOT.C:
-  Define new function to handle the Copose Identity Function.
+  Define new function to handle the Compose Identity Function.

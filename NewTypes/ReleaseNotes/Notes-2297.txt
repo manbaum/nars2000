@@ -1,0 +1,12 @@
+Build #2297 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix Bug In Identity Function For Compose Operator
+
+Directory branches/bsmith/NewTypes:
+
+MF_JOT.H:
+  Fix bug in Identity Function for Compose missing Enclose/Disclose.
+
+PO_JOT.C:
+  Correct old comments copied from PO_DOT.C.

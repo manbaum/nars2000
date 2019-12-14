@@ -1,6 +1,17 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2293 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix DEBUG Bug In Trains That Contain A Global Numeric
+
+Directory branches/bsmith/NewTypes:
+
+YYFNS.C:
+  When DEBUGging, in <YYCopyFcnTrn>, fix bug in a Train with a Global Numeric.
+
+
 Build #2291 -- Version 0.5.14.xx
 --------------------------------
 

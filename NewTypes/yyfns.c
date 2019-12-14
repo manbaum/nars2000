@@ -796,7 +796,6 @@ LPPL_YYSTYPE YYCopyFcnTrn
             case TKT_CHRSTRAND:
             case TKT_NUMSTRAND:
             case TKT_NUMSCALAR:
-            case TKT_VARARRAY:
             case TKT_DELAFO:
             case TKT_AXISIMMED:
             case TKT_AXISARRAY:
@@ -809,6 +808,7 @@ LPPL_YYSTYPE YYCopyFcnTrn
             case TKT_OP1IMMED:
             case TKT_OP2IMMED:
             case TKT_OP3IMMED:
+            case TKT_VARARRAY:
             case TKT_FCNARRAY:
             case TKT_FCNAFO:
             case TKT_OP1AFO:

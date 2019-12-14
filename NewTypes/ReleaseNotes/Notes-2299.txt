@@ -1,0 +1,9 @@
+Build #2299 -- Version 0.5.14.xx
+--------------------------------
+
+* Return Global Numeric Datatype From Identity Element
+
+Directory branches/bsmith/NewTypes:
+
+PO_SLASH.C:
+  In <PrimOpMonSlashCommon_EM_YY> when calculating the Identity Element, if the right arg is Global Numeric, then so is the Identity Element.

@@ -26,6 +26,98 @@
 
 
 //***************************************************************************
+//  $PrimIdentOpJot_EM_YY
+//
+//  Generate an identity element for the dyadic derived function from the
+//    primitive operator Jot
+//***************************************************************************
+
+LPPL_YYSTYPE PrimIdentOpJot_EM_YY
+    (LPTOKEN      lptkRhtOrig,          // Ptr to original right arg token
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkAxisOpr)          // Ptr to axis token (may be NULL)
+
+{
+    LPPL_YYSTYPE lpYYFcnStrLft,         // Ptr to left operand function strand
+                 lpYYFcnStrRht,         // Ptr to right ...
+                 lpYYRes;               // Ptr to result
+    HGLOBAL      hGlbMFO;               // Magic function/operator global memory handle
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig   NE NULL);
+    Assert (lpYYFcnStrOpr NE NULL);
+    Assert (lptkRhtArg    NE NULL);
+
+    //***************************************************************
+    // This operator is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxisOpr NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // The (right) identity function for dyadic Jot
+    //   (L f.g R) ("inner product") is
+    //   for +.{times} is
+    //   ({iota}{neg}1{take}{rho} R){jot}.={iota}{neg}1{take}{rho} R.
+
+    // Check for axis operator
+    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
+
+    // Set ptr to left & right operands,
+    //   skipping over the operator and axis token (if present)
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr               ); Assert (lpYYFcnStrRht NE NULL);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrOpr, lptkAxisOpr, lpYYFcnStrRht); Assert (lpYYFcnStrLft NE NULL);
+
+    // Ensure the left operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+     || IsTknFillJot (&lpYYFcnStrLft->tkToken))
+        goto LEFT_OPERAND_DOMAIN_EXIT;
+
+    // Ensure the right operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
+     || IsTknFillJot (&lpYYFcnStrRht->tkToken))
+        goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+    // Get the magic function/operator global memory handles
+    hGlbMFO = GetMemPTD()->hGlbMFO[MFOE_IdnJot];
+
+    lpYYRes =
+      ExecuteMagicOperator_EM_YY (NULL,                     // Ptr to left arg token (may be NULL)
+                                 &lpYYFcnStrOpr->tkToken,   // Ptr to operator token
+                                  lpYYFcnStrLft,            // Ptr to left operand function strand
+                                  lpYYFcnStrOpr,            // Ptr to function strand
+                                  lpYYFcnStrRht,            // Ptr to right operand function strand (may be NULL)
+                                  lptkRhtArg,               // Ptr to right arg token
+                                  lptkAxisOpr,              // Ptr to axis token (may be NULL)
+                                  hGlbMFO,                  // Magic function/operator global memory handle
+                                  NULL,                     // Ptr to HSHTAB struc (may be NULL)
+                                  LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
+    return lpYYRes;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxisOpr);
+    goto ERROR_EXIT;
+
+LEFT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
+RIGHT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    return NULL;
+} // End PrimIdentOpJot_EM_YY
+
+
+//***************************************************************************
 //  $PrimOpJot_EM_YY
 //
 //  Primitive operator for monadic and dyadic derived functions from

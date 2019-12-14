@@ -938,6 +938,7 @@ void InitPrimFlags
     Init1PrimFlag (UTF16_DIERESISTILDE       , 0                                                                                          ,             PrimIdentOpDieresisTilde_EM_YY    );
     Init1PrimFlag (UTF16_DOT                 , 0                                                                                          ,             PrimIdentOpDot_EM_YY              );
     Init1PrimFlag (UTF16_DOWNSHOESTILE       , 0                                                                                          ,             NULL ); // PrimIdentOpDownShoeStile_EM_YY    );
+    Init1PrimFlag (UTF16_JOT                 , 0                                                                                          ,             PrimIdentOpJot_EM_YY              );
     Init1PrimFlag (UTF16_OPJOTDOT            , 0                                                                                          ,             PrimIdentOpJotDot_EM_YY           );
     Init1PrimFlag (UTF16_OPSLASH             , 0                                             | PF_ID | PF_LI                              ,             PrimIdentOpSlash_EM_YY            );
     Init1PrimFlag (UTF16_QUADJOT             , 0                                                                                          ,             NULL ); // PrimIdentOpQuadJot_EM_YY  );

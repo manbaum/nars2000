@@ -1,0 +1,15 @@
+Build #2301 -- Version 0.5.14.xx
+--------------------------------
+
+* Reorganize PJDRed Inverse To Substitute For Left Argument Only If Absent
+* Reorganize Inverse Function Code To Test For Rank Then Domain Errors
+* Implement Default Left Argument Of Two To Inverse Base Value
+
+Directory branches/bsmith/NewTypes:
+
+MF_DISTAR.H:
+  Reorganize +{jot}{divide}/ inverse to substitute for left argument only if it's absent.
+
+PO_DISTAR.C:
+  Reorganize inverse function code to test for Rank then Domain errors
+  Implement default left argument of two to inverse Base Value.

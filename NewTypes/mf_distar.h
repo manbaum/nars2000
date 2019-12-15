@@ -35,8 +35,10 @@
 //***************************************************************************
 
 static LPAPLCHAR InvPJDRedBody[] =
-{L":if 14=⎕DR "S L"R ⋄ "S L"L←∞",
- L":elseif 0=⎕NC '"S L"L' ⋄ "S L"L←⎕PP ⋄ :end",
+{L":if 0=⎕NC '"S L"L'",
+ L"  :if 14=⎕DR "S L"R ⋄ "S L"L←∞", // MP Integer/Rational
+ L"  :else ⋄ "S L"L←⎕PP ⋄ :end",
+ L":end",
  S L"Z←1/"S L"a←⌊"S L"b←"S L"R",
  S L"L1:"S L"a←"S L"b-"S L"a",
  L"→(("S L"a=0)∨"S L"L≤⍴"S L"Z)/0",

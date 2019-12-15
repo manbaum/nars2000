@@ -570,8 +570,9 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
 
 {
     LPPL_YYSTYPE       lpYYRes = NULL;      // Ptr to the result
-    TOKEN              tkAxis = {0},        // Axis token
-                       tkFunc = {0};        // Function token
+    TOKEN              tkAxis   = {0},      // Axis token
+                       tkLftArg = {0},      // Default left arg
+                       tkFunc   = {0};      // Function token
     LPTOKEN            lptkAxis;            // Ptr to the left operand axis operator (NULL if not present)
     HGLOBAL            hGlbMFO;             // Magic function/operator global memory handle
     LPPERTABDATA       lpMemPTD;            // Ptr to PerTabData global memory
@@ -616,6 +617,7 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
             lptkAxis->tkFlags.TknType  = TKT_VARIMMED;
             lptkAxis->tkFlags.ImmType  = IMMTYPE_INT;
             lptkAxis->tkData.tkInteger = GetQuadIO ();
+////////////lptkAxis->tkCharIndex      =        // We hope it's never needed
         } // End IF
     } // End IF
 
@@ -623,7 +625,7 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
     if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_OP1IMMED
      && IsAPLCharSlash (lpYYFcnStrLft->tkToken.tkData.tkChar))
     {
-        // Check for left operand of +{jot}{divide}/
+        // Check for left operand of +{jot}{divide}
         if (lpYYFcnStrLft->TknCount EQ 4
          && lpYYFcnStrLft[1].tkToken.tkFlags.TknType EQ TKT_OP2IMMED
          && lpYYFcnStrLft[1].tkToken.tkData.tkChar   EQ UTF16_JOT
@@ -632,14 +634,19 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
          && lpYYFcnStrLft[3].tkToken.tkFlags.TknType EQ TKT_FCNIMMED
          && lpYYFcnStrLft[3].tkToken.tkData.tkChar   EQ UTF16_PLUS)
         {
-            // Ensure called monadically
-            if (lptkLftArg NE NULL)
+            // Ensure the left and right args are scalars
+            if (!IsScalar  (aplRankLft))
                 // That's an error
-                goto VALENCE_EXIT;
+                goto LEFT_DOMAIN_EXIT;
+            if (!IsScalar  (aplRankRht))
+                // That's an error
+                goto RIGHT_DOMAIN_EXIT;
 
-            // Ensure the right arg is a numeric scalar
-            if (!IsNumeric (aplTypeRht)
-             || !IsScalar  (aplRankRht))
+            // Ensure the left and right args are numerics
+            if (!IsNumeric (aplTypeLft))
+                // That's an error
+                goto LEFT_RANK_EXIT;
+            if (!IsNumeric (aplTypeRht))
                 // That's an error
                 goto RIGHT_RANK_EXIT;
 
@@ -650,7 +657,7 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
             // Get the magic function/operator global memory handle
             hGlbMFO = lpMemPTD->hGlbMFO[MFOE_InvPJDRed];
         } else
-        // Check for left operand of {times}/
+        // Check for left operand of {times}
         if (lpYYFcnStrLft->TknCount EQ 2
          && lpYYFcnStrLft[1].tkToken.tkFlags.TknType EQ TKT_FCNIMMED
          && lpYYFcnStrLft[1].tkToken.tkData.tkChar   EQ UTF16_TIMES)
@@ -660,11 +667,15 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
                 // That's an error
                 goto VALENCE_EXIT;
 
-            // Ensure the right arg is a numeric scalar
-            if (!IsNumeric (aplTypeRht)
-             || !IsScalar  (aplRankRht))
+            // Ensure the right arg is a numeric
+            if (!IsScalar  (aplRankRht))
                 // That's an error
                 goto RIGHT_RANK_EXIT;
+
+            // Ensure the right arg is a numeric
+            if (!IsNumeric (aplTypeRht))
+                // That's an error
+                goto RIGHT_DOMAIN_EXIT;
 
             // We handle -1 as the right operand value only
             if (aplLongestOprRht NE -1)
@@ -689,21 +700,36 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
      && lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
      && lpYYFcnStrLft->tkToken.tkData.tkChar   EQ UTF16_UPTACK)
     {
-        // Ensure called dyadically
+        // If called monadically, ...
         if (lptkLftArg EQ NULL)
-            // That's an error
-            goto VALENCE_EXIT;
+        {
+            // Use a default of two
+            lptkLftArg = &tkLftArg;
 
-        // Ensure the left arg is a numeric scalar
-        if (!IsNumeric (aplTypeLft)
-         || !IsScalar  (aplRankLft))
+            // Set the token to 2
+            lptkLftArg->tkFlags.TknType  = TKT_VARIMMED;
+            lptkLftArg->tkFlags.ImmType  = IMMTYPE_INT;
+            lptkLftArg->tkData.tkInteger = 2;
+////////////lptkLftArg->tkCharIndex      =      // We hope it's never needed
+
+            // Set the storage type
+            aplTypeLft = ARRAY_INT;
+        } // End IF
+
+        // Ensure the left arg is a scalar
+        if (!IsScalar  (aplRankLft))
             // That's an error
             goto LEFT_RANK_EXIT;
+
+        // Ensure the left arg is a numeric
+        if (!IsNumeric (aplTypeLft))
+            // That's an error
+            goto LEFT_DOMAIN_EXIT;
 
         // Ensure the right arg is a numeric
         if (!IsNumeric (aplTypeRht))
             // That's an error
-            goto RIGHT_RANK_EXIT;
+            goto RIGHT_DOMAIN_EXIT;
 
         // This special case allows other (negative) values for the right operand
 ////////// We handle -1 as the right operand value only
@@ -823,6 +849,11 @@ RIGHT_RANK_EXIT:
 LEFT_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
     goto ERROR_EXIT;
 
 ERROR_EXIT:

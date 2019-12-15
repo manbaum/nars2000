@@ -1,6 +1,17 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2304 -- Version 0.6.2.xx
+-------------------------------
+
+* Test For Domain Error Earlier In Monadic Dot Operator
+
+Directory branches/bsmith/NanTypes:
+
+PO_DOT.C:
+  In <PrimOpMonDotCommon_EM_YY>, test for DOMAIN eror earlier.
+
+
 Build #2302 -- Version 0.6.2.xx
 -------------------------------
 

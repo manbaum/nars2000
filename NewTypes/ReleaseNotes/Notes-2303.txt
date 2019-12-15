@@ -1,0 +1,9 @@
+Build #2303 -- Version 0.5.14.xx
+--------------------------------
+
+* Test For Domain Error Earlier In Monadic Dot Operator
+
+Directory branches/bsmith/NewTypes:
+
+PO_DOT.C:
+  In <PrimOpMonDotCommon_EM_YY>, test for DOMAIN eror earlier.

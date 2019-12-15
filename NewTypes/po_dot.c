@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -424,6 +424,10 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
     if (IsRank3P (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
+    // Check for DOMAIN ERROR
+    if (!IsNumeric (aplTypeRht))
+        goto RIGHT_DOMAIN_EXIT;
+
     // Calculate the # rows & cols in the result
     switch (aplRankRht)
     {
@@ -465,10 +469,6 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
         //***************************************************************
         // From here on, the derived function is +.x
         //***************************************************************
-
-        // Check for DOMAIN ERROR
-        if (!IsNumeric (aplTypeRht))
-            goto RIGHT_DOMAIN_EXIT;
 
         // Get the magic function/operator global memory handle
         hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DetPerm];

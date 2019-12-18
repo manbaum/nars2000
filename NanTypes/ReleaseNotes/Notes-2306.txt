@@ -1,0 +1,9 @@
+Build #2306 -- Version 0.6.2.xx
+-------------------------------
+
+* Preliminary Support For Inverses, Part II
+
+Directory branches/bsmith/NanTypes:
+
+PO_DISTAR.C:
+  Implement more instances of Inverse Functions.

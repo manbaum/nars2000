@@ -213,9 +213,12 @@ LPPL_YYSTYPE PrimOpDieresisStarCommon_EM_YY
         // Calculate the left operand's function inverse
         if (0 > (APLINT) aplLongestOprRht)
         {
-            // If the left operand is a Slash or UpTack, ...
+            // If the left operand is a Slash, Slope, UpTack, DownTack, or Pi, ...
             if (IsAPLCharSlash (lpYYFcnStrLft->tkToken.tkData.tkChar)
-             ||                 lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_UPTACK)
+             || IsAPLCharSlope (lpYYFcnStrLft->tkToken.tkData.tkChar)
+             ||                 lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_UPTACK
+             ||                 lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_DOWNTACK
+             ||                 lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_PI)
             {
                 // Call special inverse function
                 lpYYRes =
@@ -589,6 +592,7 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
     APLINT             aplIntLft;           // Left arg as integer
     APLFLOAT           aplFltLft;           // ...         float
     UBOOL              bRet;                // TRUE iff the result is valid
+    PL_YYSTYPE         yyStype[3] = {0};    // Temp area for operator strand
 
     // If there's a left arg, ...
     if (lptkLftArg NE NULL)
@@ -607,8 +611,9 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
     // If the axis is not present, ...
     if (lptkAxis EQ NULL)
     {
-        // If the operator is SLASHBAR, ...
-        if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_SLASHBAR)
+        // If the operator is SLASHBAR or SLOPEBAR, ...
+        if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_SLASHBAR
+         || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR)
         {
             // Point to tkAxis
             lptkAxis = &tkAxis;
@@ -634,16 +639,20 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
          && lpYYFcnStrLft[3].tkToken.tkFlags.TknType EQ TKT_FCNIMMED
          && lpYYFcnStrLft[3].tkToken.tkData.tkChar   EQ UTF16_PLUS)
         {
+            // If there's a left arg, ...
             // Ensure the left and right args are scalars
-            if (!IsScalar  (aplRankLft))
+            if (lptkLftArg NE NULL
+             && !IsScalar  (aplRankLft))
                 // That's an error
                 goto LEFT_DOMAIN_EXIT;
             if (!IsScalar  (aplRankRht))
                 // That's an error
                 goto RIGHT_DOMAIN_EXIT;
 
+            // If there's a left arg, ...
             // Ensure the left and right args are numerics
-            if (!IsNumeric (aplTypeLft))
+            if (lptkLftArg NE NULL
+             && !IsNumeric (aplTypeLft))
                 // That's an error
                 goto LEFT_RANK_EXIT;
             if (!IsNumeric (aplTypeRht))
@@ -685,12 +694,131 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
             tkFunc.tkFlags.TknType = TKT_FCNIMMED;
             tkFunc.tkFlags.ImmType = IMMTYPE_PRIMFCN;
             tkFunc.tkData.tkChar   = UTF16_PI;
+////////////tkFunc.tkCharIndex     =        // We hope it's never needed
 
             // Call internal function
             lpYYRes =
-              PrimFnMonPi_EM_YY (&tkFunc,
-                                  lptkRhtArg,
-                                  lptkAxis);
+              PrimFnMonPi_EM_YY (&tkFunc,           // Ptr to function token
+                                  lptkRhtArg,       // Ptr to right arg token
+                                  lptkAxis);        // Ptr to axis token (may be NULL)
+            goto NORMAL_EXIT;
+        } else
+            goto LEFT_OPERAND_NONCE_EXIT;
+    } else
+    // If the left operand is scan, ...
+    if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_OP1IMMED
+     && IsAPLCharSlope (lpYYFcnStrLft->tkToken.tkData.tkChar))
+    {
+        UBOOL btkAxis;          // TRUE iff the left operand has an axis oper
+
+        // Check for axis operator
+        btkAxis = (NULL NE CheckAxisOper (lpYYFcnStrLft));
+
+        // Check for left operand of {plus}
+        if (lpYYFcnStrLft->TknCount EQ (2 + btkAxis)
+         && lpYYFcnStrLft[1 + btkAxis].tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+         && lpYYFcnStrLft[1 + btkAxis].tkToken.tkData.tkChar   EQ UTF16_PLUS)
+        {
+            // Copy the left operand
+            yyStype[0] = lpYYFcnStrLft[0];
+            yyStype[1] = lpYYFcnStrLft[1];
+            if (btkAxis)
+                yyStype[2] = lpYYFcnStrLft[2];
+
+            // Change the left operand function from {plus} to {minus}
+            yyStype[1 + btkAxis].tkToken.tkData.tkChar = UTF16_BAR;
+
+            // Ensure called monadically
+            if (lptkLftArg NE NULL)
+                // That's an error
+                goto VALENCE_EXIT;
+
+            // Ensure the right arg is a numeric
+            if (!IsNumeric (aplTypeRht))
+                // That's an error
+                goto RIGHT_DOMAIN_EXIT;
+
+            // We handle -1 as the right operand value only
+            if (aplLongestOprRht NE -1)
+                goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+            // Use a default left arg of -2
+            lptkLftArg = &tkLftArg;
+
+            // Set the left arg token to -2
+            lptkLftArg->tkFlags.TknType  = TKT_VARIMMED;
+            lptkLftArg->tkFlags.ImmType  = IMMTYPE_INT;
+            lptkLftArg->tkData.tkInteger = -2;
+////////////lptkLftArg->tkCharIndex      =      // We hope it's never needed
+
+            // Set the storage type
+            aplTypeLft = ARRAY_INT;
+
+            // Call internal function
+            lpYYRes =
+              PrimOpDydSlope_EM_YY (lptkLftArg,     // Ptr to left arg token
+                                   &yyStype[0],     // Ptr to operator function strand
+                                    lptkRhtArg);    // Ptr to right arg token
+            goto NORMAL_EXIT;
+        } else
+        // Check for left operand of {minus}
+        if (lpYYFcnStrLft->TknCount EQ (2 + btkAxis)
+         && lpYYFcnStrLft[1 + btkAxis].tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+         && lpYYFcnStrLft[1 + btkAxis].tkToken.tkData.tkChar   EQ UTF16_BAR)
+        {
+            // Copy the left operand
+            yyStype[0] = lpYYFcnStrLft[0];
+            yyStype[1] = lpYYFcnStrLft[1];
+            if (btkAxis)
+                yyStype[2] = lpYYFcnStrLft[2];
+
+            // Change the left operand function from {minus} to {plus}
+            yyStype[1 + btkAxis].tkToken.tkData.tkChar = UTF16_PLUS;
+
+            // Ensure called dyadically
+            if (lptkLftArg EQ NULL)
+                // That's an error
+                goto VALENCE_EXIT;
+
+            // Get left arg's global ptrs
+            aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+
+            // If the left arg is a global, ...
+            if (hGlbLft NE NULL)
+                // Skip over the header and dimensions to the data
+                lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
+            else
+                lpMemLft = (LPAPLCHAR) &aplLongestLft;
+
+            // Attempt to convert the left arg to an integer
+            aplIntLft = ConvertToInteger_SCT (aplTypeLft, lpMemLft, 0, &bRet);
+
+            // If the left arg is a global, ...
+            if (hGlbLft NE NULL)
+            {
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+            } // End IF
+
+            // Ensure the left arg is -2
+            if (!bRet
+             || aplIntLft NE -2)
+                // That's an error
+                goto LEFT_DOMAIN_EXIT;
+
+            // Ensure the right arg is a numeric
+            if (!IsNumeric (aplTypeRht))
+                // That's an error
+                goto RIGHT_DOMAIN_EXIT;
+
+            // We handle -1 as the right operand value only
+            if (aplLongestOprRht NE -1)
+                goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+            // Call internal function
+            lpYYRes =
+              PrimOpMonSlope_EM_YY (&yyStype[0],    // Ptr to operator function strand
+                                     lptkRhtArg);   // Ptr to right arg token
             goto NORMAL_EXIT;
         } else
             goto LEFT_OPERAND_NONCE_EXIT;
@@ -703,7 +831,7 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
         // If called monadically, ...
         if (lptkLftArg EQ NULL)
         {
-            // Use a default of two
+            // Use a default of 2
             lptkLftArg = &tkLftArg;
 
             // Set the token to 2
@@ -712,8 +840,9 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
             lptkLftArg->tkData.tkInteger = 2;
 ////////////lptkLftArg->tkCharIndex      =      // We hope it's never needed
 
-            // Set the storage type
+            // Set the storage type and Rank
             aplTypeLft = ARRAY_INT;
+            aplRankLft = 0;
         } // End IF
 
         // Ensure the left arg is a scalar
@@ -799,6 +928,84 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
 
         // Get the magic function/operator global memory handle
         hGlbMFO = lpMemPTD->hGlbMFO[MFOE_InvBV];
+    } else
+    // Check for left operand of {downtack}
+    if (lpYYFcnStrLft->TknCount EQ 1
+     && lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+     && lpYYFcnStrLft->tkToken.tkData.tkChar   EQ UTF16_DOWNTACK)
+    {
+        // If called monadically, ...
+        if (lptkLftArg EQ NULL)
+            // That's an error
+            goto VALENCE_EXIT;
+
+        // Ensure the left arg is a numeric
+        if (!IsNumeric (aplTypeLft))
+            // That's an error
+            goto LEFT_DOMAIN_EXIT;
+
+        // Ensure the right arg is a numeric
+        if (!IsNumeric (aplTypeRht))
+            // That's an error
+            goto RIGHT_DOMAIN_EXIT;
+
+        // This special case allows other (negative) values for the right operand
+        // We handle -1 as the right operand value only
+        if (aplLongestOprRht NE -1)
+            goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+        // Fill in function token
+        tkFunc.tkFlags.TknType = TKT_FCNIMMED;
+        tkFunc.tkFlags.ImmType = IMMTYPE_PRIMFCN;
+        tkFunc.tkData.tkChar   = UTF16_UPTACK;
+////////tkFunc.tkCharIndex     =        // We hope it's never needed
+
+        // Call internal function
+        lpYYRes =
+          PrimFnDydUpTack_EM_YY (lptkLftArg,        // Ptr to left arg token (may be NULL if monadic)
+                                &tkFunc,            // Ptr to function token
+                                 lptkRhtArg,        // Ptr to right arg token
+                                 lptkAxis);         // Ptr to axis token (may be NULL)
+        goto NORMAL_EXIT;
+    } else
+    // Check for left operand of {pi}
+    if (lpYYFcnStrLft->TknCount EQ 1
+     && lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+     && lpYYFcnStrLft->tkToken.tkData.tkChar   EQ UTF16_PI)
+    {
+        // If called dyadically, ...
+        if (lptkLftArg NE NULL)
+            // That's an error
+            goto VALENCE_EXIT;
+
+        // Ensure the right arg is a numeric
+        if (!IsNumeric (aplTypeRht))
+            // That's an error
+            goto RIGHT_DOMAIN_EXIT;
+
+        // This special case allows other (negative) values for the right operand
+        // We handle -1 as the right operand value only
+        if (aplLongestOprRht NE -1)
+            goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+        // Fill in operator strand
+        yyStype[0].TknCount = 2;
+        yyStype[0].tkToken.tkFlags.TknType = TKT_OP1IMMED;
+        yyStype[0].tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP1;
+        yyStype[0].tkToken.tkData.tkChar   = UTF16_SLASH;
+////////yyStype[0].tkToken.tkCharIndex     =        // We hope it's never needed
+
+        yyStype[1].TknCount = 1;
+        yyStype[1].tkToken.tkFlags.TknType = TKT_FCNIMMED;
+        yyStype[1].tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
+        yyStype[1].tkToken.tkData.tkChar   = UTF16_TIMES;
+////////yyStype[1].tkToken.tkCharIndex     =        // We hope it's never needed
+
+        // Call internal function
+        lpYYRes =
+          PrimOpMonSlash_EM_YY (&yyStype[0],        // Ptr to operator function strand
+                                 lptkRhtArg);       // Ptr to right arg token
+        goto NORMAL_EXIT;
     } else
         goto LEFT_OPERAND_NONCE_EXIT;
 

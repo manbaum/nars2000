@@ -1,6 +1,17 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2306 -- Version 0.6.2.xx
+-------------------------------
+
+* Preliminary Support For Inverses, Part II
+
+Directory branches/bsmith/NanTypes:
+
+PO_DISTAR.C:
+  Implement more instances of Inverse Functions.
+
+
 Build #2304 -- Version 0.6.2.xx
 -------------------------------
 

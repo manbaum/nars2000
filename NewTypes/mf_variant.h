@@ -47,22 +47,6 @@ MAGIC_FCNOPR MFO_DydVOFact =
 };
 
 
-//***************************************************************************
-//  Magic function/operator for Execute with local ⎕FPC
-//***************************************************************************
-
-static LPAPLCHAR MonExecuteBody[] =
-{L"⎕PRO:",
- L"⎕FPC←"S L"L",
- L""S L"Z←##.⍎"S L"R",
-};
-
-MAGIC_FCNOPR MFO_MonExecute =
-{L""S L"Z←"S L"L " MFON_MonExecute L" "S L"R;⎕FPC",
- MonExecuteBody,
- countof (MonExecuteBody),
-};
-
 #undef  S
 
 

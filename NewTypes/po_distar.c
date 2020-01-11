@@ -213,34 +213,16 @@ LPPL_YYSTYPE PrimOpDieresisStarCommon_EM_YY
         // Calculate the left operand's function inverse
         if (0 > (APLINT) aplLongestOprRht)
         {
-            // If the left operand is a Slash, Slope, UpTack, DownTack, or Pi, ...
-            if (IsAPLCharSlash (lpYYFcnStrLft->tkToken.tkData.tkChar)
-             || IsAPLCharSlope (lpYYFcnStrLft->tkToken.tkData.tkChar)
-             ||                 lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_UPTACK
-             ||                 lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_DOWNTACK
-             ||                 lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_PI)
-            {
-                // Call special inverse function
-                lpYYRes =
-                  PrimOpDieresisStarSpecInv_EM_YY (lptkLftArg,          // Ptr to left arg token (may be NULL if niladic/monadic derived function)
-                                                   lpYYFcnStrLft,       // Ptr to left operand function strand
-                                                   lpYYFcnStrOpr,       // Ptr to operator function strand
-                                                   lpYYFcnStrRht,       // Ptr to right operand function strand
-                                                   aplLongestOprRht,    // Signed value of right operand var
-                                                   lptkRhtArg,          // Ptr to right arg token (may be NULL if niladic)
-                                                   bPrototyping);       // TRUE iff protoyping
-                goto NORMAL_EXIT;
-            } // End IF
-
-            // Use the absolute value as the loop limit
-            aplLongestOprRht = abs64 ((APLINT) aplLongestOprRht);
-
-
-
-
-
-
-            goto RIGHT_OPERAND_NONCE_EXIT;
+            // Call special inverse functions
+            lpYYRes =
+              PrimOpDieresisStarSpecInv_EM_YY (lptkLftArg,          // Ptr to left arg token (may be NULL if niladic/monadic derived function)
+                                               lpYYFcnStrLft,       // Ptr to left operand function strand
+                                               lpYYFcnStrOpr,       // Ptr to operator function strand
+                                               lpYYFcnStrRht,       // Ptr to right operand function strand
+                                               aplLongestOprRht,    // Signed value of right operand var
+                                               lptkRhtArg,          // Ptr to right arg token (may be NULL if niladic)
+                                               bPrototyping);       // TRUE iff protoyping
+            goto NORMAL_EXIT;
         } // End IF
     } // End IF
 
@@ -454,11 +436,6 @@ RIGHT_OPERAND_LENGTH_EXIT:
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
-RIGHT_OPERAND_NONCE_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                              &lpYYFcnStrRht->tkToken);
-    goto ERROR_EXIT;
-
 LEFT_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkLftArg);
@@ -591,7 +568,9 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
     APLLONGEST         aplLongestLft;       // Left arg as immediate
     APLINT             aplIntLft;           // Left arg as integer
     APLFLOAT           aplFltLft;           // ...         float
-    UBOOL              bRet;                // TRUE iff the result is valid
+    UBOOL              bRet,                // TRUE iff the result is valid
+                       btkAxis,             // TRUE iff the oringial lptkAxis NE NULL
+                       bQuadIO = GetQuadIO ();  // []IO
     PL_YYSTYPE         yyStype[3] = {0};    // Temp area for operator strand
 
     // If there's a left arg, ...
@@ -605,13 +584,16 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    // Check for axis operator
+    // Check for Left Operand axis operator
     lptkAxis = CheckAxisOper (lpYYFcnStrLft);
+
+    // Save the lptkAxis state
+    btkAxis = (lptkAxis NE NULL);   // TRUE iff there was an original Axis operator on the Left Operand
 
     // If the axis is not present, ...
     if (lptkAxis EQ NULL)
     {
-        // If the operator is SLASHBAR or SLOPEBAR, ...
+        // If the Left Operand is SLASHBAR or SLOPEBAR, ...
         if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_SLASHBAR
          || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR)
         {
@@ -700,7 +682,7 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
             lpYYRes =
               PrimFnMonPi_EM_YY (&tkFunc,           // Ptr to function token
                                   lptkRhtArg,       // Ptr to right arg token
-                                  lptkAxis);        // Ptr to axis token (may be NULL)
+                                  lptkAxis);        // Ptr to Left Operand axis token (may be NULL)
             goto NORMAL_EXIT;
         } else
             goto LEFT_OPERAND_NONCE_EXIT;
@@ -709,11 +691,6 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
     if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_OP1IMMED
      && IsAPLCharSlope (lpYYFcnStrLft->tkToken.tkData.tkChar))
     {
-        UBOOL btkAxis;          // TRUE iff the left operand has an axis oper
-
-        // Check for axis operator
-        btkAxis = (NULL NE CheckAxisOper (lpYYFcnStrLft));
-
         // Check for left operand of {plus}
         if (lpYYFcnStrLft->TknCount EQ (2 + btkAxis)
          && lpYYFcnStrLft[1 + btkAxis].tkToken.tkFlags.TknType EQ TKT_FCNIMMED
@@ -766,45 +743,111 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
          && lpYYFcnStrLft[1 + btkAxis].tkToken.tkFlags.TknType EQ TKT_FCNIMMED
          && lpYYFcnStrLft[1 + btkAxis].tkToken.tkData.tkChar   EQ UTF16_BAR)
         {
-            // Copy the left operand
-            yyStype[0] = lpYYFcnStrLft[0];
-            yyStype[1] = lpYYFcnStrLft[1];
-            if (btkAxis)
-                yyStype[2] = lpYYFcnStrLft[2];
-
-            // Change the left operand function from {minus} to {plus}
-            yyStype[1 + btkAxis].tkToken.tkData.tkChar = UTF16_PLUS;
-
-            // Ensure called dyadically
+            // If called monadically, ...
             if (lptkLftArg EQ NULL)
+            {
+                // Ensure the right arg is a numeric
+                if (!IsNumeric (aplTypeRht))
+                    // That's an error
+                    goto RIGHT_DOMAIN_EXIT;
+
+                // We handle -1 as the right operand value only
+                if (aplLongestOprRht NE -1)
+                    goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+                // If there's no original axis specifed, ...
+                if (!btkAxis || IsScalar (aplRankRht))
+                {
+                    // Point to tkAxis
+                    lptkAxis = &tkAxis;
+
+                    // If the right arg is a scalar, ...
+                    if (IsScalar (aplRankRht))
+                    {
+                        // Set the token to {zilde}
+                        lptkAxis->tkFlags.TknType  = TKT_VARARRAY;
+                        lptkAxis->tkFlags.ImmType  = IMMTYPE_ERROR;
+                        lptkAxis->tkData.tkGlbData = MakePtrTypeGlb (hGlbZilde);
+                    } else
+                    {
+                        // Set the token to Rank + []IO - 1
+                        lptkAxis->tkFlags.TknType  = TKT_VARIMMED;
+                        lptkAxis->tkFlags.ImmType  = IMMTYPE_INT;
+                        lptkAxis->tkData.tkInteger = aplRankRht + bQuadIO - 1;
+                    } // End IF/ELSE
+
+////////////////////lptkAxis->tkCharIndex      =      // We hope it's never needed
+                } // End IF
+
+                // Get the magic function/operator global memory handle
+                hGlbMFO = lpMemPTD->hGlbMFO[MFOE_InvBS];
+            } else
+            {
+                // Copy the left operand
+                yyStype[0] = lpYYFcnStrLft[0];
+                yyStype[1] = lpYYFcnStrLft[1];
+                if (btkAxis)
+                    yyStype[2] = lpYYFcnStrLft[2];
+
+                // Change the left operand function from {minus} to {plus}
+                yyStype[1 + btkAxis].tkToken.tkData.tkChar = UTF16_PLUS;
+
+                // Ensure called dyadically
+                if (lptkLftArg EQ NULL)
+                    // That's an error
+                    goto VALENCE_EXIT;
+
+                // Get left arg's global ptrs
+                aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+
+                // If the left arg is a global, ...
+                if (hGlbLft NE NULL)
+                    // Skip over the header and dimensions to the data
+                    lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
+                else
+                    lpMemLft = (LPAPLCHAR) &aplLongestLft;
+
+                // Attempt to convert the left arg to an integer
+                aplIntLft = ConvertToInteger_SCT (aplTypeLft, lpMemLft, 0, &bRet);
+
+                // If the left arg is a global, ...
+                if (hGlbLft NE NULL)
+                {
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+                } // End IF
+
+                // Ensure the left arg is -2
+                if (!bRet
+                 || aplIntLft NE -2)
+                    // That's an error
+                    goto LEFT_DOMAIN_EXIT;
+
+                // Ensure the right arg is a numeric
+                if (!IsNumeric (aplTypeRht))
+                    // That's an error
+                    goto RIGHT_DOMAIN_EXIT;
+
+                // We handle -1 as the right operand value only
+                if (aplLongestOprRht NE -1)
+                    goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+                // Call internal function
+                lpYYRes =
+                  PrimOpMonSlope_EM_YY (&yyStype[0],    // Ptr to operator function strand
+                                         lptkRhtArg);   // Ptr to right arg token
+                goto NORMAL_EXIT;
+            } // End IF/ELSE
+        } else
+        // Check for left operand of {colonbar}
+        if (lpYYFcnStrLft->TknCount EQ (2 + btkAxis)
+         && lpYYFcnStrLft[1 + btkAxis].tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+         && lpYYFcnStrLft[1 + btkAxis].tkToken.tkData.tkChar   EQ UTF16_COLONBAR)
+        {
+            // Ensure called monadically
+            if (lptkLftArg NE NULL)
                 // That's an error
                 goto VALENCE_EXIT;
-
-            // Get left arg's global ptrs
-            aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
-
-            // If the left arg is a global, ...
-            if (hGlbLft NE NULL)
-                // Skip over the header and dimensions to the data
-                lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
-            else
-                lpMemLft = (LPAPLCHAR) &aplLongestLft;
-
-            // Attempt to convert the left arg to an integer
-            aplIntLft = ConvertToInteger_SCT (aplTypeLft, lpMemLft, 0, &bRet);
-
-            // If the left arg is a global, ...
-            if (hGlbLft NE NULL)
-            {
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
-            } // End IF
-
-            // Ensure the left arg is -2
-            if (!bRet
-             || aplIntLft NE -2)
-                // That's an error
-                goto LEFT_DOMAIN_EXIT;
 
             // Ensure the right arg is a numeric
             if (!IsNumeric (aplTypeRht))
@@ -815,11 +858,32 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
             if (aplLongestOprRht NE -1)
                 goto RIGHT_OPERAND_DOMAIN_EXIT;
 
-            // Call internal function
-            lpYYRes =
-              PrimOpMonSlope_EM_YY (&yyStype[0],    // Ptr to operator function strand
-                                     lptkRhtArg);   // Ptr to right arg token
-            goto NORMAL_EXIT;
+                // If there's no original axis specifed, ...
+                if (!btkAxis || IsScalar (aplRankRht))
+            {
+                // Point to tkAxis
+                lptkAxis = &tkAxis;
+
+                // If the right arg is a scalar, ...
+                if (IsScalar (aplRankRht))
+                {
+                    // Set the token to {zilde}
+                    lptkAxis->tkFlags.TknType  = TKT_VARARRAY;
+                    lptkAxis->tkFlags.ImmType  = IMMTYPE_ERROR;
+                    lptkAxis->tkData.tkGlbData = MakePtrTypeGlb (hGlbZilde);
+                } else
+                {
+                    // Set the token to Rank + []IO - 1
+                    lptkAxis->tkFlags.TknType  = TKT_VARIMMED;
+                    lptkAxis->tkFlags.ImmType  = IMMTYPE_INT;
+                    lptkAxis->tkData.tkInteger = aplRankRht + bQuadIO - 1;
+                } // End IF/ELSE
+
+////////////////lptkAxis->tkCharIndex      =      // We hope it's never needed
+            } // End IF
+
+            // Get the magic function/operator global memory handle
+            hGlbMFO = lpMemPTD->hGlbMFO[MFOE_InvCBS];
         } else
             goto LEFT_OPERAND_NONCE_EXIT;
     } else
@@ -843,17 +907,18 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
             // Set the storage type and Rank
             aplTypeLft = ARRAY_INT;
             aplRankLft = 0;
-        } // End IF
+        } else
+        {
+            // Ensure the left arg is a scalar
+            if (!IsScalar  (aplRankLft))
+                // That's an error
+                goto LEFT_RANK_EXIT;
 
-        // Ensure the left arg is a scalar
-        if (!IsScalar  (aplRankLft))
-            // That's an error
-            goto LEFT_RANK_EXIT;
-
-        // Ensure the left arg is a numeric
-        if (!IsNumeric (aplTypeLft))
-            // That's an error
-            goto LEFT_DOMAIN_EXIT;
+            // Ensure the left arg is a numeric
+            if (!IsNumeric (aplTypeLft))
+                // That's an error
+                goto LEFT_DOMAIN_EXIT;
+        } // End IF/ELSE
 
         // Ensure the right arg is a numeric
         if (!IsNumeric (aplTypeRht))
@@ -949,7 +1014,6 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
             // That's an error
             goto RIGHT_DOMAIN_EXIT;
 
-        // This special case allows other (negative) values for the right operand
         // We handle -1 as the right operand value only
         if (aplLongestOprRht NE -1)
             goto RIGHT_OPERAND_DOMAIN_EXIT;
@@ -965,7 +1029,7 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
           PrimFnDydUpTack_EM_YY (lptkLftArg,        // Ptr to left arg token (may be NULL if monadic)
                                 &tkFunc,            // Ptr to function token
                                  lptkRhtArg,        // Ptr to right arg token
-                                 lptkAxis);         // Ptr to axis token (may be NULL)
+                                 lptkAxis);         // Ptr to Left Operand axis token (may be NULL)
         goto NORMAL_EXIT;
     } else
     // Check for left operand of {pi}
@@ -983,7 +1047,6 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
             // That's an error
             goto RIGHT_DOMAIN_EXIT;
 
-        // This special case allows other (negative) values for the right operand
         // We handle -1 as the right operand value only
         if (aplLongestOprRht NE -1)
             goto RIGHT_OPERAND_DOMAIN_EXIT;
@@ -1020,9 +1083,9 @@ LPPL_YYSTYPE PrimOpDieresisStarSpecInv_EM_YY
     lpYYRes =
       ExecuteMagicFunction_EM_YY (lptkLftArg,               // Ptr to left arg token
                                  &lpYYFcnStrLft->tkToken,   // Ptr to function token
-                                  NULL,                     // Ptr to function strand
+                                  lpYYFcnStrLft,            // Ptr to function strand
                                   lptkRhtArg,               // Ptr to right arg token
-                                  lptkAxis,                 // Ptr to axis token
+                                  lptkAxis,                 // Ptr to Left Operand axis token
                                   hGlbMFO,                  // Magic function/operator global memory handle
                                   NULL,                     // Ptr to HSHTAB struc (may be NULL)
                                   LINENUM_ONE);             // Starting line # type (see LINE_NUMS)

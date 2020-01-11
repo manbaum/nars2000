@@ -1,6 +1,23 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2309 -- Version 0.5.14.xx
+--------------------------------
+
+* Preliminary Support For Inverses, Part III
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+EXECMFN.H:
+MF_DISTAR.H:
+  Define magic functions for the inverses to -\ and {divide}\.
+
+PO_DISTAR.C:
+  Re-organize the inverse function code into a single routine.
+  Call magic functions for the inverses to -\ and {divide}\.
+
+
 Build #2307 -- Version 0.5.14.xx
 --------------------------------
 

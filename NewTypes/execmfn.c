@@ -80,6 +80,8 @@ extern MAGIC_FCNOPR MFO_DydDomino2;
 extern MAGIC_FCNOPR MFO_InvPJDRed;
 extern MAGIC_FCNOPR MFO_InvBV;
 extern MAGIC_FCNOPR MFO_IdnJot;
+extern MAGIC_FCNOPR MFO_InvBS;
+extern MAGIC_FCNOPR MFO_InvCBS;
 
 
 //***************************************************************************
@@ -854,6 +856,8 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_InvPJDRed        ]  = Init1MagicFunction (MFON_InvPJDRed        , &MFO_InvPJDRed        , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_InvBV            ]  = Init1MagicFunction (MFON_InvBV            , &MFO_InvBV            , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_IdnJot           ]  = Init1MagicFunction (MFON_IdnJot           , &MFO_IdnJot           , lpMemPTD, hWndEC, NULL));
+    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_InvBS            ]  = Init1MagicFunction (MFON_InvBS            , &MFO_InvBS            , lpMemPTD, hWndEC, NULL));
+    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_InvCBS           ]  = Init1MagicFunction (MFON_InvCBS           , &MFO_InvCBS           , lpMemPTD, hWndEC, NULL));
 
     //***************************************************************
     //  N.B.:  If you define an additional MFO with a local

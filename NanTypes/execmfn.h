@@ -81,7 +81,9 @@ typedef enum tagMFO
     MFOE_InvPJDRed       ,      // 37:  Inverse +{jot}{divide}/ (Continue Fractions)
     MFOE_InvBV           ,      // 38:  Inverse Base Value
     MFOE_IdnJot          ,      // 39:  Inverse Dyadic Jot
-    MFOE_LENGTH                 // 3A:  # entries in this enum
+    MFOE_InvBS           ,      // 3A:  Inverse Bar Scan
+    MFOE_InvCBS          ,      // 3B:  Inverse ColonBar Scan
+    MFOE_LENGTH                 // 3C:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -143,6 +145,8 @@ typedef enum tagMFO
 #define MFON_InvPJDRed          L"#InvPJDRed"
 #define MFON_InvBV              L"#InvBV"
 #define MFON_IdnJot             L"#IdnJot"
+#define MFON_InvBS              L"#InvBS"
+#define MFON_InvCBS             L"#InvCBS"
 
 // Magic Function/Operator Variables
 #define $ALPHA          WS_UTF16_ALPHA

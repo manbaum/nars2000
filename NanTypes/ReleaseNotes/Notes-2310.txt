@@ -1,0 +1,15 @@
+Build #2310 -- Version 0.6.2.xx
+-------------------------------
+
+* Preliminary Support For Inverses, Part III
+
+Directory branches/bsmith/NanTypes:
+
+EXECMFN.C:
+EXECMFN.H:
+MF_DISTAR.H:
+  Define magic functions for the inverses to -\ and {divide}\.
+
+PO_DISTAR.C:
+  Re-organize the inverse function code into a single routine.
+  Call magic functions for the inverses to -\ and {divide}\.

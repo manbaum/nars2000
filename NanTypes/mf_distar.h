@@ -70,6 +70,39 @@ MAGIC_FCNOPR MFO_InvBV =
  countof (InvBVBody),
 };
 
+
+//***************************************************************************
+//  Magic function/operator for monadic derived function from the Power
+//    dyadic operator for Inverse Bar Scan
+//***************************************************************************
+
+static LPAPLCHAR InvBSBody[] =
+{S L"Z←(2-\\["S L"X] "S L"R)×["S L"X](⍴"S L"R)["S L"X]⍴¯1 1",     // Double the \ to avoid it being confused with a character escape sequence
+};
+
+MAGIC_FCNOPR MFO_InvBS =
+{S L"Z←" MFON_InvBS L"["S L"X] "S L"R",
+ InvBSBody,
+ countof (InvBSBody),
+};
+
+
+//***************************************************************************
+//  Magic function/operator for monadic derived function from the Power
+//    dyadic operator for Inverse ColonBar Scan
+//***************************************************************************
+
+static LPAPLCHAR InvCBSBody[] =
+{S L"Z←(2÷\\["S L"X] "S L"R)*["S L"X](⍴"S L"R)["S L"X]⍴¯1 1",     // Double the \ to avoid it being confused with a character escape sequence
+};
+
+MAGIC_FCNOPR MFO_InvCBS =
+{S L"Z←" MFON_InvCBS L"["S L"X] "S L"R",
+ InvCBSBody,
+ countof (InvCBSBody),
+};
+
+
 #undef  S
 
 

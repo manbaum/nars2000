@@ -1,0 +1,12 @@
+Build #2312 -- Version 0.6.2.xx
+-------------------------------
+
+* Miscellaneous Changes
+
+Directory branches/bsmith/NanTypes:
+
+MAKEFILE.INC:
+  Clean up the MAKEFILE.
+
+PF_LSHOE.C:
+  Improve comments.

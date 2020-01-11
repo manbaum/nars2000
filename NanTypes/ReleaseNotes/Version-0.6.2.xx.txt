@@ -1,6 +1,20 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2312 -- Version 0.6.2.xx
+-------------------------------
+
+* Miscellaneous Changes
+
+Directory branches/bsmith/NanTypes:
+
+MAKEFILE.INC:
+  Clean up the MAKEFILE.
+
+PF_LSHOE.C:
+  Improve comments.
+
+
 Build #2310 -- Version 0.6.2.xx
 -------------------------------
 

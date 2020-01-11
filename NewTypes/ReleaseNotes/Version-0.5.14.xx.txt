@@ -1,6 +1,20 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2311 -- Version 0.5.14.xx
+--------------------------------
+
+* Miscellaneous Changes
+
+Directory branches/bsmith/NewTypes:
+
+MAKEFILE.INC:
+  Clean up the MAKEFILE.
+
+PF_LSHOE.C:
+  Improve comments.
+
+
 Build #2309 -- Version 0.5.14.xx
 --------------------------------
 

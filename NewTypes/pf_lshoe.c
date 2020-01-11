@@ -588,7 +588,7 @@ UBOOL LftShoeGlbCom_EM
         if (CheckCtrlBreak (lpComVars->lpbCtrlBreak))
             goto ERROR_EXIT;
 
-        // Initialize the right arg index
+        // Initialize the right arg index to the identity element for addition
         uRht = 0;
 
         // If the subitem is non-empty, ...
@@ -690,7 +690,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                           &aplNELMAxis,     // Return # elements in axis vector
                           &hGlbAxis))       // Return HGLOBAL with APLINT axis values
             goto ERROR_EXIT;
-
     } else
         // No axis is the same as all axes
         aplNELMAxis = aplRankRht;

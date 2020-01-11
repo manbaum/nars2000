@@ -1,6 +1,6 @@
 # /***************************************************************************
 #     NARS2000 -- An Experimental APL Interpreter
-#     Copyright (C) 2006-2019 Sudley Place Software
+#     Copyright (C) 2006-2020 Sudley Place Software
 #
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -50,12 +50,16 @@
 !error Environment variable PARGEN= not defined.
 !endif
 
+!ifndef NARSROOT
+!error Environment variable NARSROOT= not defined.
+!endif
+
 !ifndef MSVC
 !error Environment variable MSVC= not defined.
 !endif
 
-!ifndef CS_DIR
-!error Environment variable CS_DIR= not defined.
+!ifndef SDK
+!error Environment variable SDK= not defined.
 !endif
 
 !ifndef MS_DIR
@@ -82,20 +86,20 @@
 !error Environment variable ECM_DIR= not defined.
 !endif
 
-!ifndef MPFFT_DIR
-!error Environment variable MPFFT_DIR= not defined.
+!ifndef GSL_DIR
+!error Environment variable GSL_DIR= not defined.
 !endif
 
-!ifndef SDK
-!error Environment variable SDK= not defined.
+!ifndef MPFFT_DIR
+!error Environment variable MPFFT_DIR= not defined.
 !endif
 
 !ifndef PTH_DIR
 !error Environment variable PTH_DIR= not defined.
 !endif
 
-!ifndef NARSROOT
-!error Environment variable NARSROOT= not defined.
+!ifndef CS_DIR
+!error Environment variable CS_DIR= not defined.
 !endif
 
 .SUFFIXES: .DEP .DEV .PRO .Y
@@ -108,7 +112,6 @@ A=Images^\                          # Images & artwork
 BC=$(BIN)COM^\                      # Directory for common binaries
 WS=WineHQ^\                         # Wine source
 OLDPATH=$(PATH)                     # Save the current path
-GSL_INC=$(GSL_DIR)include^\         # Directory of GSL includes
 SDK_INC=$(INCLUDE)                  # Directories of SDK includes
 
 QDEBUG=$(NARSROOT)qdebug\           # Directory for QDEBUG files/libraries
@@ -122,21 +125,20 @@ LIST=
 
 !if "$(DEBUG)" == "1"
 RESDEBUG=1
-CFLAGS_DEBUG=/Zi /D "DEBUG"
+CFLAGS_DEBUG=/Zi /Od /D "DEBUG"
 BUILD_DIR=Debug
 DEBUG_LIBSUFFIX=d
 WIND=$(WIN)$(DEBUG_LIBSUFF)
 LFLAGS_NDEF=/NODEFAULTLIB:libcmt.lib /SAFESEH:NO
 !else
 RESDEBUG=0
-CFLAGS_DEBUG=/Zi
+CFLAGS_DEBUG=/Zi /O2
 BUILD_DIR=Release
 DEBUG_LIBSUFFIX=
 LFLAGS_NDEF=/NODEFAULTLIB:libcmtd.lib
 !endif
 
 WIND=$(WIN)$(DEBUG_LIBSUFF)
-GSL_LIB=$(GSL_DIR)\lib\libgsl$(WIND)-double.lib     # GSL library
 
 MS_INC    = $(MS_DIR)
 MPC_INC   = $(MPC_DIR)include^\
@@ -145,9 +147,14 @@ MPFR_INC  = $(MPFR_DIR)include^\
 FLINT_INC = $(FLINT_DIR)include^\
 FLINT_INC2= $(FLINT_DIR)
 ECM_INC   = $(ECM_DIR)include^\
-MPFFT_INC = $(MPFFT_DIR)include^\
+GSL_INC   = $(GSL_DIR)include^\
 PTH_INC   = $(PTH_DIR)include^\
+MPFFT_INC = $(MPFFT_DIR)include^\
+CS_INC    = $(CS_DIR)include^\
 
+!if [if not exist $(MS_INC)*.h  exit 1]
+!error Incorrect value for MS_INC=$(MS_INC)
+!endif
 !if [if not exist $(MPC_INC)*.h  exit 1]
 !error Incorrect value for MPC_INC=$(MPC_INC)
 !endif
@@ -160,20 +167,43 @@ PTH_INC   = $(PTH_DIR)include^\
 !if [if not exist $(FLINT_INC)*.h  exit 1]
 !error Incorrect value for FLINT_INC=$(FLINT_INC)
 !endif
+##!if [if not exist $(FLINT_INC2)*.h  exit 1]   // Pseudo directory
+##!error Incorrect value for FLINT_INC2=$(FLINT_INC2)
+##!endif
 !if [if not exist $(ECM_INC)*.h exit 1]
 !error Incorrect value for ECM_INC=$(ECM_INC)
+!endif
+!if [if not exist $(GSL_INC)gsl\*.h exit 1]
+!error Incorrect value for GSL_INC=$(GSL_INC)
+!endif
+!if [if not exist $(PTH_INC)*.h exit 1]
+!error Incorrect value for PTH_INC=$(PTH_INC)
 !endif
 !if [if not exist $(MPFFT_INC)*.h exit 1]
 !error Incorrect value for MPFFT_INC=$(MPFFT_INC)
 !endif
-!if [if not exist $(PTH_INC)*.h exit 1]
-!error Incorrect value for PTH_INC=$(PTH_INC)
+!if [if not exist $(CS_INC)*.h exit 1]
+!error Incorrect value for CS_INC=$(CS_INC)
 !endif
 
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
-I98=.\;$(SDK_INC);$(MSVC)INCLUDE;$(MS_INC);$(MPC_INC);$(MPIR_INC);$(MPFR_INC);$(FLINT_INC);$(FLINT_INC2);$(ECM_INC);$(GSL_INC);$(PTH_INC);$(MPFFT_INC);$(CS_DIR)include;$(QDEBUG)
+I98=.^\
+I98=$(I98);$(SDK_INC)
+I98=$(I98);$(MSVC)INCLUDE
+I98=$(I98);$(MS_INC)
+I98=$(I98);$(MPC_INC)
+I98=$(I98);$(MPIR_INC)
+I98=$(I98);$(MPFR_INC)
+I98=$(I98);$(FLINT_INC)
+I98=$(I98);$(FLINT_INC2)
+I98=$(I98);$(ECM_INC)
+I98=$(I98);$(GSL_INC)
+I98=$(I98);$(PTH_INC)
+I98=$(I98);$(MPFFT_INC)
+I98=$(I98);$(CS_INC)
+I98=$(I98);$(QDEBUG)
 
 MV=makever
 
@@ -182,13 +212,14 @@ MV=makever
 ##   mkn LINKDEBUG=1
 LINKDEBUG=0
 
-MPC_LIB   = $(MPC_DIR)lib\mpc$(WIN)$(DEBUG_LIBSUFFIX).lib
-MPIR_LIB  = $(MPIR_DIR)lib\mpir$(WIN)$(DEBUG_LIBSUFFIX).lib
-MPFR_LIB  = $(MPFR_DIR)lib\mpfr$(WIN)$(DEBUG_LIBSUFFIX).lib
-FLINT_LIB = $(FLINT_DIR)lib\flint$(WIN)$(DEBUG_LIBSUFFIX).lib
-ECM_LIB   = $(ECM_DIR)lib\ecm$(WIN)$(DEBUG_LIBSUFFIX).lib
-MPFFT_LIB = $(MPFFT_DIR)lib\mpfft$(WIN)$(DEBUG_LIBSUFFIX).lib
-PTH_LIB   = $(PTH_DIR)lib\pthreads$(WIN)$(DEBUG_LIBSUFFIX).lib
+MPC_LIB   = $(MPC_DIR)lib\mpc$(WIND).lib
+MPIR_LIB  = $(MPIR_DIR)lib\mpir$(WIND).lib
+MPFR_LIB  = $(MPFR_DIR)lib\mpfr$(WIND).lib
+FLINT_LIB = $(FLINT_DIR)lib\flint$(WIND).lib
+ECM_LIB   = $(ECM_DIR)lib\ecm$(WIND).lib
+GSL_LIB   = $(GSL_DIR)\lib\libgsl$(WIND)-double.lib
+PTH_LIB   = $(PTH_DIR)lib\pthreads$(WIND).lib
+MPFFT_LIB = $(MPFFT_DIR)lib\mpfft$(WIND).lib
 ##VCOMP_LIB = vcomp$(DEBUG_SUFFIX).lib
 
 !if "$(DEBUG)" == "1"
@@ -212,7 +243,7 @@ CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)" /D "_STDINT_H"
 
 VERSION_FLAGS = /D "NTDDI_VERSION=NTDDI_WIN7" /D "_WIN32_WINNT=_WIN32_WINNT_WIN7" /D "_WIN32_IE=_WIN32_IE_WIN7"
 CFLAGS_WEXE = /nologo /GA /W3 /WX /Oy- /Ot $(CFLAGS_DEBUG) /D "_WIN32" /c /D "_CRT_SECURE_NO_WARNINGS"
-CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS" /Qpar /O2 /D "_OPENMP"
+CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS" /Qpar /D "_OPENMP"
 ##CFLAGS_WEXE = $(CFLAGS_WEXE) /GL
 
 LFLAGS_WEXE2 = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF /DYNAMICBASE:NO /MANIFEST:NO /SUBSYSTEM:WINDOWS,6.0 /IGNOREIDL /NXCOMPAT /DEBUG
@@ -249,14 +280,14 @@ LIBS_WEXE =                     \
 !endif
 ##          $(VCOMP_LIB)        \
 ##VS2015    legacy_stdio_definitions.lib \
+            $(MPC_LIB)          \
             $(MPIR_LIB)         \
             $(MPFR_LIB)         \
             $(FLINT_LIB)        \
-            $(MPC_LIB)          \
             $(ECM_LIB)          \
-            $(MPFFT_LIB)        \
+            $(GSL_LIB)          \
             $(PTH_LIB)          \
-            $(GSL_LIB)
+            $(MPFFT_LIB)
 
 RCFLAGS = /nologo $(VERSION_FLAGS)
 !if "$(DEBUG)" == "1"
@@ -752,14 +783,14 @@ OBJS=   $(SRC:???=obj)                  \
 
 $(O)$(ENAME).exe:       $(OBJS)             \
                         $(DEFFILE)          \
+                        $(MPC_LIB)          \
                         $(MPIR_LIB)         \
                         $(MPFR_LIB)         \
                         $(FLINT_LIB)        \
-                        $(MPC_LIB)          \
                         $(ECM_LIB)          \
-                        $(MPFFT_LIB)        \
-                        $(PTH_LIB)          \
                         $(GSL_LIB)          \
+                        $(PTH_LIB)          \
+                        $(MPFFT_LIB)        \
                         $(CS_FILES)         \
                         $(FONT)             \
                         makefile.inc        \

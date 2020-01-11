@@ -1,0 +1,12 @@
+Build #2311 -- Version 0.5.14.xx
+--------------------------------
+
+* Miscellaneous Changes
+
+Directory branches/bsmith/NewTypes:
+
+MAKEFILE.INC:
+  Clean up the MAKEFILE.
+
+PF_LSHOE.C:
+  Improve comments.

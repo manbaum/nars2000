@@ -293,9 +293,14 @@ UBOOL CheckAxisGlb_EM
    *lpaplNELM  = lpMemHdrData->NELM;
     aplRankLcl = lpMemHdrData->Rank;
 
+    // Handle Zilde specially as first axis
+    if (*lpaplNELM EQ 0
+     && aplRankLcl EQ 1)
+        aplRankLcl = 0;
+
     // Check the axis rank and the NELM (if singletons only)
     if (IsRank2P (aplRankLcl)
-     || (bSingleton && !IsSingleton (*lpaplNELM))
+     || (bSingleton && IsMultiNELM (*lpaplNELM))
      || IsSimpleChar (aplTypeLcl)
      || IsPtrArray (aplTypeLcl))
         goto ERROR_EXIT;

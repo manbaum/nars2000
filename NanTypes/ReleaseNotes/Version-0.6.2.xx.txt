@@ -1,6 +1,17 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2308 -- Version 0.6.2.xx
+-------------------------------
+
+* Allow {zilde} In Axis Operator As Valid For Scalars
+
+Directory branches/bsmith/NanTypes:
+
+AXISFNS.C:
+  In <CheckAxisGlb_EM>, allow {zilde} to mean first coordinate on scalars.
+
+
 Build #2306 -- Version 0.6.2.xx
 -------------------------------
 

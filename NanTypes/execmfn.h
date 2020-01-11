@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ typedef enum tagMFO
     MFOE_DydDotDot       ,      // 1A:  Dyadic DotDot
     MFOE_DydIotaUnderbar ,      // 1B:  Dyadic Iota Underbar
     MFOE_MonDot          ,      // 1C:  Monadic derived function from f.g for determinant
-    MFOE_MonDotInit      ,      // 1D:  Initialization for #MonDot
+    MFOE_AfoMfoInit      ,      // 1D:  Initialization for AFO MFOs
     MFOE_MonDotAll       ,      // 1E:  Subroutine to ...
     MFOE_MonDotPerm      ,      // 1F:  ...
     MFOE_MonDotCr        ,      // 20:  ...
@@ -115,7 +115,7 @@ typedef enum tagMFO
 #define MFON_DydDotDot          L"#DydDotDot"
 #define MFON_DydIotaUnderbar    L"#DydIotaUnderbar"
 #define MFON_MonDot             L"#MonDot"
-#define MFON_MonDotInit         L"#MonDotInit"
+#define MFON_AfoMfoInit         L"#AfoMfoInit"
 #define MFON_MonDotAll          L"#MonDotAll"
 #define MFON_MonDotPerm         L"#MonDotPerm"
 #define MFON_MonDotCr           L"#MonDotCr"

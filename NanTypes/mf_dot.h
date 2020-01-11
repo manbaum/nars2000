@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,10 +82,11 @@ static LPAPLCHAR IniBody[] =
 {MFON_MonDotAll L"←{⎕IO←1 ⋄ y←" MFON_MonDotPerm L"⍴⍵ ⋄ k←⍴⍴y ⋄ ((⍳k),k)⍉⍵[y;]}",
  MFON_MonDotPerm L"←{s←(⌊/⍵)↑⌽⍳1↑⍵ ⋄ (s,⍴s)⍴110 1‼⍴s}",
  MFON_MonDotCr L"←{0=⍴⍴⍵:⍵ ⋄ 0=1⍴⎕EC '⍺⍺/⍵':∇(¯1↓⍴⍵)⍴⍵ ⋄ ∇ ⍺⍺/⍵}",
+ MFON_MonExecute L"←{⎕FPC←⍺ ⋄ ##.⍎⍵}",
 };
 
-MAGIC_FCNOPR MFO_MonDotInit =
-{MFON_MonDotInit,
+MAGIC_FCNOPR MFO_AfoMfoInit =
+{MFON_AfoMfoInit,
  IniBody,
  countof (IniBody),
 };

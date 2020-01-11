@@ -1,6 +1,30 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2314 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug In Execute With Variant Operator And No Result
+
+Directory branches/bsmith/NanTypes:
+
+EXECMFN.C:
+  Rename MFO_MonDotInit to MFO_AfoMfoInit so as to define Monadic Execute with Variant function.
+  Define <InitHTS> and <DeleHTS> both extracted from <Init1MagicFunction> as separately callable.
+  After calling <MFO_AfoMfoInit> set the HGLOBAL for that function info <lpMemPTD->hGlbMFO[]>.
+  Remove initialization call for <MFO_MonExecute> as it is now initialized in <MFO_AfoMfoInit>.
+
+EXECMFN.H:
+  Rename MFO_MonDotInit to <MFO_AfoMfoInit> so as to define Monadic Execute with Variant function.
+
+MF_DOT.H:
+  Rename MFO_MonDotInit to <MFO_AfoMfoInit> so as to define Monadic Execute with Variant function.
+  Initialize <MFO_MonExecute> from within <MFO_AfoMfoInit>.
+
+MF_VARIANT.H:
+   Delete the definition of <MFO_MonExecute> as it is now defined within <MFO_AfoMfoInit>.
+
+
 Build #2312 -- Version 0.6.2.xx
 -------------------------------
 

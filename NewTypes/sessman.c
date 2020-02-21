@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1615,20 +1615,24 @@ WM_NCCREATE_FAIL:
                 bLoadMsgDisp = TRUE;
             } // End IF
 
+            // Transfer the ExecLX flag and set it to the default
+            bRet = gbCmdExecLX && lpMemPTD->bExecLX;
+            gbCmdExecLX = TRUE;
+
             // Attempt to load the workspace
-            if (!LoadWorkspace_EM ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE, hWndEC))
+            if (!LoadWorkspace_EM ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE, hWndEC, bRet))
             {
                 // If we're loading a workspace from the command line, we can't afford to fail
-                if (wszLoadFile[0])
+                if (wszLoadFile[0] NE L'\0')
                 {
-                    if (!LoadWorkspace_EM (NULL, hWndEC))   // Attempt to load a CLEAR WS
-                        goto LOAD_WORKSPACE_FAIL;           // If that fails, give up
-                } else
-                    goto LOAD_WORKSPACE_FAIL;           // If that fails, give up
-            } // End IF
+                    // Zap so the above test doesn't succeed again
+                    wszLoadFile[0] = WC_EOS;
 
-            // Zap so the above test doesn't succeed again
-            wszLoadFile[0] = WC_EOS;
+                    if (!LoadWorkspace_EM (NULL, hWndEC, FALSE))    // Attempt to load a CLEAR WS
+                        goto LOAD_WORKSPACE_FAIL;                   // If that fails, give up
+                } else
+                    goto LOAD_WORKSPACE_FAIL;                       // If that fails, give up
+            } // End IF
 
             // Tell the window to finish initialization
             PostMessageW (hWnd, MYWM_INIT_EC, 0, 0);

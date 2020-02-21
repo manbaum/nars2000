@@ -37,7 +37,7 @@ UINT nDigitsFPC;            // # decimal digits in []FPC
 typedef struct tagSM_CREATESTRUCTW
 {
     HGLOBAL hGlbDPFE;       // 00:  Workspace DPFE global memory handle
-    UBOOL    bExecLX;       // 04:  TRUE iff execute []LX after successful load
+    UBOOL   bExecLX;        // 04:  TRUE iff execute []LX after successful load
                             // 08:  Length
 } UNALIGNED SM_CREATESTRUCTW, *LPSM_CREATESTRUCTW;
 
@@ -482,6 +482,13 @@ WCHAR wszAppDPFE [_MAX_PATH],           // .EXE drive, path, filename.ext
       wszLoadFile[_MAX_PATH],           // Save area for initial workspace to load
       wszComctl32FileVer[64],           // Comctl32.dll file version string
       wszFileVer[64];                   // File version string
+
+EXTERN
+UBOOL gbCmdExecLX                       // TRUE iff we're to )LOAD the workspace
+#ifdef DEFINE_VALUES                    //   on the command line
+ = TRUE
+#endif
+;
 
 EXTERN
 float fComctl32FileVer;                 // Comctl32.dll file version #

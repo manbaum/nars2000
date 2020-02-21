@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -224,7 +224,8 @@ UBOOL CmdLoadProcess
 
 UBOOL LoadWorkspace_EM
     (HGLOBAL hGlbDPFE,                  // Workspace DPFE global memory handle (NULL = CLEAR WS)
-     HWND    hWndEC)                    // Edit Ctrl window handle
+     HWND    hWndEC,                    // Edit Ctrl window handle
+     UBOOL   bExecLX)                   // TRUE iff execute []LX after successful load
 
 {
     LPWCHAR      lpwszDPFE = NULL,      // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
@@ -242,7 +243,6 @@ UBOOL LoadWorkspace_EM
                  wszTemp[1024];         // ... temp format data
     UBOOL        bRet = FALSE,          // TRUE iff the result is valid
                  bImmed,                // TRUE iff the result of ParseSavedWsVar_EM is immediate
-                 bExecLX,               // TRUE iff execute []LX after successful load
                  bSuspended;            // TRUE iff the function is suspended
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     APLSTYPE     aplTypeObj;            // Object storage type
@@ -267,8 +267,9 @@ UBOOL LoadWorkspace_EM
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    // Save the bExecLX flag
-    bExecLX = lpMemPTD->bExecLX;
+    // Merge the bExecLX flag
+    bExecLX &= lpMemPTD->bExecLX;
+    lpMemPTD->bExecLX = bExecLX;
 
     // Check for CLEAR WS
     if (hGlbDPFE EQ NULL)
@@ -895,6 +896,9 @@ UBOOL LoadWorkspace_EM
         } // End FOR
     } __except (CheckVirtAlloc (GetExceptionInformation (), WFCN))
     {
+#ifdef DEBUG
+        DbgBrk ();
+#endif
         // Display message for unhandled exception
         DisplayException ();
     } // End __try/__except

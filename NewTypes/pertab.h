@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 
 #define INIT_PERTABVARS                                     \
     lpMemPTD->Sig.nature    = ' DTP';                       \
+    lpMemPTD->bExecLX       = TRUE;                         \
     lpMemPTD->uQuadMF       = uQuadMF_CWS;                  \
     SetCurrentFeatureFromCWS (lpMemPTD);                    \
     lpMemPTD->hGlbQuadEM    = hGlbQuadEM_DEF;               \

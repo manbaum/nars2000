@@ -216,7 +216,7 @@
 
 
 // Range limits for []vars
-#define DEF_RANGELIMIT_CT           TRUE
+#define DEF_RANGELIMIT_CT           FALSE
 #define DEF_RANGELIMIT_FEATURE      TRUE
 #define DEF_RANGELIMIT_FPC          TRUE
 #define DEF_RANGELIMIT_IC           TRUE

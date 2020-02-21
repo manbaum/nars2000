@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #define STRICT
 #define MPIFNS
 #include <windows.h>
-#include <math.h>               // For fabs
 #include "headers.h"
 
 typedef mpir_ui (*MPZ_INVALID)  (enum MP_ENUM, mpz_t , mpz_t , mpz_t , mpz_t , mpir_ui, mpir_ui);

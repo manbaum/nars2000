@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@
 #include <mpir.h>
 #include <mpfr.h>
 #include <flint.h>
+#include <math.h>
 #include <complex.h>
 #undef  I               // So we can use this symbol ourselves
 #undef _Complex_I       // To keep mpc.h happy

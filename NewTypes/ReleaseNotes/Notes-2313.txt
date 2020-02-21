@@ -1,7 +1,7 @@
 Build #2313 -- Version 0.5.14.xx
 --------------------------------
 
-* Fix Bug In Execute Witrh Variant Operator And No Resuilt
+* Fix Bug In Execute With Variant Operator And No Result
 
 Directory branches/bsmith/NewTypes:
 

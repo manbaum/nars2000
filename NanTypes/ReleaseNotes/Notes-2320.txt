@@ -1,0 +1,19 @@
+Build #2320 -- Version 0.6.2.xx
+-------------------------------
+
+* Implement -x In Command Line To )XLOAD The Initial Workspace
+
+Directory branches/bsmith/NanTypes:
+
+EXTERNS.H:
+  Define global var to mark as )XLOAD of initial workspace.
+
+MAIN.C:
+  In <ParseCommandLine>, parse "-x" to )XLOAD the initial workspace.
+
+PERTAB.H:
+  Initialize <lpMemPTD->bExecLX>.
+
+SC_LOAD.C:
+SESSMAN.C:
+  Pass <bExecLX> flag to <LoadWorkspace_EM>.

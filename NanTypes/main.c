@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3967,7 +3967,7 @@ UBOOL ParseCommandLine
         LPCHAR p;                   // Temporary ptr
         UBOOL  bDone = FALSE;       // TRUE iff we're bDone
 
-        // Skip over leading space
+        // Skip over leading space(s)
         p = SkipWhite (lpCmdLine);
 
         // Loop until bDone
@@ -3979,6 +3979,9 @@ UBOOL ParseCommandLine
             case '-':           // ...
                 // Skip over the separator
                 p++;
+
+                // Skip over leading space(s)
+                p = SkipWhite (p);
 
                 // Test for various keywords
                 if (TestCmdLine (&p,
@@ -4022,6 +4025,7 @@ UBOOL ParseCommandLine
                                 &bDone,
                                 &bRet,
                                 &gAFOHshTabSize))
+                    break;
                 if (TestCmdLine (&p,
                                  "mfosymtabsize",
                                  MFO_SYMTABSIZE_MUL,
@@ -4051,6 +4055,17 @@ UBOOL ParseCommandLine
                                 &gGLBHshTabSize))
                     break;
 
+                if (p[0] EQ L'x')
+                {
+                    // Mark the workspace for )XLOAD
+                    gbCmdExecLX = FALSE;
+
+                    // Skip over the keyword
+                    p++;
+
+                    break;
+                } // End IF
+
                 bDone = TRUE;
                 bRet = FALSE;
                 MBW (L"Unknown command line argument.");
@@ -4063,6 +4078,9 @@ UBOOL ParseCommandLine
                 break;
 
             default:
+                // Skip over leading space(s)
+                p = SkipWhite (p);
+
                 // Copy to temporary buffer
                 A2W (wszTempDPFE, p, sizeof (wszTempDPFE));
 

@@ -1,0 +1,9 @@
+Build #2321 -- Version 0.5.14.xx
+--------------------------------
+
+* Use Separate Font For Displaying NaN in Customize Dialog
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  Use font "SImPL Medium" for diplaying NaNs in []IC in customize dialog as that font has that character.

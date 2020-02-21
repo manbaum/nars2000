@@ -372,7 +372,8 @@ INT_PTR CALLBACK CustomizeDlgProc
      LPARAM lParam)     // ...
 
 {
-    static HFONT        hFontCWS = NULL;        // Font for CLEARWS Values
+    static HFONT        hFontCWS = NULL,        // Font for CLEARWS Values
+                        hFontIC  = NULL;        // ...              []IC 2nd combobox for NaN
     static HWND         hWndGroupBox,           // Dialog GroupBox window handle
                         hWndDirsComboBox,       // Directories ComboBox window handle
                         hWndKeybComboBox,       // Keyboard Layout ComboBox window handle
@@ -705,6 +706,12 @@ INT_PTR CALLBACK CustomizeDlgProc
                         // Create a new HFONT from the changed LOGFONTW
                         hFontCWS = MyCreateFontIndirectW (&lf_CWS);
 
+                        // Use this font for the CB2 ComboBox as it has NaN in it natively
+                        lstrcpyW (&lf_CWS.lfFaceName[0], L"SImPL Medium");
+
+                        // Create a new HFONT from the changed LOGFONTW
+                        hFontIC  = MyCreateFontIndirectW (&lf_CWS);
+
                         // Set the font for each Edit Ctrl or ComboBox
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []ALX
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []CT
@@ -717,7 +724,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB2 ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []FEATURE
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FPC_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []FPC
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB1      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []IC
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB2      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []IC
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB2      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontIC , MAKELPARAM (FALSE, 0));  // []IC
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IO_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []IO
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LX_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []LX
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_MF_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []MF
@@ -5550,6 +5557,12 @@ INT_PTR CALLBACK CustomizeDlgProc
                 if (hFontCWS NE NULL)
                 {
                     MyDeleteObject (hFontCWS); hFontCWS = NULL;
+                } // End IF
+
+                // If it's still valid, ...
+                if (hFontIC  NE NULL)
+                {
+                    MyDeleteObject (hFontIC ); hFontIC  = NULL;
                 } // End IF
 
                 // Clear for next time

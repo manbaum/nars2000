@@ -1,0 +1,55 @@
+Build #2316 -- Version 0.6.2.xx
+-------------------------------
+
+* Move <math.h> From Individual Files To Global Header File
+
+Directory branches/bsmith/NanTypes:
+
+CONVERT.C:
+DISPLAY.C:
+DTOA.C:
+EDITFCN.C:
+FMTSPEC.C:
+FPCHO_COM.C:
+HC_PROC.C:
+HEADERS.H:
+INITDATA.C:
+MPCHO_COM.C:
+MPFNS.C:
+MPIFNS.C:
+PF_CIRCLE.C:
+PF_CSTAR.C:
+PF_DCARET.C:
+PF_DOTDOT.C:
+PF_DSTILE.C:
+PF_LCARET.C:
+PF_LCARETUND.C:
+PF_QDOT.C:
+PF_QUERY.C:
+PF_RCARET.C:
+PF_RCARETUND.C:
+PF_RHO.C:
+PF_ROOT.C:
+PF_STAR.C:
+PF_STILE.C:
+PF_TIMES.C:
+PF_UCARET.C:
+PF_USTILE.C:
+PF_UTACKJOT.C:
+PN_PARSE.Y:
+PN_PROC.C:
+PRIMFNS.C:
+QF_DC.C:
+QF_FMT.C:
+SORT.C:
+STATUSBAR.C:
+SYMTAB.C:
+TOKENIZE.C:
+TRANSLATE.C:
+TYPEMOTE.C:
+  Move <math.h> into <headers.h>
+
+Directory msieve:
+
+UTIL.H:
+  Comment out #define _USE_MATH_DEFINES to avoid later conflict.

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -119,6 +119,7 @@
 #define KEYNAME_OUTPUTDEBUG             L"OutputDebug"
 #define KEYNAME_OUTPUTEXCRLF            L"OutputExCRLF"
 #define KEYNAME_SHOWNETERRS             L"ShowNetErrs"
+#define KEYNAME_RADCTLMIDPREC           L"RadCtlMidPrec"
 
 #define KEYNAME_SC_GLBNAME              L"GlbName"
 #define KEYNAME_SC_LCLNAME              L"LclName"
@@ -724,6 +725,12 @@ UBOOL ReadIniFileGlb
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_SHOWNETERRS,   // Ptr to the key name
                              DEF_SHOWNETERRS,       // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bRadCtlMidPrec
+    OptionFlags.bRadCtlMidPrec =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_RADCTLMIDPREC, // Ptr to the key name
+                             DEF_RADCTLMIDPREC,     // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Read in bDisp0Imag
     OptionFlags.bDisp0Imag =
@@ -2532,6 +2539,16 @@ void SaveIniFile
     // Write out bShowNetErrs
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
                                 KEYNAME_SHOWNETERRS,        // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    //******************* bRadCtlMidPrec **********************
+    // Format bRadCtlMidPrec
+    wszTemp[0] = L'0' + OptionFlags.bRadCtlMidPrec;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bRadCtlMidPrec
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_RADCTLMIDPREC,      // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bDisp0Imag **************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #define STRICT
 #include <windows.h>
 #define _USE_MATH_DEFINES
-#include <math.h>
 #include "headers.h"
 #include "debug.h"              // For xxx_TEMP_OPEN macros
 
@@ -4902,6 +4901,60 @@ LPAPLCHAR FormatAplArbFC
         // Extract the Midpoint as a VFP number
         arf_get_mpfr2 (&aplMid, arb_midref (lpaplArb), prec);
 
+        // Extract the Radius as a VFP number
+        mag_get_mpfr  (&aplRad, arb_radref (lpaplArb), MPFR_RNDN);
+
+        // If we're displaying # signifcant digits, ...
+        if ((fltDispFmt EQ FLTDISPFMT_RAWINT
+          || fltDispFmt EQ FLTDISPFMT_RAWFLT)
+         && nDigits > 0
+         && OptionFlags.bRadCtlMidPrec)
+        {
+            APLVFP aplTmp = {0};            // Temp
+            double tmp;
+            int    nDigs, nDigsF, nDigsI;
+
+            // Initialize to NaN
+            mpfr_init  (&aplTmp);
+
+            // Calculate the base 10 log so as to count the maximum #
+            //   significant digits in the Midpoint
+            mpfr_log10    (&aplTmp, &aplRad, MPFR_RNDN);
+
+            // Extract the nearest double precision value
+            tmp = mpfr_get_d (&aplTmp, MPFR_RNDN);
+
+            // # fractional digits
+            nDigsF = -(int) (signumflt (tmp) * ceil (fabs (tmp)));
+
+            // Get the absolute value
+            mpfr_abs      (&aplTmp, &aplMid, MPFR_RNDN);
+
+            // Calculate the base 10 log so as to count the maximum #
+            //   significant digits in the Midpoint
+            mpfr_log10    (&aplTmp, &aplTmp, MPFR_RNDN);
+
+            // Extract the nearest double precision value
+            tmp = mpfr_get_d (&aplTmp, MPFR_RNDN);
+
+            // # integer digits
+            nDigsI = (int) (signumflt (tmp) * ceil (fabs (tmp)));
+
+            // Add in the # integer digits
+            nDigs = nDigsI + nDigsF;
+
+            // If it's not positive, ...
+            if (nDigs <= 0)
+                // No significant digits to speak of
+                nDigs = 1;
+
+            // Format the Midpoint to no more than this # significant digits
+            nDigits = min (nDigs, nDigits);
+
+            // We no longer need this storage
+            mpfr_clear (&aplTmp);
+        } // End IF
+
         // Format the Midpoint
         lpaplChar =
           FormatAplVfpFC (lpaplChar,        // Ptr to output save area
@@ -4918,9 +4971,6 @@ LPAPLCHAR FormatAplArbFC
                           FALSE);           // TRUE iff we're to precede the display with (FPCnnn)
         // We no longer need this storage
         mpfr_clear (&aplMid);
-
-        // Extract the Radius as a VFP number
-        mag_get_mpfr (&aplRad, arb_radref (lpaplArb), MPFR_RNDN);
 
         // If the Radius is non-zero or we're displaying all zeroes, ...
         if (!IsMpf0 (&aplRad)

@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 #define STRICT
 #include <windows.h>
 #define _USE_MATH_DEFINES
-#include <math.h>
 #include "headers.h"
 #include <gsl/gsl_sf_zeta.h>
 
@@ -1890,7 +1889,7 @@ void PN_actFLT_BA1F
      LPPNLOCALVARS lppnLocalVars)
 
 {
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Initialize to 0/0
     Myarb_init (&lpSrc->at.aplArb);
@@ -1912,7 +1911,7 @@ void PN_actFLT_BA2F
      LPPNLOCALVARS lppnLocalVars)
 
 {
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Initialize to 0/0
     arb2f_init (&lpSrc->at.aplBA2F);
@@ -1934,7 +1933,7 @@ void PN_actFLT_BA4F
      LPPNLOCALVARS lppnLocalVars)
 
 {
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Initialize to 0/0
     arb4f_init (&lpSrc->at.aplBA4F);
@@ -1956,7 +1955,7 @@ void PN_actFLT_BA8F
      LPPNLOCALVARS lppnLocalVars)
 
 {
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Initialize to 0/0
     arb8f_init (&lpSrc->at.aplBA8F);
@@ -1980,7 +1979,7 @@ void PN_actRAT_BA1F
 {
     APLRAT aplRat;
     fmpq_t fmpq;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the RAT as we overwrite it
     aplRat = lpSrc->at.aplRat;
@@ -2014,7 +2013,7 @@ void PN_actRAT_BA2F
 {
     APLRAT aplRat;
     fmpq_t fmpq;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the RAT as we overwrite it
     aplRat = lpSrc->at.aplRat;
@@ -2048,7 +2047,7 @@ void PN_actRAT_BA4F
 {
     APLRAT aplRat;
     fmpq_t fmpq;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the RAT as we overwrite it
     aplRat = lpSrc->at.aplRat;
@@ -2082,7 +2081,7 @@ void PN_actRAT_BA8F
 {
     APLRAT aplRat;
     fmpq_t fmpq;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the RAT as we overwrite it
     aplRat = lpSrc->at.aplRat;
@@ -2226,7 +2225,7 @@ void PN_actHC2I_BA2F
     APLRAT           aplRat = {0};
     fmpq_t           fmpq;
     int              i;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the HC2I as we overwrite it
     aplInt = lpSrc->at.aplHC2I;
@@ -2270,7 +2269,7 @@ void PN_actHC2I_BA4F
     APLRAT           aplRat = {0};
     fmpq_t           fmpq;
     int              i;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the HC2I as we overwrite it
     aplInt = lpSrc->at.aplHC2I;
@@ -2314,7 +2313,7 @@ void PN_actHC2I_BA8F
     APLRAT           aplRat = {0};
     fmpq_t           fmpq;
     int              i;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the HC2I as we overwrite it
     aplInt = lpSrc->at.aplHC2I;
@@ -2384,7 +2383,7 @@ void PN_actHC2R_BA2F
     APLHC2R          aplRat;
     fmpq_t           fmpq;
     int              i;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the HC2R as we overwrite it
     aplRat = lpSrc->at.aplHC2R;
@@ -2482,7 +2481,7 @@ void PN_actHC2R_BA4F
     APLHC2R          aplRat;
     fmpq_t           fmpq;
     int              i;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the HC2R as we overwrite it
     aplRat = lpSrc->at.aplHC2R;
@@ -2580,7 +2579,7 @@ void PN_actHC2R_BA8F
     APLHC2R          aplRat;
     fmpq_t           fmpq;
     int              i;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the HC2R as we overwrite it
     aplRat = lpSrc->at.aplHC2R;
@@ -2651,7 +2650,7 @@ void PN_actHC4R_BA4F
     APLHC4R          aplRat;
     fmpq_t           fmpq;
     int              i;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the HC4R as we overwrite it
     aplRat = lpSrc->at.aplHC4R;
@@ -2722,7 +2721,7 @@ void PN_actHC4R_BA8F
     APLHC4R          aplRat;
     fmpq_t           fmpq;
     int              i;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the HC4R as we overwrite it
     aplRat = lpSrc->at.aplHC4R;
@@ -2793,7 +2792,7 @@ void PN_actHC8R_BA8F
     APLHC8R          aplRat;
     fmpq_t           fmpq;
     int              i;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the HC8R as we overwrite it
     aplRat = lpSrc->at.aplHC8R;
@@ -2865,7 +2864,7 @@ void PN_actHC4I_BA4F
     APLRAT           aplRat = {0};
     fmpq_t           fmpq;
     int              i;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the HC4I as we overwrite it
     aplInt = lpSrc->at.aplHC4I;
@@ -2936,7 +2935,7 @@ void PN_actHC4I_BA8F
     APLRAT           aplRat = {0};
     fmpq_t           fmpq;
     int              i;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the HC4I as we overwrite it
     aplInt = lpSrc->at.aplHC4I;
@@ -3007,7 +3006,7 @@ void PN_actHC8I_BA8F
     APLRAT           aplRat = {0};
     fmpq_t           fmpq;
     int              i;
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Make a temp copy of the HC8I as we overwrite it
     aplInt = lpSrc->at.aplHC8I;
@@ -3435,7 +3434,7 @@ void PN_NumCalc
               uAcc;                     // Loop counter
     PNNUMTYPE chType;                   // The numeric type (see PNNUMTYPE)
     LPCHAR    lpszNumAccum;             // Ptr to next byte
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // If there's been a YYERROR, ...
     if (lppnLocalVars->bYYERROR)
@@ -4301,7 +4300,7 @@ UBOOL PN_MakeBasePointSub
     PN_YYSTYPE pnBase;                  // Local copy of <lpYYBase>
     int        i,                       // Loop counter
                iHCDim;                  // HC Dimension (1, 2, 4, 8)
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Copy the arg in case we promote
     pnBase = *lpYYBase;
@@ -5593,7 +5592,7 @@ LPPN_YYSTYPE PN_MakeExpPoint
     LPCHAR         lpszNumAccum;        // Ptr to next byte
     int            iHCDim,              // HC Dimension (1, 2, 4, 8)
                    i;                   // Loop counter
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // Initialize the starting offset
     uNumAcc = lpYYArg->uNumAcc;
@@ -5845,7 +5844,7 @@ LPPN_YYSTYPE PN_MakeGammaPoint
         case PN_NUMTYPE_ARB:
         {
             APLARB aplArbTmp = {0};
-            mp_limb_signed_t prec = ARB_PREC_FPC;
+            mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
             // Initialize the temp array to 0/0
             Myarb_init (&aplArbTmp);
@@ -6012,6 +6011,7 @@ LPPN_YYSTYPE PN_MakeZetaPoint
     PNNUMTYPE pnTypeRes;                // Result type
     ALLTYPES  atArg = {0},              // Argument as ALLTYPES
               atMul = {0};              // Multiplier ...
+    mp_limb_signed_t prec;
 
     // If there's been a YYERROR, ...
     if (lppnLocalVars->bYYERROR)
@@ -6054,6 +6054,10 @@ LPPN_YYSTYPE PN_MakeZetaPoint
     // Set the result type
     lpYYMultiplier->chType =
     lpYYArgument->chType   = pnTypeRes;
+
+    // If it's an BAxF, ...
+    if (IsAnyArb (TranslateNumTypeToArrayType (pnTypeRes)))
+        prec = ARB_PREC_FPC;
 
     // Split cases based upon the numeric type
     switch (pnTypeRes)
@@ -6226,9 +6230,7 @@ LPPN_YYSTYPE PN_MakeZetaPoint
 
         case PN_NUMTYPE_ARB:
         {
-            mp_limb_signed_t prec = ARB_PREC_FPC;
-
-            arb2f_init (&atArg.aplBA2F);
+            arb1f_init (&atArg.aplBA1F);
 
             // If the argument is 1, ...
             if (IsArb1 (&lpYYArgument->at.aplBA1F))
@@ -6239,14 +6241,14 @@ LPPN_YYSTYPE PN_MakeZetaPoint
                 arb_zeta (&atArg.aplBA1F, &lpYYArgument->at.aplBA1F, prec);
 
             // The result is Multiplier x Zeta (Argument)
-            atMul.aplBA2F = MulBA2F_RE (lpYYMultiplier->at.aplBA2F, atArg.aplBA2F);
+            atMul.aplBA1F = MulBA1F_RE (lpYYMultiplier->at.aplBA1F, atArg.aplBA1F);
 
             // Save in the result
-            arb2f_set (&lpYYMultiplier->at.aplBA2F, &atMul.aplBA2F);
+            arb1f_set (&lpYYMultiplier->at.aplBA1F, &atMul.aplBA1F);
 
             // We no longer need this storage
-            arb2f_clear (&atMul.aplBA2F);
-            arb2f_clear (&atArg.aplBA2F);
+            arb1f_clear (&atMul.aplBA1F);
+            arb1f_clear (&atArg.aplBA1F);
 
             break;
         } // End PN_NUMTYPE_ARB
@@ -6257,14 +6259,12 @@ LPPN_YYSTYPE PN_MakeZetaPoint
 ////        if (IzitImaginary (TranslateNumTypeToArrayType (pnTypeRes), &lpYYArgument->at.aplBA8F))
 ////            goto NONCE_EXIT;
 ////
-            mp_limb_signed_t prec = ARB_PREC_FPC;
-
             arb2f_init (&atArg.aplBA2F);
 
-            // If the argument is 1, ...
-            if (IsArb1 (&lpYYArgument->at.aplBA2F.parts[2])
-             && IsArb0 (&lpYYArgument->at.aplBA2F.parts[0]))
-                // Set the Zeta (1) value to {infinity}
+            // If the argument is 1i0, ...
+            if (IsArb1 (&lpYYArgument->at.aplBA2F.parts[0])
+             && IsArb0 (&lpYYArgument->at.aplBA2F.parts[1]))
+                // Set the Zeta (1i0) value to {infinity}
                 arb_pos_inf (acb_realref ((acb_ptr) &atArg.aplBA2F));
             else
                 // Calculate Zeta (Argument)
@@ -6288,8 +6288,6 @@ LPPN_YYSTYPE PN_MakeZetaPoint
             // If any of the high-order imaginary parts are non-zero, ...
             if (IzitImaginary (ARRAY_BA2F, &lpYYArgument->at.aplBA8F.partsHi))
                 goto NONCE_EXIT;
-
-            mp_limb_signed_t prec = ARB_PREC_FPC;
 
             arb4f_init (&atArg.aplBA4F);
 
@@ -6321,8 +6319,6 @@ LPPN_YYSTYPE PN_MakeZetaPoint
             if (IzitImaginary (ARRAY_BA2F, &lpYYArgument->at.aplBA8F.partsLo.partsHi)
              || IzitImaginary (ARRAY_BA4F, &lpYYArgument->at.aplBA8F.partsHi))
                 goto NONCE_EXIT;
-
-            mp_limb_signed_t prec = ARB_PREC_FPC;
 
             arb8f_init (&atArg.aplBA8F);
 
@@ -6728,13 +6724,13 @@ LPPN_YYSTYPE PN_MakeArbPoint
      LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
-    PNNUMTYPE        pnTypeRes;         // Result type
-    APLVFP           aplVfpMid = {0},   // Midpoint as VFP
-                     aplVfpRad = {0};   // Radius   ...
-    LPCHAR           lpFltStr;          // Ptr to FLT string
-    int              iHCDimRes,         // HC Dimension (1, 2, 4, 8)
-                     i;                 // Loop counter
-    mp_limb_signed_t prec = ARB_PREC_FPC;
+    PNNUMTYPE        pnTypeRes;             // Result type
+    APLVFP           aplVfpMid = {0},       // Midpoint as VFP
+                     aplVfpRad = {0};       // Radius   ...
+    LPCHAR           lpFltStr;              // Ptr to FLT string
+    int              iHCDimRes,             // HC Dimension (1, 2, 4, 8)
+                     i;                     // Loop counter
+    mp_limb_signed_t prec = ARB_PREC_FPC;   // Precision
 
     // If there's been a YYERROR, ...
     if (lppnLocalVars->bYYERROR)

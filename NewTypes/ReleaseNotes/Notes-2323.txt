@@ -1,0 +1,24 @@
+Build #2323 -- Version 0.5.14.xx
+--------------------------------
+
+* Change The Default Range Limit For []CT To FALSE
+* Update Contributors And License Agreement Text
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  Update the copyright year.
+
+DEFINES.H:
+  Change the default Range Limit for []CT to FALSE so that too large values (e.g., 1E-9) are caught.
+
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+CONTRIBUTORS-BODY.AHTML:
+  Include link to David M. Gay's DTOA code.
+  Thank Laurent Fousse for the use of his CRQ software for integration.
+  Thank Ishtaiq Rasool and Ryoji Ohba for the use of their differentiation algorithm.
+
+LICENSE-BODY.HTML:
+  Point to the license agreement of Laurent Fousse's CRQ software.

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -211,7 +211,7 @@
 
 
 // Range limits for []vars
-#define DEF_RANGELIMIT_CT           TRUE
+#define DEF_RANGELIMIT_CT           FALSE
 #define DEF_RANGELIMIT_FEATURE      TRUE
 #define DEF_RANGELIMIT_FPC          TRUE
 #define DEF_RANGELIMIT_IC           TRUE

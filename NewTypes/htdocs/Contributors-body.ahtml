@@ -45,7 +45,7 @@ Contributors</h1>
       couldn't get the one in Windows to do what I wanted.</li>
 
     <li>David M. Gay's <a class="linkleft" href="http://www.netlib.org/fp/">Numeric input/output conversion</a>
-      routines were invaluable for full numeric precision conversion (good to the last ULP!).</li>
+      routines were invaluable for full numeric precision <a class="pdfleft" href="https://ampl.com/REFS/rounding.pdf">conversion</a> (good to the last ULP!).</li>
 
     <li>Bob Bernecky's <a class="linkleft" href="http://www.snakeisland.com/apexup.htm">APEX project</a>
       contributed many test cases of APL code through which numerous bugs in NARS were found.</li>
@@ -85,11 +85,12 @@ Contributors</h1>
       implement the Factorial and Binomial primitive functions on multiple-precision Hypercomplex arguments.</li>
 
     <li>Donald E. Knuth contributed many excellent Combinatorial Algorithms to the Combinatorial Operator through his "The Art of Computer Programming",
-      Volume 4A, "Combinatorial Algorithms", Addison Wesley, 2011.
-    </li>
+      Volume 4A, "Combinatorial Algorithms", Addison Wesley, 2011.</li>
     
-    <li>The user who goes by the name <b>urrfinjuss</b> contributed the <a class="linkleft" href="https://github.com/urrfinjuss/mpfft">MPFFT</a> library.
-    </li>
+    <li>The user who goes by the name <b>urrfinjuss</b> contributed the <a class="linkleft" href="https://github.com/urrfinjuss/mpfft">MPFFT</a> library.</li>
+    
+    <li>Laurent Fousse contributed his <a class="linkleft" href="https://github.com/lfousse/crq">Numerical Integration</a> code as documented 
+      <a class="pdfleft" href="https://tel.archives-ouvertes.fr/tel-00477243/document">here</a>.</li>
   </ul>
 </div>
 
@@ -144,6 +145,9 @@ Contributors</h1>
       was taken from the designers of <a class="linkleft" href="http://www.jsoftware.com/help/dictionary/dictf.htm">J</a>.</li>
 
     <li>The idea for grouping of rows in width-limited output came from Larry Breed in a private communication sometime in the early 1980s.</li>
+
+    <li>The algorithm for Numerical Differentiation came from a series of papers by Ishtiaq Rasool Khan and Ryoji Ohba, principally in 
+      <a class="pdfleft" href="https://www.sciencedirect.com/science/article/pii/S0377042702008166">this paper</a>.</li>
 
     <li>This project benefited greatly by discussions (across several decades) with some
       of the many great APL implementors and language designers who went

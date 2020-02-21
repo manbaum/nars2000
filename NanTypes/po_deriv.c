@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,54 +23,8 @@
 #define STRICT
 #include <windows.h>
 #include <gsl/gsl_errno.h>
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_deriv.h>
 
 #include "headers.h"
-
-typedef int (*GSL_DERIV)
-    (const gsl_function *f,
-     double x, double h,
-     double *result, double *abserr);
-
-typedef int (*MPFR_DERIV)
-    (const gsl_function_vfp *f,
-     LPAPLVFP                x,
-     LPAPLVFP                h,
-     LPAPLVFP                result,
-     LPAPLVFP                abserr);
-
-typedef int (*MPFR_DERIV_CALC)
-    (const gsl_function_vfp *f,
-     LPAPLVFP                x,
-     LPAPLVFP                h,
-     LPAPLVFP                result,
-     LPAPLVFP                abserr_round,
-     LPAPLVFP                abserr_trunc);
-
-typedef int (*ARB_DERIV)
-    (const gsl_function_arb *f,
-     LPAPLARB                x,
-     LPAPLARB                h,
-     LPAPLARB                result,
-     LPAPLARB                abserr);
-
-typedef int (*ARB_DERIV_CALC)
-    (const gsl_function_arb *f,
-     LPAPLARB                x,
-     LPAPLARB                h,
-     LPAPLARB                result,
-     LPAPLARB                abserr_round,
-     LPAPLARB                abserr_trunc);
-
-typedef struct tagLCLPARAMS
-{
-    LPTOKEN         lptkLftArg;
-    LPPL_YYSTYPE    lpYYFcnStrLft;
-    LPUBOOL         lpbCtrlBreak;
-    BOOL            bInitPTD;
-    EXCEPTION_CODES exCode;        /* Exception code from lclFuncXXX */
-} LCL_PARAMS, *LPLCL_PARAMS;
 
 
 //***************************************************************************
@@ -204,10 +158,11 @@ LPPL_YYSTYPE PrimOpDerivNewCentral_EM_YY
     APLVFP            aplVfpRht = {0};  // The argument to the function
     APLFLOAT          aplFltRht;        // The argument to the function
     double            resultFlt;        // The FP result
+#ifdef DEBUG
     double            abserrFlt;        // Absolute error
+#endif
     APLSTYPE          aplTypeRes;       // The result storage type
     LPPLLOCALVARS     lpplLocalVars;    // Ptr to re-entrant vars
-    EXCEPTION_CODES   exCode;           // Exception code from lclfuncXXX
 
     // Check for axis operator
     lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
@@ -335,7 +290,6 @@ LPPL_YYSTYPE PrimOpDerivNewCentral_EM_YY
     // Fill in the common function parameters
     params.lptkLftArg    =  lptkLftArg;
     params.lpbCtrlBreak  = &lpplLocalVars->bCtrlBreak;
-    params.lpYYFcnStrLft =  lpYYFcnNext;
     params.bInitPTD      =  FALSE;
     params.exCode        =  EXCEPTION_SUCCESS;
 
@@ -455,7 +409,11 @@ LPPL_YYSTYPE PrimOpDerivNewCentral_EM_YY
                     (&F,                // Ptr to the function to differentiate
                       aplFltRht,        // The argument to the function to diff
                      &resultFlt,        // The result
-                     &abserrFlt,        // &abserrFlt,        // Absolute error (may be NULL)
+#ifdef DEBUG
+                     &abserrFlt,        // Absolute error (may be NULL)
+#else
+                      NULL,             // &abserrFlt,        // Absolute error (may be NULL)
+#endif
                       iDegree,          // Degree of derivative (1st, 2nd, etc.)
                       iOrder,           // Sample size (0 = use default)
                       iSFE);            // Sampling Frequency Exponent (0 = use default)
@@ -466,10 +424,7 @@ LPPL_YYSTYPE PrimOpDerivNewCentral_EM_YY
                     // If the lclFuncXXX code is success, ...
                     if (params.exCode EQ EXCEPTION_SUCCESS)
                         // Set the exception code
-                        exCode = EXCEPTION_DOMAIN_ERROR;
-                    else
-                        // Copy the exception code
-                        exCode = params.exCode;
+                        params.exCode = EXCEPTION_DOMAIN_ERROR;
 
                     // Mark as signalling an exception
                     bException = TRUE;
@@ -506,9 +461,9 @@ LPPL_YYSTYPE PrimOpDerivNewCentral_EM_YY
         } // End SWITCH
     } __except (CheckException (GetExceptionInformation (), WFCN))
     {
-        exCode = MyGetExceptionCode ();
+        params.exCode = MyGetExceptionCode ();
 
-        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", exCode, FNLN);
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", params.exCode, FNLN);
 
         // Mark as signalling an exception
         bException = TRUE;
@@ -518,7 +473,7 @@ EXCEPTION_START:
     // If lclfuncXXX found an exception, ...
     if (bException)
     // Split cases based upon the ExceptionCode
-    switch (exCode)
+    switch (params.exCode)
     {
         case EXCEPTION_LENGTH_ERROR:
             MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -718,7 +673,6 @@ LPPL_YYSTYPE PrimOpDerivGSLCommon_EM_YY
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
     LCL_PARAMS        params = {0};         // Local parameters
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
-    EXCEPTION_CODES   exCode;               // Exception code from lclfuncXXX
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -885,10 +839,7 @@ LPPL_YYSTYPE PrimOpDerivGSLCommon_EM_YY
                     // If the lclFuncXXX code is success, ...
                     if (params.exCode EQ EXCEPTION_SUCCESS)
                         // Set the exception code
-                        exCode = EXCEPTION_DOMAIN_ERROR;
-                    else
-                        // Copy the exception code
-                        exCode = params.exCode;
+                        params.exCode = EXCEPTION_DOMAIN_ERROR;
 
                     // Mark as signalling an exception
                     bException = TRUE;
@@ -919,9 +870,6 @@ LPPL_YYSTYPE PrimOpDerivGSLCommon_EM_YY
                 // Check for error
                 if (params.exCode NE EXCEPTION_SUCCESS)
                 {
-                    // Copy the exception code
-                    exCode = params.exCode;
-
                     // Mark as signalling an exception
                     bException = TRUE;
 
@@ -951,8 +899,6 @@ LPPL_YYSTYPE PrimOpDerivGSLCommon_EM_YY
                 // Check for error
                 if (params.exCode NE EXCEPTION_SUCCESS)
                 {
-                    // Copy the exception code
-                    exCode = params.exCode;
 
                     // Mark as signalling an exception
                     bException = TRUE;
@@ -967,9 +913,9 @@ LPPL_YYSTYPE PrimOpDerivGSLCommon_EM_YY
         } // End SWITCH
     } __except (CheckException (GetExceptionInformation (), WFCN))
     {
-        exCode = MyGetExceptionCode ();
+        params.exCode = MyGetExceptionCode ();
 
-        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", exCode, FNLN);
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", params.exCode, FNLN);
 
         // Mark as signalling an exception
         bException = TRUE;
@@ -979,7 +925,7 @@ EXCEPTION_START:
     // If lclfuncXXX found an exception, ...
     if (bException)
     // Split cases based upon the ExceptionCode
-    switch (exCode)
+    switch (params.exCode)
     {
         case EXCEPTION_LENGTH_ERROR:
             goto LENGTH_EXIT;

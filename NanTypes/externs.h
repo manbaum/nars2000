@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1814,7 +1814,8 @@ typedef struct tagOPTIONFLAGS
          bDispInfix          :1,    // 08000000:  ...      Display CHO numbers using infix notation
          bDispOctoDig        :1,    // 10000000:  ...      Display Octonions using Digraphs
          bShowNetErrs:1,     :1,    // 20000000:  ...      Show Network Errors is enabled
-                             :2;    // C00000000:  Available bits
+         bRadCtlMidPrec:1,   :1,    // 40000000:  ...      Radius controls Midpoint precision
+                             :1;    // 80000000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1848,6 +1849,7 @@ OPTIONFLAGS OptionFlags
     DEF_DISPINFIX,
     DEF_DISPOCTODIG,
     DEF_SHOWNETERRS,
+    DEF_RADCTLMIDPREC,
    }
 #endif
 ;
@@ -2812,6 +2814,21 @@ LPWCHAR aWsFeatureText[ENUM_FEATURE_LENGTH]
 
 #define ENUMS_DEFINED
 #undef  EXTERN
+
+
+//***************************************************************************
+//  Derivative and Integration structs
+//***************************************************************************
+
+typedef struct tagLCLPARAMS
+{
+    LPTOKEN         lptkLftArg;     // The left arg (NULL if none)
+    LPPL_YYSTYPE    lpYYFcnStrLft;  // Ptr to the left operand
+    LPUBOOL         lpbCtrlBreak;   // Ptr to the Ctrl-Break flag
+    BOOL            bInitPTD;       // TRUE iff the PTD for MPs is initialized
+    EXCEPTION_CODES exCode;         // Exception code from lclFuncXXX
+    mpfr_prec_t     oldPrec;        // Save area for the old MPFR precision
+} LCL_PARAMS, *LPLCL_PARAMS;
 
 
 //***************************************************************************

@@ -1,6 +1,22 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2318 -- Version 0.6.2.xx
+-------------------------------
+
+* Move Common Typedefs To Common Header File
+
+Directory branches/bsmith/NanTypes:
+
+EXTERNS.H:
+PO_DERIV.C:
+PO_DERIV.H:
+PO_DERIV_ARB.C:
+PO_DERIV_FLT.C:
+PO_DERIV_VFP.C:
+  Move common Typedefs to common header file.
+
+
 Build #2316 -- Version 0.6.2.xx
 -------------------------------
 

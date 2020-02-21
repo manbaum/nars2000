@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -331,14 +331,15 @@
 #define IDC_USER_PREFS_XB_OUTPUTDEBUG           1113
 #define IDC_USER_PREFS_XB_OUTPUTEXCRLF          1114
 #define IDC_USER_PREFS_XB_SHOWNETERRS           1115
-#define IDC_USER_PREFS_CB_DEFAULTPASTE          1116
-#define IDC_USER_PREFS_CB_DEFAULTCOPY           1117
-#define IDC_USER_PREFS_CB_UPDFRQ                1118
+#define IDC_USER_PREFS_XB_RADCTLMIDPREC         1116
+#define IDC_USER_PREFS_CB_DEFAULTPASTE          1117
+#define IDC_USER_PREFS_CB_DEFAULTCOPY           1118
+#define IDC_USER_PREFS_CB_UPDFRQ                1119
 
-#define IDC_USER_PREFS_EC_UNICODE               1120
-#define IDC_USER_PREFS_BN_UNICODE               1121
-#define IDC_USER_PREFS_RB_DEC                   1122
-#define IDC_USER_PREFS_RB_HEX                   1123
+#define IDC_USER_PREFS_EC_UNICODE               1150
+#define IDC_USER_PREFS_BN_UNICODE               1151
+#define IDC_USER_PREFS_RB_DEC                   1152
+#define IDC_USER_PREFS_RB_HEX                   1153
 
 #define IDC_HC_PREFS_XB_DISP0IMAG               1200
 #define IDC_HC_PREFS_XB_DISPINFIX               1201

@@ -1,6 +1,24 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2322 -- Version 0.6.2.xx
+-------------------------------
+
+* Use Separate Font For Displaying NaN in Customize Dialog
+* Define New Checkbox To Control Whether Or Not The Ball Radius Controls The Precision Of The Midpoint
+
+Directory branches/bsmith/NanTypes:
+
+CUSTOMIZE.C:
+  Use font "SImPL Medium" for displaying NaNs in []IC in customize dialog as that font has that character.
+  Define new checkbox in "User Preferences" to control whether or not the Ball Radius controls the precision of the Midpoint.
+
+DEFINES.H:
+MAIN.RC:
+RESOURCE.H:
+  Define new checkbox in "User Preferences" to control whether or not the Ball Radius controls the precision of the Midpoint.
+
+
 Build #2320 -- Version 0.6.2.xx
 -------------------------------
 

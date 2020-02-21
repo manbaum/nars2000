@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,24 +23,9 @@
 #define STRICT
 #include <windows.h>
 #include <gsl/gsl_errno.h>
-#include <gsl/gsl_math.h>
 #include <gsl/gsl_deriv.h>
 
 #include "headers.h"
-
-typedef int (*GSL_DERIV)
-    (const gsl_function *f,
-     double x, double h,
-     double *result, double *abserr);
-
-typedef struct tagLCLPARAMS
-{
-    LPTOKEN         lptkLftArg;
-    LPPL_YYSTYPE    lpYYFcnStrLft;
-    LPUBOOL         lpbCtrlBreak;
-    BOOL            bInitPTD;
-    EXCEPTION_CODES exCode;        /* Exception code from lclFuncXXX */
-} LCL_PARAMS, *LPLCL_PARAMS;
 
 
 //***************************************************************************

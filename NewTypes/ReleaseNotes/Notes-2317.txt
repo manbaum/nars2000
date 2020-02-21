@@ -1,0 +1,13 @@
+Build #2317 -- Version 0.5.14.xx
+--------------------------------
+
+* Move Common Typedefs To Common Header File
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+PO_DERIV.C:
+PO_DERIV.H:
+PO_DERIV_FLT.C:
+PO_DERIV_VFP.C:
+  Move common Typedefs to common header file.

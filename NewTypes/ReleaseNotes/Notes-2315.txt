@@ -1,7 +1,7 @@
 Build #2315 -- Version 0.5.14.xx
 --------------------------------
 
-* Move <math.h> From Individual Files To Global Header Fiole
+* Move <math.h> From Individual Files To Global Header File
 
 Directory branches/bsmith/NewTypes:
 
@@ -52,4 +52,4 @@ TYPEMOTE.C:
 Directory msieve:
 
 UTIL.H:
-  Comment out #define _USE_MATH_DEFINES to avoid later ocnflict.
+  Comment out #define _USE_MATH_DEFINES to avoid later conflict.

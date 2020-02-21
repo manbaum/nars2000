@@ -1,10 +1,25 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2317 -- Version 0.5.14.xx
+--------------------------------
+
+* Move Common Typedefs To Common Header File
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+PO_DERIV.C:
+PO_DERIV.H:
+PO_DERIV_FLT.C:
+PO_DERIV_VFP.C:
+  Move common Typedefs to common header file.
+
+
 Build #2315 -- Version 0.5.14.xx
 --------------------------------
 
-* Move <math.h> From Individual Files To Global Header Fiole
+* Move <math.h> From Individual Files To Global Header File
 
 Directory branches/bsmith/NewTypes:
 
@@ -55,7 +70,7 @@ TYPEMOTE.C:
 Directory msieve:
 
 UTIL.H:
-  Comment out #define _USE_MATH_DEFINES to avoid later ocnflict.
+  Comment out #define _USE_MATH_DEFINES to avoid later conflict.
 
 
 Build #2313 -- Version 0.5.14.xx

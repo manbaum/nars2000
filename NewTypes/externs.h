@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2738,6 +2738,21 @@ LPWCHAR aWsFeatureText[ENUM_FEATURE_LENGTH]
 
 #define ENUMS_DEFINED
 #undef  EXTERN
+
+
+//***************************************************************************
+//  Derivative and Integration structs
+//***************************************************************************
+
+typedef struct tagLCLPARAMS
+{
+    LPTOKEN         lptkLftArg;     // The left arg (NULL if none)
+    LPPL_YYSTYPE    lpYYFcnStrLft;  // Ptr to the left operand
+    LPUBOOL         lpbCtrlBreak;   // Ptr to the Ctrl-Break flag
+    BOOL            bInitPTD;       // TRUE iff the PTD for MPs is initialized
+    EXCEPTION_CODES exCode;         // Exception code from lclFuncXXX
+    mpfr_prec_t     oldPrec;        // Save area for the old MPFR precision
+} LCL_PARAMS, *LPLCL_PARAMS;
 
 
 //***************************************************************************

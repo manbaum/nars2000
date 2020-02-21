@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
+
+
+#include <gsl/gsl_deriv.h>
 
 
 //***************************************************************************
@@ -41,6 +44,26 @@ struct gsl_function_vfp_struct
 typedef struct gsl_function_vfp_struct gsl_function_vfp ;
 
 #define GSL_FN_VFP_EVAL(F,x) (*((F)->function))(x,(F)->params)
+
+typedef int (*GSL_DERIV)
+    (const gsl_function *f,
+     double x, double h,
+     double *result, double *abserr);
+
+typedef int (*MPFR_DERIV)
+    (const gsl_function_vfp *f,
+     LPAPLVFP                x,
+     LPAPLVFP                h,
+     LPAPLVFP                result,
+     LPAPLVFP                abserr);
+
+typedef int (*MPFR_DERIV_CALC)
+    (const gsl_function_vfp *f,
+     LPAPLVFP                x,
+     LPAPLVFP                h,
+     LPAPLVFP                result,
+     LPAPLVFP                abserr_round,
+     LPAPLVFP                abserr_trunc);
 
 
 //***************************************************************************

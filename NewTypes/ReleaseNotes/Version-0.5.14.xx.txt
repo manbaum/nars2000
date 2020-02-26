@@ -1,6 +1,17 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2331 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix Bug In Wrapped Line Display
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Fix bug in wrapped line display where the first wrapped line may display part of the previous line.
+
+
 Build #2329 -- Version 0.5.14.xx
 --------------------------------
 

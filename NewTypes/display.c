@@ -5348,6 +5348,7 @@ UBOOL DisplayGlbVector
     APLUINT   uCnt,                 // Loop counter
               uIniPos,              // Initial position
               uCurPos,              // Current ...
+              uOffPos,              // Offset  ...
               uMaxPos;              // Maximum ...
     IMM_TYPES immType;              // Immediate type
     WCHAR     wc;                   // Temp var
@@ -5369,6 +5370,7 @@ UBOOL DisplayGlbVector
     lpaplChar = lpaplCharIni;
     uCurPos   =
     uIniPos   =
+    uOffPos   =
     uMaxPos   = 0;
 
     // Split cases based upon the storage type
@@ -5412,7 +5414,7 @@ UBOOL DisplayGlbVector
                 } // End FOR
 
                 // Ensure properly terminated at the maximum width
-                lpaplCharIni[uMaxPos] = WC_EOS;
+                lpaplCharIni[uMaxPos - uOffPos] = WC_EOS;
 
                 // Account for it
                 aplDimNCols -= uCnt;
@@ -5425,7 +5427,7 @@ UBOOL DisplayGlbVector
 
                 // Set 2nd and subsequent copy length & initial positions
 ////////////////uCopyLen = (APLU3264) uQuadPW - DEF_INDENT;
-                uIniPos = uCurPos = uMaxPos = DEF_INDENT;
+                uIniPos = uCurPos = uMaxPos = uOffPos = DEF_INDENT;
 
                 // If there's more to display, ...
                 if (aplDimNCols NE 0)

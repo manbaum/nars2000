@@ -1,0 +1,13 @@
+Build #2327 -- Version 0.5.14.xx
+--------------------------------
+
+* Change GCD_CT Comparison Value To 1E-15
+* Make RAT Comparisons Exact
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+  Define RAT_EXACT so as to make RAT comparisons exact (not dependent on []CT).
+
+SYSVARS.H:
+  Change GCD_CT comparison value to 1E-15 so that more GCDs work as expected (still a bad idea).

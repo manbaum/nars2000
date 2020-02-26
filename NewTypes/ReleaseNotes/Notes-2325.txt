@@ -1,7 +1,7 @@
 Build #2325 -- Version 0.5.14.xx
 --------------------------------
 
-* Fix Bug In DEBUG Screeen
+* Fix Bug In DEBUG Screen
 
 Directory branches/bsmith/NewTypes:
 

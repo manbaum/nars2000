@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -795,8 +795,6 @@ LRESULT WINAPI LclListboxWndProc
                     for (p = lpSel, i = 0; i < iSelCnt; i++)
                     {
                         p += (UINT) SendMessageW (hWnd, LB_GETTEXT, lpMemInd[i], (LPARAM) p);
-                        *p++ = WC_CR;
-                        *p++ = WC_LF;
                     } // End FOR
 
                     // We no longer need this ptr

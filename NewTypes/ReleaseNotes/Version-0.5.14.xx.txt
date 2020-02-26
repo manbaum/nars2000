@@ -1,6 +1,19 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2329 -- Version 0.5.14.xx
+--------------------------------
+
+* Remove Vestiges Of UTF16_DELTA As UTF16_DERIV
+
+Directory branches/bsmith/NewTypes:
+
+AFOFNS.C:
+QF_NC.C:
+TOKENIZE.C:
+  Remove vestiges of UTF16_DELTA as UTF16_DERIV.
+
+
 Build #2327 -- Version 0.5.14.xx
 --------------------------------
 

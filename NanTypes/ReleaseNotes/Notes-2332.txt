@@ -1,0 +1,9 @@
+Build #2332 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug In Wrapped Line Display
+
+Directory branches/bsmith/NanTypes:
+
+DISPLAY.C:
+  Fix bug in wrapped line display where the first wrapped line may display part of the previous line.

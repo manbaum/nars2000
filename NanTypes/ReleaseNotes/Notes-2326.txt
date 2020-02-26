@@ -1,7 +1,7 @@
 Build #2326 -- Version 0.6.2.xx
 -------------------------------
 
-* Fix Bug In DEBUG Screeen
+* Fix Bug In DEBUG Screen
 
 Directory branches/bsmith/NanTypes:
 

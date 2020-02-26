@@ -780,7 +780,7 @@ default:        \
 
 // Define the following symbol iff comparison of two RATs is meant to be exact
 //   as opposed to sensitive to []CT.
-////#define RAT_EXACT
+#define RAT_EXACT
 
 
 //***************************************************************************

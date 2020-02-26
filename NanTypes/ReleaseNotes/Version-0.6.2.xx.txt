@@ -1,6 +1,17 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2326 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug In DEBUG Screeen
+
+Directory branches/bsmith/NanTypes:
+
+DEBUG.C:
+  When copying text from the DEBUG screen, do not append CR/LF as the line already ends with that.
+
+
 Build #2324 -- Version 0.6.2.xx
 -------------------------------
 

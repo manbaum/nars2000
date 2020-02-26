@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -375,10 +375,8 @@ UBOOL IsValid1stCharInName
 {
     return (wch NE WC_EOS
          && (FALSE
-#if UTF16_DERIV != UTF16_DELTA
           || wch EQ UTF16_DELTA
           || wch EQ UTF16_DELTAUNDERBAR
-#endif
           || wch EQ UTF16_UNDERBAR
           || strchrW (WQUADa, wch) NE NULL
           || strchrW (WQUADA, wch) NE NULL

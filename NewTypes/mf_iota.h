@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ MAGIC_FCNOPR MFO_MonIota =
 
 static LPAPLCHAR DydBody[] =
 {L""S L"O←⎕IO ⋄ ⎕IO←0",
- L":if 0=⍴⍴"S L"L ⋄ Z←(⍴"S L"R)⍴⊂⍬",
+ L":if 0=⍴⍴"S L"L ⋄ "S L"Z←(⍴"S L"R)⍴⊂⍬",
  L":else",
  L"  "S L"Z←(0,⍴"S L"L)⊤(,"S L"L)⍳"S L"R",
  L"  "S L"A←⍸1=0⌷[0] "S L"Z",

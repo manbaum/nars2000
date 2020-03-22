@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -66,16 +66,16 @@ LPWCHAR lpwOp2ValHdr[FCNVALENCE_LENGTH] =
 
 
 //***************************************************************************
-//  $SaveFunction
+//  $SaveFunctionFE
 //
-//  Attempt to save a function to the WS
+//  Attempt to save a function in an EditCtrl to the WS
 //***************************************************************************
 
-UBOOL SaveFunction
+UBOOL SaveFunctionFE
     (HWND hWndFE)                   // Function Editor window handle
 
 {
-    SF_FCNS      SF_Fcns = {0};     // SaveFunction local vars
+    SF_FCNS      SF_Fcns = {0};     // SaveFunctionCom local vars
     HGLOBAL      hGlbDfnHdr;        // User-defined function/operator header global memory handle
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
     LW_PARAMS    LW_Params = {0};   // Local  ...
@@ -115,11 +115,10 @@ UBOOL SaveFunction
 
     // Fill in common values
     SF_Fcns.bDisplayErr     = TRUE;                 // Display Errors
-////SF_Fcns.bAFO            = FALSE;                // Parsing an AFO (already zero from = {0})
+////SF_Fcns.bAFO            = FALSE;                // TRUE iff parsing an AFO (set above)
     SF_Fcns.SF_LineLen      = SF_LineLenFE;         // Ptr to line length function
     SF_Fcns.SF_ReadLine     = SF_ReadLineFE;        // Ptr to read line function
     SF_Fcns.SF_IsLineCont   = SF_IsLineContFE;      // Ptr to Is Line Continued function
-    SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesFE;     // Ptr to get # physical lines in the function
     SF_Fcns.SF_NumLogLines  = SF_NumLogLinesFE;     // Ptr to get # logical  ...
     SF_Fcns.SF_CreationTime = SF_CreationTimeCom;   // Ptr to get function creation time
     SF_Fcns.SF_LastModTime  = SF_LastModTimeCom;    // Ptr to get function last modification time
@@ -130,7 +129,7 @@ UBOOL SaveFunction
     // Call common routine
     return SaveFunctionCom (hWndFE,                 // Function Edit window handle (not-[]FX only)
                            &SF_Fcns);               // Ptr to common values
-} // End SaveFunction
+} // End SaveFunctionFE
 
 
 //***************************************************************************
@@ -145,26 +144,21 @@ HGLOBAL CopyUDFO
      UBOOL      bNoFree)            // TRUE iff we're *NOT* to free thye old function (if present)
 
 {
-    SF_FCNS      SF_Fcns = {0};     // SaveFunction local vars
+    SF_FCNS      SF_Fcns = {0};     // SaveFunctionCom local vars
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
     UDFO_PARAMS  UDFO_Params = {0}; // Local  ...
-    UBOOL        bNoCopy;           // TRUE iff this function should not be CopyUDFO'ed
+    UBOOL        bAFO;              // TRUE iff this function is an AFO
 
     Assert (hGlbDfnHdr NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
-    // Get the NoCopy flag(s)
-    bNoCopy = lpMemDfnHdr->bAFO;
+    // Get the AFO flag
+    bAFO = lpMemDfnHdr->bAFO;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
-
-    // If this function is not to CopyUDFO'ed, ...
-    if (bNoCopy)
-        // Handle the old way
-        return CopySymGlbDir_PTB (hGlbDfnHdr);
 
     // Save local params
     UDFO_Params.hGlbDfnHdr = hGlbDfnHdr;
@@ -172,11 +166,10 @@ HGLOBAL CopyUDFO
 
     // Fill in common values
     SF_Fcns.bDisplayErr     = TRUE;                 // Display Errors
-////SF_Fcns.bAFO            = FALSE;                // Parsing an AFO (already FALSE from = {0})
+    SF_Fcns.bAFO            = bAFO;                 // Parsing an AFO
     SF_Fcns.SF_LineLen      = SF_LineLenUDFO;       // Ptr to line length function
     SF_Fcns.SF_ReadLine     = SF_ReadLineUDFO;      // Ptr to read line function
     SF_Fcns.SF_IsLineCont   = SF_IsLineContUDFO;    // Ptr to Is Line Continued function
-    SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesUDFO;   // Ptr to get # physical lines in the function
     SF_Fcns.SF_NumLogLines  = SF_NumLogLinesUDFO;   // Ptr to get # logical  ...
     SF_Fcns.SF_CreationTime = SF_CreationTimeCom;   // Ptr to get function creation time
     SF_Fcns.SF_LastModTime  = SF_LastModTimeCom;    // Ptr to get function last modification time
@@ -266,7 +259,7 @@ UINT SF_IsLineContSV
 UINT SF_IsLineContUDFO
     (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPSF_FCNS   lpSF_Fcns,         // Ptr to common struc
-     UINT        uPhyLineNum)       // Physical function line # (0 = header)
+     UINT        uLogLineNum)       // Logical function line # (0 = header)
 
 {
     LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to common struc
@@ -283,10 +276,13 @@ UINT SF_IsLineContUDFO
     lpMemDfnHdr = MyGlobalLockDfn (lpUDFO_Params->hGlbDfnHdr);
 
     // Get the UDFO text line global memory handle
-    hGlbTxtLine = SF_GlbTxtUDFO (lpMemDfnHdr, uPhyLineNum);
+    hGlbTxtLine = SF_GlbTxtUDFO (lpMemDfnHdr, uLogLineNum);
 
     // We no longer need this ptr
     MyGlobalUnlock (lpUDFO_Params->hGlbDfnHdr); lpMemDfnHdr = NULL;
+
+    // If the global text handle is NULL, ...
+    Assert (hGlbTxtLine NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
@@ -315,7 +311,7 @@ UINT SF_IsLineContUDFO
 UINT SF_IsLineContMFO
     (HWND           hWndEC,         // Edit Ctrl window handle (FE only)
      LPMAGIC_FCNOPR lpMagicFcnOpr,  // Ptr to magic function/operator struc
-     UINT           uPhyLineNum)    // Physical function line # (origin-1) (0 = header)
+     UINT           uLogLineNum)    // Logical function line # (origin-1) (0 = header)
 
 {
     LPWCHAR        lpMemTxtLine;    // Ptr to text line
@@ -323,11 +319,11 @@ UINT SF_IsLineContMFO
     UBOOL          bRet;            // TRUE iff the result is TRUE
 
     // If it's the function header, ...
-    if (uPhyLineNum EQ 0)
+    if (uLogLineNum EQ 0)
         return FALSE;
 
     // Get the MFO text line global memory ptr
-    lpMemTxtLine = lpMagicFcnOpr->Body[uPhyLineNum - 1];
+    lpMemTxtLine = lpMagicFcnOpr->Body[uLogLineNum - 1];
 
     // Find the trailing CR
     p = strchrW (lpMemTxtLine, L'\r');
@@ -350,19 +346,19 @@ UINT SF_IsLineContMFO
 UINT SF_LineLenAN
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum)            // Function line # (0 = header)
+     UINT      uLogLineNum)         // Logical function line # (0 = header)
 
 {
-    LPLW_PARAMS lpLW_Params;        // Ptr to common struc
+    LPAN_PARAMS lpAN_Params;        // Ptr to common struc
 
     // Save local params
-    lpLW_Params = lpSF_Fcns->LclParams;
+    lpAN_Params = lpSF_Fcns->LclParams;
 
     // If it's the header, ...
-    if (uLineNum EQ 0)
+    if (uLogLineNum EQ 0)
     {
         // Split cases based upon the UDFO type
-        switch (lpLW_Params->lpYYRht->lptkRhtBrace->tkData.tkDfnType)
+        switch (lpAN_Params->lpYYRht->lptkRhtBrace->tkData.tkDfnType)
         {
             case DFNTYPE_FCN:
                 return lstrlenW (lpwFcnValHdr[FCNVALENCE_AMB]);
@@ -378,8 +374,8 @@ UINT SF_LineLenAN
         } // End SWITCH
     } else
         // Position of Right Brace less that of the char to the right of the left brace
-        return lpLW_Params->lpYYRht->lptkRhtBrace->tkCharIndex
-            - (lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex + 1);
+        return lpAN_Params->lpYYRht->lptkRhtBrace->tkCharIndex
+            - (lpAN_Params->lpYYRht->lptkLftBrace->tkCharIndex + 1);
 } // End SF_LineLenAN
 
 
@@ -392,24 +388,24 @@ UINT SF_LineLenAN
 
 HGLOBAL SF_GlbTxtUDFO
     (LPDFN_HEADER lpMemDfnHdr,      // Ptr to user-defined function/operator header global memory
-     UINT         uPhyLineNum)      // Physical function line # (origin-1) (0 = header)
+     UINT         uLogLineNum)      // Logical function line # (origin-1) (0 = header)
 
 {
     HGLOBAL hGlbTxtLine;            // Text global memory handle
 
     // If it's the header, ...
-    if (uPhyLineNum EQ 0)
+    if (uLogLineNum EQ 0)
         // Get the global memory handle
         hGlbTxtLine = lpMemDfnHdr->hGlbTxtHdr;
     else
     {
         LPFCNLINE lpFcnLines;       // Ptr to array of function line structs (FCNLINE[numLogLines])
 
-        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+        // Get ptr to array of function line structs (FCNLINE[numLogLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
         // Get the ptr to the given line's tokenized header global memory
-        hGlbTxtLine = lpFcnLines[uPhyLineNum - 1].hGlbTxtLine;
+        hGlbTxtLine = lpFcnLines[uLogLineNum - 1].hGlbTxtLine;
     } // End IF/ELSE
 
     return hGlbTxtLine;
@@ -426,15 +422,20 @@ HGLOBAL SF_GlbTxtUDFO
 UINT SF_LineLenFE
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum)            // Function line # (0 = header)
+     UINT      uLogLineNum)         // Logical function line # (0 = header)
 
 {
+    UINT uPhyLineNum;               // Physical function line # (0 = header)
+
+    // Convert Logical to Physical
+    uPhyLineNum = SF_Log2PhyFE (hWndEC, uLogLineNum);
+
     // If the preceding physical line does not continue to the current line, ...
-    if (uLineNum EQ 0
-     || SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum - 1, 0) EQ FALSE)
+    if (uPhyLineNum EQ 0
+     || SendMessageW (hWndEC, MYEM_ISLINECONT, uPhyLineNum - 1, 0) EQ FALSE)
         // Get the overall block length
         //   not including a terminating zero
-        return GetBlockLength (hWndEC, uLineNum);
+        return GetBlockLengthFE (hWndEC, uPhyLineNum);
     else
         return 0;
 } // End SF_LineLenFE
@@ -450,7 +451,7 @@ UINT SF_LineLenFE
 UINT SF_LineLenLW
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum)            // Function line # (0 = header)
+     UINT      uLogLineNum)         // Logical function line # (0 = header)
 
 {
     LPLW_PARAMS lpLW_Params;        // Ptr to common struc
@@ -464,7 +465,7 @@ UINT SF_LineLenLW
     // This means we must read the line first so we can get its length
     SF_ReadLineLW (hWndEC,                  // Edit Ctrl window handle (FE only)
                    lpSF_Fcns,               // Ptr to common struc
-                   uLineNum,                // Function line #
+                   uLogLineNum,             // Logical function line #
                    lpLW_Params->lpwBuffer); // Ptr to header/line global memory
     // Return the length
     return lstrlenW (lpLW_Params->lpwBuffer);
@@ -481,13 +482,13 @@ UINT SF_LineLenLW
 UINT SF_LineLenM
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum)            // Function line # (0 = header)
+     UINT      uLogLineNum)         // Logical function line # (0 = header)
 
 {
     LPVARARRAY_HEADER lpMemHdrRht = NULL;   // Ptr to right arg header
     LPAPLCHAR         lpMemRht;             // Ptr to right arg global memory
     UINT              uRowOff,              // Offset to start of row
-                      uLineLen;             // Line length
+                      uLogLineLen;          // Logical line length
     LPFX_PARAMS       lpFX_Params;          // Ptr to common struc
 
     // Save local params
@@ -506,15 +507,15 @@ UINT SF_LineLenM
         lpMemRht = (LPAPLCHAR) &lpFX_Params->aplLongestRht;
 
     // Get the # cols in the matrix
-    uLineLen = (UINT) lpFX_Params->aplColsRht;
+    uLogLineLen = (UINT) lpFX_Params->aplColsRht;
 
     // Calc the offset to the appropriate row
-    uRowOff = uLineNum * uLineLen;
+    uRowOff = uLogLineNum * uLogLineLen;
 
     // As this is a matrix and the header/function line might have
     //   been padded out beyond its normal length, delete trailing blanks
-    for (; uLineLen; uLineLen--)
-    if (IsBlackW (lpMemRht[uRowOff + uLineLen - 1]))
+    for (; uLogLineLen; uLogLineLen--)
+    if (IsBlackW (lpMemRht[uRowOff + uLogLineLen - 1]))
         break;
 
     // If it's valid, ...
@@ -524,7 +525,7 @@ UINT SF_LineLenM
         MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    return uLineLen;
+    return uLogLineLen;
 } // End SF_LineLenM
 
 
@@ -538,7 +539,7 @@ UINT SF_LineLenM
 UINT SF_LineLenN
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum)            // Function line # (0 = header)
+     UINT      uLogLineNum)         // Logical function line # (0 = header)
 
 {
     LPVARARRAY_HEADER lpMemHdrRht = NULL;   // Ptr to right arg header
@@ -559,7 +560,7 @@ UINT SF_LineLenN
     lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
     // Split cases based upon the right arg item ptr type
-    switch (GetPtrTypeDir (lpMemRht[uLineNum]))
+    switch (GetPtrTypeDir (lpMemRht[uLogLineNum]))
     {
         case PTRTYPE_STCONST:
             aplNELMItmRht = 1;      // Scalar is of length 1
@@ -568,7 +569,7 @@ UINT SF_LineLenN
 
         case PTRTYPE_HGLOBAL:
             // Get the global memory handle
-            hGlbItmRht = lpMemRht[uLineNum];
+            hGlbItmRht = lpMemRht[uLogLineNum];
 
             // Get the right arg item global attrs
             AttrsOfGlb (hGlbItmRht, NULL, &aplNELMItmRht, NULL, NULL);
@@ -601,7 +602,7 @@ UINT SF_LineLenN
 UINT SF_LineLenAFO
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum,            // Function line # (0 = header)
+     UINT      uLogLineNum,         // Logical function line # (0 = header)
      LPUINT    lpuLineOff)          // Ptr to line offset (may be NULL)
 
 {
@@ -642,8 +643,8 @@ UINT SF_LineLenAFO
             // If it's an AFO, ...
             if (lpSF_Fcns->bAFO)
             {
-                // Split cases based upon the line #
-                switch (uLineNum)
+                // Split cases based upon the logical line #
+                switch (uLogLineNum)
                 {
                     case 0:
                         // Find the left arrow or space
@@ -722,7 +723,7 @@ UINT SF_LineLenAFO
 UINT SF_LineLenSV
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum)            // Function line # (0 = header)
+     UINT      uLogLineNum)         // Logical function line # (0 = header)
 
 {
     // If it's an AFO, ...
@@ -730,22 +731,26 @@ UINT SF_LineLenSV
     {
         LPFX_PARAMS     lpFX_Params;    // Ptr to common struc
         LPAFODETECT_STR lpafoDetectStr; // Ptr to AFODETECT_STR
-        UINT            uLineLen;       // The line length
+        UINT            uPhyLineLen,    // The Physical line length
+                        uPhyLineNum;    // Physical line #
 
         // Save local params
         lpFX_Params    = lpSF_Fcns->LclParams;
         lpafoDetectStr = lpFX_Params->lpafoDetectStr;
 
+        // Convert logical to physical line #
+        uPhyLineNum = SF_Log2PhySV (uLogLineNum, lpafoDetectStr->numPhyLines, lpafoDetectStr->lpafoLineStr);
+
         // Get the precomputed line length
-        uLineLen = lpFX_Params->lpafoDetectStr->lpafoLineStr[uLineNum].uLineLen;
+        uPhyLineLen = lpFX_Params->lpafoDetectStr->lpafoLineStr[uPhyLineNum].uPhyLineLen;
 
         // Loop through contiguous continued physical lines
-        while (lpafoDetectStr->lpafoLineStr[uLineNum++].bLineCont)
+        for (;lpafoDetectStr->lpafoLineStr[uPhyLineNum].bLineCont; uPhyLineNum++)
             // Add in the line length plus the count of WS_CRCRLF
-            uLineLen += lpafoDetectStr->lpafoLineStr[uLineNum].uLineLen + strcountof (WS_CRCRLF);
-        return uLineLen;
+            uPhyLineLen += lpafoDetectStr->lpafoLineStr[uPhyLineNum].uPhyLineLen + strcountof (WS_CRCRLF);
+        return uPhyLineLen;
     } else
-        return SF_LineLenAFO (hWndEC, lpSF_Fcns, uLineNum, NULL);
+        return SF_LineLenAFO (hWndEC, lpSF_Fcns, uLogLineNum, NULL);
 } // End SF_LineLenSV
 
 
@@ -759,7 +764,7 @@ UINT SF_LineLenSV
 UINT SF_LineLenTF1
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum)            // Function line # (0 = header)
+     UINT      uLogLineNum)         // Logical function line # (0 = header)
 
 {
     LPTF1_PARAMS lpTF1_Params;      // Ptr to common struc
@@ -782,7 +787,7 @@ UINT SF_LineLenTF1
 UINT SF_LineLenAA
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum)            // Function line # (0 = header)
+     UINT      uLogLineNum)         // Logical function line # (0 = header)
 
 {
     LPAA_PARAMS lpAA_Params;        // Ptr to common struc
@@ -794,8 +799,8 @@ UINT SF_LineLenAA
     // Get a ptr to the start of the function lines
     lpw = lpAA_Params->lpwStart;
 
-    // Skip to the designated line #
-    while (uLineNum NE 0)
+    // Skip to the designated logical line #
+    while (uLogLineNum NE 0)
     {
         // Skip over the line
         lpw += lstrlenW (lpw);
@@ -804,7 +809,7 @@ UINT SF_LineLenAA
         while (*lpw EQ WC_EOS)
             lpw++;
         // Count out one more line
-        uLineNum--;
+        uLogLineNum--;
     } // End WHILE
 
     // Return the line length
@@ -822,7 +827,7 @@ UINT SF_LineLenAA
 UINT SF_LineLenUDFO
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum)            // Function line # (0 = header)
+     UINT      uLogLineNum)         // Logical function line # (0 = header)
 
 {
     LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to common struc
@@ -838,10 +843,12 @@ UINT SF_LineLenUDFO
     lpMemDfnHdr = MyGlobalLockDfn (lpUDFO_Params->hGlbDfnHdr);
 
     // Get the UDFO text line global memory handle
-    hGlbTxtLine = SF_GlbTxtUDFO (lpMemDfnHdr, uLineNum);
+    hGlbTxtLine = SF_GlbTxtUDFO (lpMemDfnHdr, uLogLineNum);
 
     // We no longer need this ptr
     MyGlobalUnlock (lpUDFO_Params->hGlbDfnHdr); lpMemDfnHdr = NULL;
+
+    Assert (hGlbTxtLine NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
@@ -867,20 +874,20 @@ UINT SF_LineLenUDFO
 void SF_ReadLineAN
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum,            // Function line # (0 = header)
+     UINT      uLogLineNum,         // Logical function line # (0 = header)
      LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
 
 {
-    LPLW_PARAMS lpLW_Params;        // Ptr to common struc
+    LPAN_PARAMS lpAN_Params;        // Ptr to common struc
 
     // Save local params
-    lpLW_Params = lpSF_Fcns->LclParams;
+    lpAN_Params = lpSF_Fcns->LclParams;
 
     // If it's the header, ...
-    if (uLineNum EQ 0)
+    if (uLogLineNum EQ 0)
     {
         // Split cases based upon the UDFO type
-        switch (lpLW_Params->lpYYRht->lptkRhtBrace->tkData.tkDfnType)
+        switch (lpAN_Params->lpYYRht->lptkRhtBrace->tkData.tkDfnType)
         {
             case DFNTYPE_FCN:
                 strcpyW (lpMemLine, lpwFcnValHdr[FCNVALENCE_AMB]);
@@ -903,31 +910,75 @@ void SF_ReadLineAN
     } else
     {
         // If the line text is present, ...
-        if (lpLW_Params->lpplLocalVars->lpwszLine)
+        if (lpAN_Params->lpplLocalVars->lpwszLine)
             // Copy the line to the caller's memory
             //   with room for the trailing zero
             strcpynW (lpMemLine,
-                     &lpLW_Params->lpplLocalVars->lpwszLine[lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex + 1],
-                      lpLW_Params->lpYYRht->lptkRhtBrace->tkCharIndex
-                    - lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex);
+                     &lpAN_Params->lpplLocalVars->lpwszLine[lpAN_Params->lpYYRht->lptkLftBrace->tkCharIndex + 1],
+                      lpAN_Params->lpYYRht->lptkRhtBrace->tkCharIndex
+                    - lpAN_Params->lpYYRht->lptkLftBrace->tkCharIndex);
         else
         {
             LPMEMTXT_UNION lpMemTxtLine;
 
             // Lock the memory to get a ptr to it
-            lpMemTxtLine = MyGlobalLockPad (lpLW_Params->lpplLocalVars->hGlbTxtLine);
+            lpMemTxtLine = MyGlobalLockPad (lpAN_Params->lpplLocalVars->hGlbTxtLine);
 
             // Copy the line to the caller's memory
             //   with room for the trailing zero
             strcpynW (lpMemLine,
-                     &(&lpMemTxtLine->C)[lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex + 1],
-                      lpLW_Params->lpYYRht->lptkRhtBrace->tkCharIndex
-                    - lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex);
+                     &(&lpMemTxtLine->C)[lpAN_Params->lpYYRht->lptkLftBrace->tkCharIndex + 1],
+                      lpAN_Params->lpYYRht->lptkRhtBrace->tkCharIndex
+                    - lpAN_Params->lpYYRht->lptkLftBrace->tkCharIndex);
             // We no longer need this ptr
-            MyGlobalUnlock (lpLW_Params->lpplLocalVars->hGlbTxtLine); lpMemTxtLine = NULL;
+            MyGlobalUnlock (lpAN_Params->lpplLocalVars->hGlbTxtLine); lpMemTxtLine = NULL;
         } // End IF/ELSE
     } // End IF/ELSE
 } // End SF_ReadLineAN
+
+
+//***************************************************************************
+//  $SF_Log2PhyFE
+//
+//  Convert logical to physical line numbers
+//***************************************************************************
+
+UINT SF_Log2PhyFE
+    (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
+     UINT      uLogLineNum)         // Logical function line # (0 = header)
+
+{
+    UINT uPhyLineNum = 0,           // Physical function line # (0 = header)
+         uCnt;                      // Loop counter
+
+    // Loop through the logical lines to get the physical line #
+    for (uCnt = 0; uCnt < uLogLineNum; uCnt++)
+        uPhyLineNum = GetBlockEndLineFE (hWndEC, uPhyLineNum) + 1;
+    return uPhyLineNum;
+} // End SF_Log2PhyFE
+
+
+//***************************************************************************
+//  $SF_Log2PhySV
+//
+//  Convert logical to physical line numbers
+//***************************************************************************
+
+UINT SF_Log2PhySV
+    (UINT          uLogLineNum,     // Logical function line # (0 = header)
+     UINT          numPhyLines,     // # physical line #
+     LPAFOLINE_STR lpafoLineStr)    // Ptr to AFOLINE_STR[numPhyLines]
+
+{
+    UINT uPhyLineNum;               // Physical function line # (0 = header)
+
+    // Loop through the physical lines
+    for (uPhyLineNum = 0; uPhyLineNum < numPhyLines; uPhyLineNum++)
+    // If this matches our Logical line #, ...
+    if (uLogLineNum EQ lpafoLineStr[uPhyLineNum].uLogLineNum)
+        break;
+    return uPhyLineNum;
+} // End SF_Log2PhySV
 
 
 //***************************************************************************
@@ -940,16 +991,21 @@ void SF_ReadLineAN
 void SF_ReadLineFE
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum,            // Function line # (0 = header)
+     UINT      uLogLineNum,         // Logical function line # (0 = header)
      LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
 
 {
+    UINT uPhyLineNum;               // Physical function line # (0 = header)
+
+    // Convert Logical to Physical
+    uPhyLineNum = SF_Log2PhyFE (hWndEC, uLogLineNum);
+
     // If the preceding physical line does not continue to the current line, ...
-    if (uLineNum EQ 0
-     || SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum - 1, 0) EQ FALSE)
+    if (uPhyLineNum EQ 0
+     || SendMessageW (hWndEC, MYEM_ISLINECONT, uPhyLineNum - 1, 0) EQ FALSE)
         // Copy a block of lines
         //   including a terminating zero if there's enough room
-        CopyBlockLines (hWndEC, uLineNum, lpMemLine);
+        CopyBlockLinesFE (hWndEC, uPhyLineNum, lpMemLine);
     else
         lpMemLine[0] = WC_EOS;
 } // End SF_ReadLineFE
@@ -965,7 +1021,7 @@ void SF_ReadLineFE
 void SF_ReadLineLW
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum,            // Function line # (0 = header)
+     UINT      uLogLineNum,         // Logical function line # (0 = header)
      LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
 
 {
@@ -980,7 +1036,7 @@ void SF_ReadLineLW
     MySprintfW (wszLineNum,
                 sizeof (wszLineNum),
                L"%d",
-                uLineNum);
+                uLogLineNum);
     // Get the one (and only) line
     lpwszProf =
       ProfileGetString (lpLW_Params->lpwSectName,   // Ptr to the section name
@@ -1011,7 +1067,7 @@ void SF_ReadLineLW
 void SF_ReadLineM
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum,            // Function line # (0 = header)
+     UINT      uLogLineNum,         // Logical function line # (0 = header)
      LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
 
 {
@@ -1040,7 +1096,7 @@ void SF_ReadLineM
     uLineLen = (UINT) lpFX_Params->aplColsRht;
 
     // Calc the offset to the appropriate row
-    uRowOff = uLineNum * uLineLen;
+    uRowOff = uLogLineNum * uLineLen;
 
     // As this is a matrix and the header/function line might have
     //   been padded out beyond its normal length, delete trailing blanks
@@ -1074,7 +1130,7 @@ void SF_ReadLineM
 void SF_ReadLineN
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum,            // Function line # (0 = header)
+     UINT      uLogLineNum,         // Logical function line # (0 = header)
      LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
 
 {
@@ -1098,18 +1154,18 @@ void SF_ReadLineN
     lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
     // Split cases based upon the right arg item ptr type
-    switch (GetPtrTypeDir (lpMemRht[uLineNum]))
+    switch (GetPtrTypeDir (lpMemRht[uLogLineNum]))
     {
         case PTRTYPE_STCONST:
             // Copy the single char to the result
-            *lpMemLine++ = ((LPSYMENTRY*) lpMemRht)[uLineNum]->stData.stChar;
+            *lpMemLine++ = ((LPSYMENTRY*) lpMemRht)[uLogLineNum]->stData.stChar;
             *lpMemLine++ = WC_EOS;
 
             break;
 
         case PTRTYPE_HGLOBAL:
             // Get the global memory handle
-            hGlbItmRht = lpMemRht[uLineNum];
+            hGlbItmRht = lpMemRht[uLogLineNum];
 
             // Lock the memory to get a ptr to it
             lpMemHdrItmRht = MyGlobalLockVar (hGlbItmRht);
@@ -1153,14 +1209,15 @@ void SF_ReadLineN
 void SF_ReadLineSV
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum,            // Function line # (0 = header)
+     UINT      uLogLineNum,         // Logical function line # (0 = header)
      LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
 
 {
     LPVARARRAY_HEADER lpMemHdrRht = NULL;   // Ptr to right arg header
     LPAPLCHAR         lpMemRht;             // Ptr to right arg global memory
     UINT              uLineLen,             // The line length
-                      uLineOff;             // The line offset
+                      uLineOff,             // The line offset
+                      uPhyLineNum;          // Physical line number
     LPFX_PARAMS       lpFX_Params;          // Ptr to common struc
     LPAFODETECT_STR   lpafoDetectStr;       // Ptr to AFODETECT_STR
 
@@ -1171,12 +1228,15 @@ void SF_ReadLineSV
     // If it's an AFO, ...
     if (lpSF_Fcns->bAFO)
     {
+        // Convert from logical to physical ine number
+        uPhyLineNum = SF_Log2PhySV (uLogLineNum, lpafoDetectStr->numPhyLines, lpafoDetectStr->lpafoLineStr);
+
         // Get the precomputed line length & offset
-        uLineLen = SF_LineLenSV (hWndEC, lpSF_Fcns, uLineNum);
-        uLineOff = lpafoDetectStr->lpafoLineStr[uLineNum].uLineOff;
+        uLineLen = SF_LineLenSV (hWndEC, lpSF_Fcns, uLogLineNum);
+        uLineOff = lpafoDetectStr->lpafoLineStr[uPhyLineNum].uPhyLineOff;
     } else
         // Get the line length and offset
-        uLineLen = SF_LineLenAFO (hWndEC, lpSF_Fcns, uLineNum, &uLineOff);
+        uLineLen = SF_LineLenAFO (hWndEC, lpSF_Fcns, uLogLineNum, &uLineOff);
 
     // Check for immediate right arg
     if (lpFX_Params->hGlbRht EQ NULL)
@@ -1214,7 +1274,7 @@ void SF_ReadLineSV
 void SF_ReadLineTF1
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum,            // Function line # (0 = header)
+     UINT      uLogLineNum,         // Logical function line # (0 = header)
      LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
 
 {
@@ -1225,7 +1285,7 @@ void SF_ReadLineTF1
 
     // Copy the line to global memory
     CopyMemoryW (lpMemLine,
-                 lpTF1_Params->lpMemRht + uLineNum * lpTF1_Params->aplColsRht,
+                 lpTF1_Params->lpMemRht + uLogLineNum * lpTF1_Params->aplColsRht,
                  (APLU3264) lpTF1_Params->aplColsRht);
 } // End SF_ReadLineTF1
 
@@ -1241,7 +1301,7 @@ void SF_ReadLineTF1
 void SF_ReadLineAA
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum,            // Function line # (0 = header)
+     UINT      uLogLineNum,         // Logical function line # (0 = header)
      LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
 
 {
@@ -1255,7 +1315,7 @@ void SF_ReadLineAA
     lpw = lpAA_Params->lpwStart;
 
     // Skip to the designated line #
-    while (uLineNum NE 0)
+    while (uLogLineNum NE 0)
     {
         // Skip over the line
         lpw += lstrlenW (lpw);
@@ -1264,7 +1324,7 @@ void SF_ReadLineAA
         while (*lpw EQ WC_EOS)
             lpw++;
         // Count out one more line
-        uLineNum--;
+        uLogLineNum--;
     } // End WHILE
 
     // Copy the line to global memory
@@ -1284,7 +1344,7 @@ void SF_ReadLineAA
 void SF_ReadLineUDFO
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum,            // Function line # (0 = header)
+     UINT      uLogLineNum,         // Logical function line # (0 = header)
      LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
 
 {
@@ -1300,7 +1360,7 @@ void SF_ReadLineUDFO
     lpMemDfnHdr = MyGlobalLockDfn (lpUDFO_Params->hGlbDfnHdr);
 
     // Get the UDFO text line global memory handle
-    hGlbTxtLine = SF_GlbTxtUDFO (lpMemDfnHdr, uLineNum);
+    hGlbTxtLine = SF_GlbTxtUDFO (lpMemDfnHdr, uLogLineNum);
 
     // We no longer need this ptr
     MyGlobalUnlock (lpUDFO_Params->hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -1342,36 +1402,97 @@ UINT SF_NumLinesCom
 
 
 //***************************************************************************
-//  $SF_NumLinesAN
+//  $SF_NumLogLinesAN
 //
-//  Return the # lines in the function (excluding the header line)
+//  Return the # logical lines in the function (excluding the header line)
 //    when saving an AFO
 //***************************************************************************
 
-UINT SF_NumLinesAN
+UINT SF_NumLogLinesAN
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
 
 {
-    return 1;
-} // End SF_NumLinesAN
+    UINT         numLogLines = 1,   // # logical lines in the function
+                 numPhyLines = 1;   // # physical ...
+
+    SF_NumLinesAN (hWndEC,          // Edit Ctrl window handle (FE only)
+                  &numLogLines,     // Ptr to # logical lines in the function (excluding the header line)
+                  &numPhyLines,     // ...      physical ...
+                   lpSF_Fcns);
+    return numLogLines;
+} // End SF_NumLogLinesAN
 
 
 //***************************************************************************
-//  $SF_NumPhyLinesFE
+//  $SF_NumLinesAN
 //
-//  Return the # physical lines in the function (excluding the header line)
-//    when called from function editor
+//  Return the # logical and physical lines in the function (excluding the header line)
+//    when saving an AFO
 //***************************************************************************
 
-UINT SF_NumPhyLinesFE
+void SF_NumLinesAN
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
+     LPUINT    lpNumLogLines,       // Ptr to # logical lines in the function (excluding the header line)
+     LPUINT    lpNumPhyLines,       // ...      physical ...
      LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
 
 {
-    return -1 +
-      (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
-} // End SF_NumPhyLinesFE
+    LPAN_PARAMS  lpAN_Params;       // Ptr to common struc
+    LPTOKEN      lptkNext,
+                 lptkLftBrace,
+                 lptkRhtBrace;
+    UINT         uNestCnt = 0;      // Nested brace count
+
+    // Save local params
+    lpAN_Params = lpSF_Fcns->LclParams;
+
+    // Point to the token after the TKT_LEFTBRACE and TKT_GLBDFN
+    lptkLftBrace = &lpAN_Params->lpYYRht->lptkLftBrace[2];
+
+    // Point to the token of the right brace (end of loop)
+    lptkRhtBrace = &lpAN_Params->lpYYRht->lptkRhtBrace[0];
+
+    // Loop through the tokens skipping over nested braces
+    for (lptkNext = lptkLftBrace; lptkNext < lptkRhtBrace; lptkNext++)
+    {
+        // Split cases based upon the token type
+        switch (lptkNext->tkFlags.TknType)
+        {
+            case TKT_LINECONT:
+                // If we're not nested in braces, ...
+                if (uNestCnt EQ 0)
+                    // Count in another physical line
+                    (*lpNumPhyLines)++;
+                break;
+
+            case TKT_LEFTBRACE:
+                // Count in another nesting level
+                uNestCnt++;
+
+                break;
+
+            case TKT_RIGHTBRACE:
+                // Count out another nesting level
+                uNestCnt--;
+
+                break;
+
+            case TKT_EOS:
+            case TKT_EOL:
+                // If we're not nested in braces, ...
+                if (uNestCnt EQ 0)
+                    // Count in another logical line
+                    (*lpNumLogLines)++;
+                break;
+
+            default:
+                break;
+        } // End SWITCH
+    } // End FOR
+
+    Assert (uNestCnt EQ 0);
+} // End SF_NumLinesAN
 
 
 //***************************************************************************
@@ -1483,105 +1604,6 @@ UINT SF_NumLinesAA
     return -1 +
       (UINT) lpAA_Params->NumLines;
 } // End SF_NumLinesAA
-
-
-//***************************************************************************
-//  $SF_NumPhyLinesSV
-//
-//  Return the # physical lines in the function (excluding the header line)
-//    when called from []FX with a simple char scalar or vector arg, or
-//***************************************************************************
-
-UINT SF_NumPhyLinesSV
-    (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
-     LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
-
-{
-    LPFX_PARAMS lpFX_Params;        // Ptr to common struc
-
-    // Save local params
-    lpFX_Params = lpSF_Fcns->LclParams;
-
-    // If it's an AFO, ...
-    if (lpSF_Fcns->bAFO)
-        // The # physical function lines
-        return lpFX_Params->lpafoDetectStr->numPhyLines;
-    else
-        // The # physical function lines
-        return (UINT) lpFX_Params->aplRowsRht - 1;
-} // End SF_NumPhyLinesSV
-
-
-//***************************************************************************
-//  $SF_NumPhyLinesUDFO
-//
-//  Return the # physical lines in the function (excluding the header line)
-//    when copying a UDFO
-//***************************************************************************
-
-UINT SF_NumPhyLinesUDFO
-    (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
-     LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
-
-{
-    LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to common struc
-    LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header global memory
-    UINT           uLogLine,        // # logical lines
-                   numPhyLines,     // # physical lines in the function
-                   uCnt;            // Loop counter
-    HGLOBAL        hGlbTxtLine;     // Text global memory handle
-    LPMEMTXT_UNION lpMemTxtLine;    // Ptr to text line
-    LPWCHAR        lpwTxtLine;      // ...
-
-    // Save local params
-    lpUDFO_Params = lpSF_Fcns->LclParams;
-
-    // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLockDfn (lpUDFO_Params->hGlbDfnHdr);
-
-    // Get the # logical lines
-    numPhyLines =
-    uLogLine = lpMemDfnHdr->numFcnLines;
-
-    // Loop through the logical lines
-    for (uCnt = 0; uCnt < uLogLine; uCnt++)
-    {
-        // Get the UDFO text line global memory handle
-        hGlbTxtLine = SF_GlbTxtUDFO (lpMemDfnHdr, uCnt + 1);
-
-        // Lock the memory to get a ptr to it
-        lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
-
-        // Point to the text part
-        lpwTxtLine = &lpMemTxtLine->C;
-
-        while (TRUE)
-        {
-            // Find the trailing CR
-            lpwTxtLine = strchrW (lpwTxtLine, L'\r');
-
-            if (lpwTxtLine NE NULL
-             && lpwTxtLine[1] EQ L'\r'
-             && lpwTxtLine[2] EQ L'\n')
-            {
-                // Count in another physical line
-                numPhyLines++;
-
-                // Skip over the CR/CR/LF to the start of the next line
-                lpwTxtLine += strcountof (WS_CRCRLF);
-            } else
-                break;
-        } // End WHILE
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
-    } // End FOR
-
-    // We no longer need this ptr
-    MyGlobalUnlock (lpUDFO_Params->hGlbDfnHdr); lpMemDfnHdr = NULL;
-
-    return numPhyLines;
-} // End SF_NumPhyLinesUDFO
 
 
 //***************************************************************************
@@ -2116,7 +2138,7 @@ LPWCHAR ConstructFcnHdr
 //  $SaveFunctionCom
 //
 //  Attempt to save a function to the WS.
-//  Subroutine to SaveFunction; also called directly from []FX.
+//  Subroutine to SaveFunctionFE; also called directly from []FX and elsewhere.
 //***************************************************************************
 
 UBOOL SaveFunctionCom
@@ -2127,9 +2149,7 @@ UBOOL SaveFunctionCom
     HWND           hWndEC = NULL;           // Edit Ctrl Window handle (FE only)
     UINT           uLineLen,                // Line length
                    uLogLineNum,             // Current logical line # in the Edit Ctrl (0 = header)
-                   uPhyLineNum,             // ...     physical ...
                    uOffset,                 // Cumulative offset
-                   numPhyLines,             // # physical lines in the function
                    numLogLines;             // # logical  ...
     HGLOBAL        hGlbTxtHdr = NULL,       // Header text global memory handle
                    hGlbTknHdr = NULL,       // Tokenized header text ...
@@ -2210,20 +2230,15 @@ UBOOL SaveFunctionCom
     if (lpSF_Fcns->bAFO && (lpSF_Fcns->bMakeAFE || lpSF_Fcns->bMakeAFX))
     {
         // Get # physical & logical lines in the function (excluding the header)
-        numPhyLines = (*lpSF_Fcns->SF_NumPhyLines) (hWndEC, lpSF_Fcns);
         numLogLines = (*lpSF_Fcns->SF_NumLogLines) (hWndEC, lpSF_Fcns);
 
         // Get size of tokenization of all lines (excluding the header)
-        for (uOffset = 0, uLogLineNum = uPhyLineNum = 1; uPhyLineNum <= numPhyLines; uPhyLineNum++)
-            // If the preceding physical line is not continued to the current line, ...
-            if (!(*lpSF_Fcns->SF_IsLineCont) (hWndEC, lpSF_Fcns, uPhyLineNum - 1))
-            {
-                // Size a function line
-                if (SaveFunctionLine (lpSF_Fcns, NULL, NULL, uLogLineNum, uPhyLineNum, NULL, hWndEC, hWndFE, &uOffset) EQ -1)
-                    goto ERROR_EXIT;
-                // Count in another logical line
-                uLogLineNum++;
-            } // End IF
+        for (uOffset = 0, uLogLineNum = 1; uLogLineNum <= numLogLines; uLogLineNum++)
+        {
+            // Size a logical function line
+            if (SaveFunctionLine (lpSF_Fcns, NULL, NULL, uLogLineNum, NULL, hWndEC, hWndFE, &uOffset) EQ -1)
+                goto ERROR_EXIT;
+        } // End FOR
 
         // Restore the ptr to the next token on the CS stack
         //   because we advanced it during the above sizing
@@ -2380,8 +2395,7 @@ UBOOL SaveFunctionCom
                      numRhtArgSTE,      // # right ...
                      numLocalsSTE,      // # locals ...
                      numSTE,            // Loop counter
-                     uLogLineNum,       // ...
-                     uPhyLineNum;       // ...
+                     uLogLineNum;       // ...
         LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numLogLines])
         LPSYMENTRY   lpSymName = NULL,  // Ptr to SYMENTRY for the function name
                     *lplpSymDfnHdr;     // Ptr to LPSYMENTRYs at end of user-defined function/operator header
@@ -2430,7 +2444,7 @@ UBOOL SaveFunctionCom
             lpMemTxtLine = MyGlobalLockTxt (hGlbTxtHdr);
 
             // Calculate the length of the old name (list all possible terminators)
-            uOldLen = strcspnW (&(&lpMemTxtLine->C)[fhLocalVars.offFcnText], L" [();" WS_UTF16_LAMP);
+            uOldLen = strcspnW (&(&lpMemTxtLine->C)[fhLocalVars.offFcnText], L" [();" $OMEGA WS_UTF16_LAMP);
 
             // Get the new name's global memory handle
             hGlbNewName = ((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->lpSymEntry->stHshEntry->htGlbName;
@@ -2526,7 +2540,7 @@ UBOOL SaveFunctionCom
         // If this is
         //    not an immediate function/operator,
         //    and this is not an AFO, ...
-        //      or it is and we're called from <SaveFunction> to save an AFO
+        //      or it is and we're called from <SaveFunctionFE> to save an AFO
         //      or it is and we're called from <SysFnMonFX_EM> to save an AFO
         if (!lpSymName->stFlags.Imm
          && (!fhLocalVars.bAFO
@@ -2651,21 +2665,16 @@ UBOOL SaveFunctionCom
         else
             numLocalsSTE = 0;
 
-        // Get # physical & logical lines in the function (excluding the header)
-        numPhyLines = (*lpSF_Fcns->SF_NumPhyLines) (hWndEC, lpSF_Fcns);
+        // Get # logical lines in the function (excluding the header)
         numLogLines = (*lpSF_Fcns->SF_NumLogLines) (hWndEC, lpSF_Fcns);
 
-        // Get size of tokenization of all lines (excluding the header)
-        for (uOffset = 0, uLogLineNum = uPhyLineNum = 1; uPhyLineNum <= numPhyLines; uPhyLineNum++)
-            // If the preceding physical line is not continued to the current line, ...
-            if (!(*lpSF_Fcns->SF_IsLineCont) (hWndEC, lpSF_Fcns, uPhyLineNum - 1))
-            {
-                // Size a function line
-                if (SaveFunctionLine (lpSF_Fcns, NULL, NULL, uLogLineNum, uPhyLineNum, NULL, hWndEC, hWndFE, &uOffset) EQ -1)
-                    goto ERROR_EXIT;
-                // Count in another logical line
-                uLogLineNum++;
-            } // End IF
+        // Get size of tokenization of all logical lines (excluding the header)
+        for (uOffset = 0, uLogLineNum = 1; uLogLineNum <= numLogLines; uLogLineNum++)
+        {
+            // Size a logical function line
+            if (SaveFunctionLine (lpSF_Fcns, NULL, NULL, uLogLineNum, NULL, hWndEC, hWndFE, &uOffset) EQ -1)
+                goto ERROR_EXIT;
+        } // End FOR
 
         // Restore the ptr to the next token on the CS stack
         //   because we advanced it during the above sizing
@@ -2732,7 +2741,6 @@ UBOOL SaveFunctionCom
         lpMemDfnHdr->bLclRL       = fhLocalVars.bLclRL;
         lpMemDfnHdr->RefCnt       = 1;
         lpMemDfnHdr->numFcnLines  = numLogLines;
-        lpMemDfnHdr->numPhyLines  = numPhyLines;
         lpMemDfnHdr->steLftOpr    = fhLocalVars.lpYYLftOpr
                                   ? fhLocalVars.lpYYLftOpr ->tkToken.tkData.tkSym
                                   : NULL;
@@ -2856,58 +2864,48 @@ UBOOL SaveFunctionCom
         // Save offset to tokenized lines
         lpMemDfnHdr->offTknLines = uOffset + numLogLines * sizeof (FCNLINE);
 
-        // Get ptr to array of function line structs (FCNLINE[numLogLines])
+        // Get ptr to array of logical function line structs (FCNLINE[numLogLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
         // Initialize the offset of where to start saving the tokenized lines
         uOffset = lpMemDfnHdr->offTknLines;
 
         // Loop through the lines (excluding the header)
-        for (uPhyLineNum = uLogLineNum = 1; uPhyLineNum <= numPhyLines; uPhyLineNum++)
+        for (uLogLineNum = 1; uLogLineNum <= numLogLines; uLogLineNum++, lpFcnLines++)
         {
-            // If the preceding physical line is not continued to the current line, ...
-            if (!(*lpSF_Fcns->SF_IsLineCont) (hWndEC, lpSF_Fcns, uPhyLineNum - 1))
+            // Save a logical function line
+            uLineLen =
+              SaveFunctionLine (lpSF_Fcns, NULL, lpMemDfnHdr, uLogLineNum, lpFcnLines, hWndEC, hWndFE, &uOffset);
+            if (uLineLen EQ -1)
+                goto ERROR_EXIT;
+
+            // If tokenization failed, ...
+            if (lpFcnLines->offTknLine EQ 0)
             {
-                // Save a function line
-                uLineLen =
-                  SaveFunctionLine (lpSF_Fcns, NULL, lpMemDfnHdr, uLogLineNum, uPhyLineNum, lpFcnLines, hWndEC, hWndFE, &uOffset);
-                if (uLineLen EQ -1)
-                    goto ERROR_EXIT;
-
-                // Count in another logical line
-                uLogLineNum++;
-
-                // If tokenization failed, ...
-                if (lpFcnLines->offTknLine EQ 0)
+                if (hWndFE NE NULL)
                 {
-                    if (hWndFE NE NULL)
-                    {
-                        // Format the error message
-                        MySprintfW (wszTemp,
-                                    sizeof (wszTemp),
-                                   L"SYNTAX ERROR on line # %d, position %d -- function not saved",
-                                    uLogLineNum,
-                                    lpMemPTD->uCaret);
-                        // Display the error message
-                        MessageBoxW (hWndMF,
-                                     wszTemp,
-                                     lpwszAppName,
-                                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                        MySetFocus (GetParent (hWndEC));
-                    } else
-                        // Save the line # in error (origin-0)
-                        lpSF_Fcns->uErrLine = uLogLineNum;
+                    // Format the error message
+                    MySprintfW (wszTemp,
+                                sizeof (wszTemp),
+                               L"SYNTAX ERROR on line # %d, position %d -- function not saved",
+                                uLogLineNum,
+                                lpMemPTD->uCaret);
+                    // Display the error message
+                    MessageBoxW (hWndMF,
+                                 wszTemp,
+                                 lpwszAppName,
+                                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                    MySetFocus (GetParent (hWndEC));
+                } else
+                    // Save the line # in error (origin-0)
+                    lpSF_Fcns->uErrLine = uLogLineNum;
 
-                    goto ERROR_EXIT;
-                } // End IF
-
-                // Transfer Stop & Trace info
-                lpFcnLines->bStop  =
-                lpFcnLines->bTrace = FALSE;     // ***FIXME*** -- transfer from orig fn
-
-                // Skip to the next struct
-                lpFcnLines++;
+                goto ERROR_EXIT;
             } // End IF
+
+            // Transfer Stop & Trace info
+            lpFcnLines->bStop  =
+            lpFcnLines->bTrace = FALSE;     // ***FIXME*** -- transfer from orig fn
         } // End FOR
 
         // Fill in the CS local vars struc
@@ -3021,7 +3019,7 @@ UBOOL SaveFunctionCom
         } // End IF
 
         // If this is not an AFO, ...
-        //    or it is and we're called from <SaveFunction> to save an AFO
+        //    or it is and we're called from <SaveFunctionFE> to save an AFO
         //    or it is and we're called from <SysFnMonFX_EM> to save an AFO
         if (!lpSF_Fcns->bAFO || lpSF_Fcns->bMakeAFE || lpSF_Fcns->bMakeAFX)
         {
@@ -3190,8 +3188,8 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $SaveFunctionLine
 //
-//  Save one function line or
-//    size one function line
+//  Save one logical function line or
+//    size one logical function line
 //***************************************************************************
 
 UINT SaveFunctionLine
@@ -3199,7 +3197,6 @@ UINT SaveFunctionLine
      LPMAGIC_FCNOPR lpMagicFcnOpr,          // Ptr to magic function/operator struc (is not NULL if Magic Functions)
      LPDFN_HEADER   lpMemDfnHdr,            // Ptr to user-defined function/operator header (may be NULL if sizing)
      UINT           uLogLineNum,            // Current logical line # in the Edit Ctrl (0 = header)
-     UINT           uPhyLineNum,            // Current physical
      LPFCNLINE      lpFcnLines,             // Ptr to array of function line structs (FCNLINE[numLogLines]) (may be NULL if sizing)
      HWND           hWndEC,                 // Edit Ctrl Window handle (FE only)
      HWND           hWndFE,                 // Function Editor window handle (FE only, NULL otherwise)
@@ -3216,6 +3213,7 @@ UINT SaveFunctionLine
     WCHAR          wszTemp[1024];           // Save area for error message text
     LPPERTABDATA   lpMemPTD;                // Ptr to PerTabData global memory
     APLU3264       uLen;                    // Temporary var
+    UBOOL          bMakeBraces;             // TRUE iff this is an AFO which needs surrounding braces
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -3226,10 +3224,16 @@ UINT SaveFunctionLine
         uLineLen = lstrlenW (lpMagicFcnOpr->Body[uLogLineNum - 1]);
     else
         // Get the length of the function line
-        uLineLen = (*lpSF_Fcns->SF_LineLen) (hWndEC, lpSF_Fcns, uPhyLineNum);
+        uLineLen = (*lpSF_Fcns->SF_LineLen) (hWndEC, lpSF_Fcns, uLogLineNum);
 
+    // If this is an AFO which needs surrounding braces, ...
+    bMakeBraces = (lpSF_Fcns NE NULL
+               &&  lpSF_Fcns->bAFO
+               && !lpSF_Fcns->bMakeAFO
+               && !lpSF_Fcns->bMakeAFE
+               && !lpSF_Fcns->bMakeAFX);
     // Calculate extra WCHARs in case we need to surround the line with braces
-    uLen = 2 * (lpSF_Fcns && lpSF_Fcns->bAFO && !lpSF_Fcns->bMakeAFO);
+    uLen = 2 * bMakeBraces;
 
     // Allocate global memory to hold this text
     // The "sizeof (lpMemTxtLine->U)" is for the leading length
@@ -3287,17 +3291,13 @@ UINT SaveFunctionLine
         else
         {
             // Read in the line text
-            (*lpSF_Fcns->SF_ReadLine) (hWndEC, lpSF_Fcns, uPhyLineNum, lpwszLine);
+            (*lpSF_Fcns->SF_ReadLine) (hWndEC, lpSF_Fcns, uLogLineNum, lpwszLine);
 
-            // If we're about to tokenize an AFO
-            //   and we're not called from MakeAFO
-////        //   and we're not called from MakeAFE, ...
-////        //   and we're not called from MakeAFX, ...
-            if (lpSF_Fcns->bAFO
-             && !lpSF_Fcns->bMakeAFO)
-////         && !lpSF_Fcns->bMakeAFE
-////         && !lpSF_Fcns->bMakeAFX)
+            // If we're about to tokenize an AFO which needs surrounding braces, ...
+            if (bMakeBraces)
             {
+                Assert (lpSF_Fcns->sfTypes EQ SFTYPES_LOAD || lpSF_Fcns->sfTypes EQ SFTYPES_UDFO);
+
                 // Make room for a leading left brace
                 MoveMemory (&lpwszLine[1], lpwszLine, (uLineLen + 1) * sizeof (lpwszLine[0]));
 
@@ -3306,7 +3306,7 @@ UINT SaveFunctionLine
 
                 // Append a trailing right brace & EOS
                 lpwszLine[uLineLen + 1] = UTF16_RIGHTBRACE;
-////////////////lpwszLine[uLineLen + 2] = WC_EOS;       // Already zero from GHND
+                lpwszLine[uLineLen + 2] = WC_EOS;
 
                 // Tokenize the line so as to determine operator valence (if it's an operator)
                 //   and whether or not the (derived) function is niladic
@@ -3318,9 +3318,9 @@ UINT SaveFunctionLine
                               &ErrorHandler,            // Ptr to error handling function (may be NULL)
                                lpSF_Fcns,               // Ptr to common struc (may be NULL if unused)
                               (lpMagicFcnOpr NE NULL)
-                            || (lpSF_Fcns
+                            || (lpSF_Fcns NE NULL
                              && lpSF_Fcns->bMFO)
-                            || (lpMemDfnHdr
+                            || (lpMemDfnHdr NE NULL
                              && lpMemDfnHdr->bMFO));    // TRUE iff we're tokenizing a Magic Function/Operator
                 // We no longer need this storage
                 DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
@@ -3344,9 +3344,9 @@ UINT SaveFunctionLine
                   &ErrorHandler,            // Ptr to error handling function (may be NULL)
                    lpSF_Fcns,               // Ptr to common struc (may be NULL if unused)
                   (lpMagicFcnOpr NE NULL)
-                || (lpSF_Fcns
+                || (lpSF_Fcns NE NULL
                  && lpSF_Fcns->bMFO)
-                || (lpMemDfnHdr
+                || (lpMemDfnHdr NE NULL
                  && lpMemDfnHdr->bMFO));    // TRUE iff we're tokenizing a Magic Function/Operator
     // We no longer need this ptr
     MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
@@ -3640,7 +3640,7 @@ UBOOL IsLineEmpty
 //***************************************************************************
 //  $GetLabelNums
 //
-//  Calculate the line #s of the line labels
+//  Calculate the logical line #s of the line labels
 //***************************************************************************
 
 UBOOL GetLabelNums
@@ -3651,10 +3651,9 @@ UBOOL GetLabelNums
 
 {
     UINT           numLogLines,         // # logical lines in the function
-                   numPhyLines,         // # physical ...
                    uDupLineNum1,        // Line # of duplicate label (origin-1)
                    uCnt,                // Loop counter
-                   uLineNum1;           // Line # (origin-1)
+                   uLogLineNum1;        // Logical line # (origin-1)
     LPLBLENTRY    *lplpLblEntry = NULL, // Ptr to array of LPLBLENTRYs of labeled lines
                    lpLblEntry;          // Ptr to an individual LBLENTRY
     LPFCNLINE      lpFcnLines,          // Ptr to array of function line structs (FCNLINE[numLogLines])
@@ -3665,9 +3664,8 @@ UBOOL GetLabelNums
     UBOOL          bRet;                // TRUE iff the result is valid
     HGLOBAL        hGlbName;            // Name's global memory handle
 
-    // Get # logical and physical lines in the function
+    // Get # logical lines in the function
     numLogLines = lpMemDfnHdr->numFcnLines;
-    numPhyLines = lpMemDfnHdr->numPhyLines;
 
     // Allocate room for <numLogLines> of <LPSYMENTRY>s for the line labels
     //   so we can sort the labels and find duplicates
@@ -3686,7 +3684,7 @@ UBOOL GetLabelNums
     lpMemDfnHdr->numLblLines = 0;
 
     // Loop through the function lines
-    for (uLineNum1 = 1; uLineNum1 <= numLogLines; uLineNum1++)
+    for (uLogLineNum1 = 1; uLogLineNum1 <= numLogLines; uLogLineNum1++)
     if (lpFcnLines->offTknLine NE 0)
     {
         UINT numTokens;     // # tokens in the line
@@ -3766,7 +3764,7 @@ UBOOL GetLabelNums
                             if (uDupLineNum1 NE 0)
                                 goto SYSDUP_EXIT;
                             // Save line # in origin-1
-                            lpMemDfnHdr->aSysLblId.sysLblLine  = uLineNum1;
+                            lpMemDfnHdr->aSysLblId.sysLblLine  = uLogLineNum1;
                             lpMemDfnHdr->aSysLblId.sysLblTkn   = (UINT) (lptkLine - lptkStart);     // The preceding EOS/EOL
                         } else
                         if (lstrcmpiW (lpMemName, $QUAD_INV) EQ 0)
@@ -3775,7 +3773,7 @@ UBOOL GetLabelNums
                             if (uDupLineNum1 NE 0)
                                 goto SYSDUP_EXIT;
                             // Save line # in origin-1
-                            lpMemDfnHdr->aSysLblInv.sysLblLine = uLineNum1;
+                            lpMemDfnHdr->aSysLblInv.sysLblLine = uLogLineNum1;
                             lpMemDfnHdr->aSysLblInv.sysLblTkn  = (UINT) (lptkLine - lptkStart);     // The preceding EOS/EOL
                         } else
                         if (lstrcmpiW (lpMemName, $QUAD_MS ) EQ 0)
@@ -3784,7 +3782,7 @@ UBOOL GetLabelNums
                             if (uDupLineNum1 NE 0)
                                 goto SYSDUP_EXIT;
                             // Save line # in origin-1
-                            lpMemDfnHdr->aSysLblMs.sysLblLine  = uLineNum1;
+                            lpMemDfnHdr->aSysLblMs.sysLblLine  = uLogLineNum1;
                             lpMemDfnHdr->aSysLblMs.sysLblTkn   = (UINT) (lptkLine - lptkStart);     // The preceding EOS/EOL
                         } else
                         if (lstrcmpiW (lpMemName, $QUAD_PRO) EQ 0)
@@ -3793,7 +3791,7 @@ UBOOL GetLabelNums
                             if (uDupLineNum1 NE 0)
                                 goto SYSDUP_EXIT;
                             // Save line # in origin-1
-                            lpMemDfnHdr->aSysLblPro.sysLblLine = uLineNum1;
+                            lpMemDfnHdr->aSysLblPro.sysLblLine = uLogLineNum1;
                             lpMemDfnHdr->aSysLblPro.sysLblTkn  = (UINT) (lptkLine - lptkStart);     // The preceding EOS/EOL
                         } // End IF/ELSE/...
 
@@ -3805,10 +3803,10 @@ UBOOL GetLabelNums
                             // If there's a previous label, ...
                             if (lpLstLabel NE NULL)
                                 // Save the line # of the next labeled line
-                                lpLstLabel->numNxtLabel1 = uLineNum1;
+                                lpLstLabel->numNxtLabel1 = uLogLineNum1;
                             else
                                 // Save the line # of the first labeled line
-                                lpMemDfnHdr->num1stLabel1 = uLineNum1;
+                                lpMemDfnHdr->num1stLabel1 = uLogLineNum1;
                             // Save as the ptr to the last labeled line
                             lpLstLabel = lpFcnLines;
 
@@ -3816,8 +3814,8 @@ UBOOL GetLabelNums
                             lplpLblEntry[lpMemDfnHdr->numLblLines] = lpLblEntry++;
 
                             // Save the LBLENTRY of the label
-                            lplpLblEntry[lpMemDfnHdr->numLblLines]->lpSymEntry = lptkLine[1].tkData.tkSym;
-                            lplpLblEntry[lpMemDfnHdr->numLblLines]->uLineNum1  = uLineNum1;
+                            lplpLblEntry[lpMemDfnHdr->numLblLines]->lpSymEntry   = lptkLine[1].tkData.tkSym;
+                            lplpLblEntry[lpMemDfnHdr->numLblLines]->uLogLineNum1 = uLogLineNum1;
 
                             // Mark as a labeled line
                             lpLstLabel->bLabel = TRUE;
@@ -3868,7 +3866,7 @@ UBOOL GetLabelNums
         if (CmpLPLBLENTRY (lplpLblEntry[uCnt], lplpLblEntry[uCnt + 1]) EQ 0)
             // Call common error function
             ErrLabelNums (lplpLblEntry[uCnt]->lpSymEntry->stHshEntry->htGlbName,
-                          lplpLblEntry[uCnt]->uLineNum1,
+                          lplpLblEntry[uCnt]->uLogLineNum1,
                           lpMemDfnHdr,
                           bDispErrMsg);
     } // End IF
@@ -3925,7 +3923,7 @@ NORMAL_EXIT:
 
 void ErrLabelNums
     (HGLOBAL      hGlbName,         // Line label name's global memory handle
-     UINT         uLineNum1,        // Line # in error (origin-1)
+     UINT         uLogLineNum1,     // Logical line # in error (origin-1)
      LPDFN_HEADER lpMemDfnHdr,      // Ptr to user-defined function/operator header
      UBOOL        bDispErrMsg)      // TRUE iff we may display error messages
 
@@ -3946,7 +3944,7 @@ void ErrLabelNums
                L"Duplicate label <%s> in <%s> on line # %d",
                 lpMem,
                 lpMemName,
-                uLineNum1);
+                uLogLineNum1);
     // We no longer need these ptrs
     MyGlobalUnlock (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName); lpMemName = NULL;
     MyGlobalUnlock (hGlbName); lpMem = NULL;

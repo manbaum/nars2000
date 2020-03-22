@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1640,6 +1640,41 @@ UBOOL vfpNeg0_EQ0
     } else
         return FALSE;
 } // End vfpNeg0_EQ0
+
+
+//***************************************************************************
+//  $MyGlobalDup
+//
+//  Duplicate an HGLOBAL
+//***************************************************************************
+
+HGLOBAL MyGlobalDup
+    (HGLOBAL hArg)
+
+{
+    size_t  uLen = MyGlobalSize (hArg);
+    HGLOBAL hRes;
+    LPVOID  lpMemArg,
+            lpMemRes;
+
+    // Attempt to allocate a duplicate handle
+    hRes = DbgGlobalAlloc (GHND, uLen);
+    if (hRes NE NULL)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemArg = MyGlobalLockInt (hArg);
+        lpMemRes = MyGlobalLockInt (hRes);
+
+        // Copy the memory to the result
+        CopyMemory (lpMemRes, lpMemArg, uLen);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hRes); lpMemRes = NULL;
+        MyGlobalUnlock (hArg); lpMemArg = NULL;
+    } // End IF
+
+    return hRes;
+} // End MyGlobalDup
 
 
 //***************************************************************************

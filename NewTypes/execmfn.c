@@ -480,13 +480,11 @@ HGLOBAL Init1MagicFunction
     if (ParseFcnHeader (hWndEC, hGlbTknHdr, &fhLocalVars, TRUE))
     {
         UINT         uLogLineNum,       // Current logical line # in the Edit Ctrl (0 = header)
-                     uPhyLineNum,       // ...     physical ...
                      uOffset,           // Cumulative offset
                      numResultSTE,      // # result STEs (may be zero)
                      numLftArgSTE,      // # left arg ...
                      numRhtArgSTE,      // # right ...
                      numLocalsSTE,      // # locals ...
-                     numPhyLines,       // # physical lines in the function
                      numLogLines,       // # logical  ...
                      numSTE;            // Loop counter
         LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header ...
@@ -523,24 +521,17 @@ HGLOBAL Init1MagicFunction
         else
             numLocalsSTE = 0;
 
-        // Get # lines in the function
-        numPhyLines = lpMagicFcnOpr->numFcnLines;
-
         // The lines of MFOs do not come from an EC
         //   so Physical == Logical
         numLogLines = lpMagicFcnOpr->numFcnLines;
 
         // Get size of tokenization of all lines (excluding the header)
-        for (uOffset = 0, uLogLineNum = uPhyLineNum = 1; uPhyLineNum <= numPhyLines; uPhyLineNum++)
-            // If the preceding physical line is not continued to the current line, ...
-            if (!SF_IsLineContMFO (hWndEC, lpMagicFcnOpr, uPhyLineNum - 1))
-            {
-                // Size a function line
-                if (SaveFunctionLine (NULL, lpMagicFcnOpr, NULL, uLogLineNum, uPhyLineNum, NULL, hWndEC, NULL, &uOffset) EQ -1)
-                    goto ERROR_EXIT;
-                // Count in another logical line
-                uLogLineNum++;
-            } // End IF
+        for (uOffset = 0, uLogLineNum = 1; uLogLineNum <= numLogLines; uLogLineNum++)
+        {
+            // Size a function line
+            if (SaveFunctionLine (NULL, lpMagicFcnOpr, NULL, uLogLineNum, NULL, hWndEC, NULL, &uOffset) EQ -1)
+                goto ERROR_EXIT;
+        } // End FOR
 
         // Allocate global memory for the function header
         hGlbDfnHdr =
@@ -580,7 +571,7 @@ HGLOBAL Init1MagicFunction
         lpMemDfnHdr->ListLft      = fhLocalVars.ListLft;
         lpMemDfnHdr->ListRht      = fhLocalVars.ListRht;
         lpMemDfnHdr->RefCnt       = 1;
-        lpMemDfnHdr->numFcnLines  = numPhyLines;
+        lpMemDfnHdr->numFcnLines  = numLogLines;
         lpMemDfnHdr->steLftOpr    = fhLocalVars.lpYYLftOpr
                                   ? fhLocalVars.lpYYLftOpr ->tkToken.tkData.tkSym
                                   : NULL;
@@ -681,19 +672,13 @@ HGLOBAL Init1MagicFunction
         uOffset = lpMemDfnHdr->offTknLines;
 
         // Loop through the lines
-        for (uLogLineNum = uPhyLineNum = 1; uPhyLineNum <= numPhyLines; uPhyLineNum++)
+        for (uLogLineNum = 1; uLogLineNum <= numLogLines; uLogLineNum++)
         {
-            // If the preceding physical line is not continued to the current line, ...
-            if (!SF_IsLineContMFO (hWndEC, lpMagicFcnOpr, uPhyLineNum - 1))
-            {
-                // Save a function line
-                uLineLen =
-                  SaveFunctionLine (NULL, lpMagicFcnOpr, lpMemDfnHdr, uLogLineNum, uPhyLineNum, lpFcnLines, hWndEC, hWndEC, &uOffset);
-                if (uLineLen EQ -1)
-                    goto ERROR_EXIT;
-                // Count in another logical line
-                uLogLineNum++;
-            } // End IF
+            // Save a function line
+            uLineLen =
+              SaveFunctionLine (NULL, lpMagicFcnOpr, lpMemDfnHdr, uLogLineNum, lpFcnLines, hWndEC, hWndEC, &uOffset);
+            if (uLineLen EQ -1)
+                goto ERROR_EXIT;
 
             // Transfer Stop & Trace info
             lpFcnLines->bStop  =

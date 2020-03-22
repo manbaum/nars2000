@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -264,7 +264,8 @@ typedef struct tagTOKEN
     SO_ENUM          tkSynObj;      // 04:  The Syntax Object for this token
     TOKEN_DATA       tkData;        // 08:  The data part (16 bytes)
     int              tkCharIndex;   // 18:  Index into the input line of this token
-                                    // 1C:  Length
+    HGLOBAL          tkhGlbAfoTxt;  // 1C:  Handle to WCHAR string of AFO text incl braces (for TKT_LEFTBRACE only)
+                                    // 20:  Length
 } TOKEN, *LPTOKEN;
 
 // N.B.:  Whenever changing the above struct (TOKEN),
@@ -281,7 +282,7 @@ typedef struct tagTOKEN_HEADER
     UINT             Version,       // 04:  Version # of this header
                      TokenCnt,      // 08:  # tokens in lpToken
                      PrevGroup;     // 0C:  Index of the previous (to the left) grouping symbol
-                                    //      (L/R paren, L/R bracket) where the index is relative
+                                    //      (L/R paren/bracket/brace) where the index is relative
                                     //      to the first token after this header.
                                     // 10:  Length
                                     // 10:  Followed by a <TokenCnt> array of TOKENs

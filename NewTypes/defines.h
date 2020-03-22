@@ -254,11 +254,11 @@
 
 #define WS_WKSNAME  L"workspaces"       // Name of Workspaces subdirectory under main dir
 
-#define LVER_LEGALCOPYRIGHT_YEARS  L"2006-2019"     // ***COPYRIGHT***
+#define LVER_LEGALCOPYRIGHT_YEARS  L"2006-2020"     // ***COPYRIGHT***
 #define LVER_COMPANYNAME_STR       L"Sudley Place Software"
 #define LVER_COPYRIGHT1_STR        L"Copyright " WS_UTF16_COPYRIGHT L" " LVER_LEGALCOPYRIGHT_YEARS L" " LVER_COMPANYNAME_STR
 
-#define VER_LEGALCOPYRIGHT_YEARS    "2006-2019"     // ***COPYRIGHT***
+#define VER_LEGALCOPYRIGHT_YEARS    "2006-2020"     // ***COPYRIGHT***
 #define VER_COMPANYNAME_STR         "Sudley Place Software"
 #define VER_COPYRIGHT1_STR          "Copyright "    UTF16_COPYRIGHT  " "  VER_LEGALCOPYRIGHT_YEARS  " "  VER_COMPANYNAME_STR
 
@@ -474,10 +474,10 @@ default:        \
 #define MYWM_MOVE           (WM_APP + 0)    // MF
 #define MYWM_SETFOCUS       (WM_APP + 1)    // SM (SetFocus)
 #define MYWM_IZITNAME       (WM_APP + 2)    // FE (Izit A Name)
-#define MYWM_SAVE_FN        (WM_APP + 3)    // FE (SaveFunction)
-#define MYWM_SAVECLOSE_FN   (WM_APP + 4)    // FE (SaveFunction/CloseFunction)
+#define MYWM_SAVE_FN        (WM_APP + 3)    // FE (SaveFunctionFE)
+#define MYWM_SAVECLOSE_FN   (WM_APP + 4)    // FE (SaveFunctionFE/CloseFunctionFE)
 #define MYWM_SAVE_AS_FN     (WM_APP + 5)    // FE (SaveAsFunction)
-#define MYWM_CLOSE_FN       (WM_APP + 6)    // FE (CloseFunction)
+#define MYWM_CLOSE_FN       (WM_APP + 6)    // FE (CloseFunctionFE)
 #define MYWM_QUOTEQUAD      (WM_APP + 7)    // PL (Quote-Quad/Quad Input)
 #define MYWM_ERRMSG         (WM_APP + 8)    // SM (Display error message)
 #define MYWM_SAVE_WS        (WM_APP + 9)    // SM (Save workspace)

@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -754,6 +754,12 @@ UBOOL ParseFcnHeader
         //   2 = memory exhausted
         bRet = fh_yyparse (lpfhLocalVars) EQ 0;
 
+#ifdef DEBUG
+        // If we're debugging, ...
+        if (bDebugFH)
+            // Display the tokens in the function header
+            DisplayTokens (lpfhLocalVars->lpHeader);
+#endif
 #if YYDEBUG
         // Disable debugging
         yydebug = FALSE;

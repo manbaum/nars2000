@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ UBOOL CmdDebug_EM
                     sizeof (wszTemp),
                    L"Is %s\r\n"
                    L"   PLTrace = %d  PLStart = %d  ExecTrace = %d\r\n"
-                   L"   CS = %d  FH = %d  FHLex = %d  PN = %d  PNLex = %d\r\n"
+                   L"   CS = %d  CSNew = %d  FH = %d  FHLex = %d  PN = %d  PNLex = %d\r\n"
                    L"   DbgLvl = %d  FcnLvl = %d  VfpLvl = %d  ResizeLvl = %d\r\n"
                    L"   YYAlloc = 0x%X  Test = %d",
                    (hWndDB EQ NULL) ? L"OFF" : L"ON",
@@ -59,6 +59,7 @@ UBOOL CmdDebug_EM
                     bDebugPLStart,
                     bDebugExecTrace,
                     bDebugCS,
+                    bDebugCSNew,
                     bDebugFH,
                     bDebugFHLex,
                     bDebugPN,
@@ -245,6 +246,7 @@ UBOOL CmdDebug_EM
     DEBUG_MAC (L"PLStart"    , L"Was PLStart = %d"   , bDebugPLStart   , IsBooleanValue)
     DEBUG_MAC (L"ExecTrace"  , L"Was ExecTrace = %d" , bDebugExecTrace , IsBooleanValue)
     DEBUG_MAC (L"CS"         , L"Was CS = %d"        , bDebugCS        , IsBooleanValue)
+    DEBUG_MAC (L"CSNew"      , L"Was CSNew = %d"     , bDebugCSNew     , IsBooleanValue)
     DEBUG_MAC (L"FHLex"      , L"Was FHLex = %d"     , bDebugFHLex     , IsBooleanValue)
     DEBUG_MAC (L"FH"         , L"Was FH = %d"        , bDebugFH        , IsBooleanValue)
     DEBUG_MAC (L"PNLex"      , L"Was PNLex = %d"     , bDebugPNLex     , IsBooleanValue)

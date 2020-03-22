@@ -323,7 +323,7 @@ void MakeAfo_EM_YY
      LPPLLOCALVARS lpplLocalVars)       // Ptr to LocalVars
 {
     SF_FCNS      SF_Fcns = {0};         // Common struc for SaveFunctionCom
-    LW_PARAMS    LW_Params = {0};       // Local  ...
+    AN_PARAMS    AN_Params = {0};       // Local  ...
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     HGLOBAL      hGlbDfnHdr;            // AFO Global memory handle
 
@@ -345,7 +345,6 @@ void MakeAfo_EM_YY
     SF_Fcns.SF_LineLen      = SF_LineLenAN;         // Ptr to line length function
     SF_Fcns.SF_ReadLine     = SF_ReadLineAN;        // Ptr to read line function
     SF_Fcns.SF_IsLineCont   = SF_IsLineContAN;      // Ptr to Is Line Continued function
-    SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesAN;     // Ptr to get # physical lines function
     SF_Fcns.SF_NumLogLines  = SF_NumLogLinesAN;     // Ptr to get # logical  ...
     SF_Fcns.SF_CreationTime = SF_CreationTimeCom;   // Ptr to get function creation time
     SF_Fcns.SF_LastModTime  = SF_LastModTimeCom;    // Ptr to get function last modification time
@@ -353,12 +352,12 @@ void MakeAfo_EM_YY
 ////SF_Fcns.hGlbDfnHdr      = NULL;                 // UDFO global memory handle        (Already zero from = {0})
 ////SF_Fcns.numLocalsSTE    = 0;                    // # locals                         (Already zero from = {0})
 ////SF_Fcns.lplpLocalSTEs   = NULL;                 // Ptr to save area for local STEs  (Already zero from = {0})
-    SF_Fcns.LclParams       = &LW_Params;           // Ptr to local parameters
+    SF_Fcns.LclParams       = &AN_Params;           // Ptr to local parameters
     SF_Fcns.sfTypes         = SFTYPES_AFO;          // Caller type
 
     // Fill in local values
-    LW_Params.lpYYRht       = lpYYRht;              // Ptr to right brace token
-    LW_Params.lpplLocalVars = lpplLocalVars;        // Ptr to Local Vars
+    AN_Params.lpYYRht       = lpYYRht;              // Ptr to right brace token
+    AN_Params.lpplLocalVars = lpplLocalVars;        // Ptr to Local Vars
 
     Assert (lpYYRht->lptkLftBrace[1].tkFlags.TknType EQ TKT_GLBDFN);
 
@@ -369,6 +368,8 @@ void MakeAfo_EM_YY
     if (hGlbDfnHdr NE NULL
      || SaveFunctionCom (NULL, &SF_Fcns))
     {
+        LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header global memory
+
         // ***FIXME*** -- Should we rebase tkCharIndexes now?
 
         // If we've not already saved this AFO, ...
@@ -382,6 +383,16 @@ void MakeAfo_EM_YY
         } else
             // Convert to a PTRTYPE_HGLOBAL
             hGlbDfnHdr = MakePtrTypeGlb (hGlbDfnHdr);
+
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
+
+        // Copy the handle to DFN_HEADER
+        lpMemDfnHdr->hGlbAfoTxt =
+          MyGlobalDup (lpYYRht->lptkLftBrace->tkhGlbAfoTxt);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
         goto NORMAL_EXIT;
     } else
@@ -648,8 +659,8 @@ UBOOL afoNameEnd
         goto WSFULL_EXIT;
 
     // Save the last line length and offset
-    lpafoDetectStr->lpafoLineStr[lpafoDetectStr->uLineStrNxt].uLineOff = lpafoDetectStr->uLastLineOff;
-    lpafoDetectStr->lpafoLineStr[lpafoDetectStr->uLineStrNxt].uLineLen = lpafoLocalVars->uChar - lpafoDetectStr->uLastLineOff;
+    lpafoDetectStr->lpafoLineStr[lpafoDetectStr->uLineStrNxt].uPhyLineOff = lpafoDetectStr->uLastLineOff;
+    lpafoDetectStr->lpafoLineStr[lpafoDetectStr->uLineStrNxt].uPhyLineLen = lpafoLocalVars->uChar - lpafoDetectStr->uLastLineOff;
     lpafoDetectStr->uLineStrNxt++;
 
     return TRUE;
@@ -749,8 +760,8 @@ UBOOL afoLbrExit
             goto WSFULL_EXIT;
 
         // Save the last line length and offset
-        lpafoDetectStr->lpafoLineStr[lpafoDetectStr->uLineStrNxt].uLineOff = lpafoDetectStr->uLastLineOff;
-        lpafoDetectStr->lpafoLineStr[lpafoDetectStr->uLineStrNxt].uLineLen = lpafoLocalVars->uChar - lpafoDetectStr->uLastLineOff;
+        lpafoDetectStr->lpafoLineStr[lpafoDetectStr->uLineStrNxt].uPhyLineOff = lpafoDetectStr->uLastLineOff;
+        lpafoDetectStr->lpafoLineStr[lpafoDetectStr->uLineStrNxt].uPhyLineLen = lpafoLocalVars->uChar - lpafoDetectStr->uLastLineOff;
         lpafoDetectStr->uLineStrNxt++;
     } // End IF
 
@@ -783,8 +794,11 @@ UBOOL afoLbrCR
             goto WSFULL_EXIT;
 
     // Save the line length and offset
-    lpafoDetectStr->lpafoLineStr[lpafoDetectStr->uLineStrNxt].uLineOff = lpafoDetectStr->uLastLineOff;
-    lpafoDetectStr->lpafoLineStr[lpafoDetectStr->uLineStrNxt].uLineLen = lpafoLocalVars->uChar - lpafoDetectStr->uLastLineOff;
+    lpafoDetectStr->lpafoLineStr[lpafoDetectStr->uLineStrNxt].uPhyLineOff = lpafoDetectStr->uLastLineOff;
+    lpafoDetectStr->lpafoLineStr[lpafoDetectStr->uLineStrNxt].uPhyLineLen = lpafoLocalVars->uChar - lpafoDetectStr->uLastLineOff;
+
+    // Save the logical line #
+    lpafoDetectStr->lpafoLineStr[lpafoDetectStr->uLineStrNxt].uLogLineNum = lpafoDetectStr->numLogLines;
 
     // If it's a CR/LF, ...
     if (strncmpW (&lpafoLocalVars->lpwszOrig[lpafoLocalVars->uChar], WS_CRLF, strcountof (WS_CRLF)) EQ 0)

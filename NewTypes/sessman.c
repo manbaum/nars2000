@@ -168,30 +168,30 @@ void AppendLine
 //***************************************************************************
 //  $ReplaceLine
 //
-//  Replace the current line in the history buffer
+//  Replace the current physical line in the history buffer
 //***************************************************************************
 
 void ReplaceLine
     (HWND    hWndEC,            // Edit Ctrl window handle
      LPWCHAR lpwszLine,         // Ptr to incoming line text
-     UINT    uLineNum)          // Line # to replace
+     UINT    uPhyLineNum)       // Physical line # to replace
 
 {
-    UINT uLinePos,
-         uLineLen;
+    UINT uPhyLinePos,
+         uPhyLineLen;
 
-    // Get the line position of the given line
-    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+    // Get the line position of the given physical line
+    uPhyLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uPhyLineNum, 0);
 
-    // Get the length of the line
-    uLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
+    // Get the length of the physical line
+    uPhyLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uPhyLinePos, 0);
 
-    // Set the selection to this line
-    SendMessageW (hWndEC, EM_SETSEL, uLinePos, uLinePos + uLineLen);
+    // Set the selection to this pohysical line
+    SendMessageW (hWndEC, EM_SETSEL, uPhyLinePos, uPhyLinePos + uPhyLineLen);
 
-    dprintfWL9 (L"ReplaceLine: %d:<%s> (%S#%d)", uLineNum, lpwszLine, FNLN);
+    dprintfWL9 (L"ReplaceLine: %d:<%s> (%S#%d)", uPhyLineNum, lpwszLine, FNLN);
 
-    // Replace the selection with the given line
+    // Replace the selection with the given physical line
     SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpwszLine);
 } // End ReplaceLine
 
@@ -252,27 +252,27 @@ void ReplaceLastLineCRPmt
 //***************************************************************************
 //  $IzitLastLine
 //
-//  Return TRUE iff the cursor is on the last line
+//  Return TRUE iff the cursor is on the last physical line
 //***************************************************************************
 
 UBOOL IzitLastLine
     (HWND hWndEC)           // Window handle of the Edit Ctrl
 
 {
-    UINT uLineNum,          // Current line #
-         uLineEnd,          // Ending line of the block containing uLineNum
-         uLineCnt;          // # lines in the Edit Ctrl
+    UINT uPhyLineNum,       // Current physical line #
+         uPhyLineEnd,       // Ending physical line of the block containing uLineNum
+         uPhyLineCnt;       // # physical lines in the Edit Ctrl
 
-    // Get the current line # (origin-0)
-    uLineNum = (DWORD) SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
+    // Get the current physical line # (origin-0)
+    uPhyLineNum = (DWORD) SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
 
-    // Get the last line # in this block (origin-0)
-    uLineEnd = GetBlockEndLine (hWndEC, uLineNum);
+    // Get the last physical line # in this block (origin-0)
+    uPhyLineEnd = GetBlockEndLineFE (hWndEC, uPhyLineNum);
 
-    // Get the # lines in the text
-    uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
+    // Get the # physical lines in the text
+    uPhyLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
-    return (uLineEnd EQ (uLineCnt - 1));
+    return (uPhyLineEnd EQ (uPhyLineCnt - 1));
 } // End IzitlastLine
 
 
@@ -422,14 +422,14 @@ void DrawAllLineCont
 
 void DrawLineCont
     (HWND  hWndEC,                  // Edit Ctrl window handle
-     UINT  uLineNum)                // Line number
+     UINT  uPhyLineNum)             // Physical line number
 
 {
     HWND         hWndParent;        // Parent window handle
     HDC          hDC;               // Screen DC
     FONTENUM     fontEnum;          // Font enum index
     SIZE         charSize;          // cx & cy of the average char in the font
-    UINT         uLineTop,          // # of topmost visible line
+    UINT         uPhyLineTop,       // # of topmost visible Physical line
                  uLeft;             // Left margin in rcLC
     RECT         rcLC;              // Rectangle for the Line Continuation char
     HFONT        hFontOld;          // Handle to the old font
@@ -463,11 +463,11 @@ void DrawLineCont
     // Get the font average char size
     charSize = *GetFSIndAveCharSize (fontEnum);
 
-    // Get the # of the topmost visible line
-    uLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
+    // Get the # of the topmost visible Physical line
+    uPhyLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
 
     // Fill in the top/left of the RECT
-    rcLC.top  = (uLineNum - uLineTop) * charSize.cy;
+    rcLC.top  = (uPhyLineNum - uPhyLineTop) * charSize.cy;
     rcLC.left = uLeft + uWidthLC[fontEnum];
 
     // Handle via subroutine
@@ -747,24 +747,24 @@ void DisplayPrompt
 
 
 //***************************************************************************
-//  $GetLineLength
+//  $GetLineLengthFE
 //
-//  Return the line length of a given line #
+//  Return the physical line length of a given line #
 //***************************************************************************
 
-UINT GetLineLength
+UINT GetLineLengthFE
     (HWND     hWndEC,           // Edit Ctrl window handle
-     APLU3264 uLineNum)         // The line #
+     APLU3264 uPhyLineNum)      // The physical line #
 
 {
-    UINT uLinePos;              // Char position of start of line
+    UINT uPhyLinePos;           // Char position of start of physical line
 
     // Get the position of the start of the line
-    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+    uPhyLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uPhyLineNum, 0);
 
-    // Get the line length
-    return (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
-} // GetLineLength
+    // Get the physical line length
+    return (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uPhyLinePos, 0);
+} // GetLineLengthFE
 
 
 //***************************************************************************
@@ -774,25 +774,25 @@ UINT GetLineLength
 //***************************************************************************
 
 void FormatQQuadInput
-    (UINT         uLineNum,     // Line #
+    (UINT         uPhyLineNum,  // Physical line #
      HWND         hWndEC,       // Handle of Edit Ctrl window
      LPPERTABDATA lpMemPTD)     // Ptr to PerTabData global memory
 
 {
-    UINT         uLineLen;      // Line length
+    UINT         uPhyLineLen;   // Physical Line length
     APLUINT      ByteRes;       // # bytes in the result
     HGLOBAL      hGlbRes;       // Result global memory handle
     LPAPLCHAR    lpMemRes;      // Ptr to result global memory
     LPPL_YYSTYPE lpYYRes;       // Ptr to the result
 
-    // Get the line length of a given line #
-    uLineLen = GetLineLength (hWndEC, uLineNum);
+    // Get the line length of a given physical line #
+    uPhyLineLen = GetLineLengthFE (hWndEC, uPhyLineNum);
 
     // Calculate space needed for the result
     // N.B.:  max is needed because, in order to get the line,
     //        we need to tell EM_GETLINE the buffer size which
     //        takes up one APLCHAR (WORD) at the start of the buffer.
-    ByteRes = CalcArraySize (ARRAY_CHAR, max (uLineLen, 1), 1);
+    ByteRes = CalcArraySize (ARRAY_CHAR, max (uPhyLineLen, 1), 1);
 
     // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
@@ -813,24 +813,24 @@ void FormatQQuadInput
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
-    lpHeader->NELM       = uLineLen;
+    lpHeader->NELM       = uPhyLineLen;
     lpHeader->Rank       = 1;
 #undef  lpHeader
 
     // Save the dimension in the result
-    *VarArrayBaseToDim (lpMemRes) = uLineLen;
+    *VarArrayBaseToDim (lpMemRes) = uPhyLineLen;
 
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Tell EM_GETLINE maximum # chars in the buffer
-    // Because we allocated space for max (uLineLen, 1)
+    // Because we allocated space for max (uPhyLineLen, 1)
     //   chars, we don't have to worry about overwriting
     //   the allocation limits of the buffer
-    ((LPWORD) lpMemRes)[0] = (WORD) uLineLen;
+    ((LPWORD) lpMemRes)[0] = (WORD) uPhyLineLen;
 
     // Get the contents of the line
-    SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpMemRes);
+    SendMessageW (hWndEC, EM_GETLINE, uPhyLineNum, (LPARAM) lpMemRes);
 
     // Replace leading Prompt Replacement chars
     if (lpMemPTD->cQuadPR NE CQUADPR_MT)
@@ -1910,16 +1910,16 @@ NORMAL_EXIT:
             return FALSE;           // We handled the msg
 
 #define nVirtKey    ((int) wParam)
-#define uLineNum    ((UINT) lParam)
-        case MYWM_KEYDOWN:          // nVirtKey = (int) wParam;     // Virtual-key code
-                                    // uLineNum = lParam;           // Line #
-                                    // lKeyData = lParam;           // Key data
+#define uPhyLineNum     ((UINT) lParam)
+        case MYWM_KEYDOWN:          // nVirtKey    = (int) wParam;  // Virtual-key code
+                                    // uPhyLineNum = lParam;        // Physical line #
+                                    // lKeyData    = lParam;        // Key data
         {
-            UINT uLineLen,
-                 uLineTop,
-                 uLineCur,
-                 uLinesPerPage,
-                 uLineCnt;
+            UINT uPhyLineLen,
+                 uPhyLineTop,
+                 uPhyLineCur,
+                 uPhyLinesPerPage,
+                 uPhyLineCnt;
             UBOOL bRet,
                   ksCtrl,
                   ksShift;
@@ -1983,7 +1983,7 @@ NORMAL_EXIT:
                         //   copy it and append it to the buffer
                         if (ksShift || ksCtrl || !IzitLastLine (hWndEC))
                         {
-                            UINT    uLastNum;
+                            UINT    uPhyLastNum;
                             LPWCHAR lpwTmpLine;
 
                             // If we're inserting a soft line-break, ...
@@ -2011,18 +2011,18 @@ NORMAL_EXIT:
                                 // If we're not on the last line, ...
                                 if (!IzitLastLine (hWndEC))
                                 {
-                                    UINT uLineBeg;
+                                    UINT uPhyLineBeg;
 
-                                    // Get the line # of the start of a block of a Line Continuations
-                                    uLineBeg = GetBlockStartLine (hWndEC, uLineNum);
+                                    // Get the physical line # of the start of a block of a Line Continuations
+                                    uPhyLineBeg = GetBlockStartLineFE (hWndEC, uPhyLineNum);
 
                                     // Get the overall block length
                                     //   not including a terminating zero
-                                    uLineLen = GetBlockLength (hWndEC, uLineBeg);
+                                    uPhyLineLen = GetBlockLengthFE (hWndEC, uPhyLineBeg);
 
                                     // Allocate space for the line including the terminating CRLF and zero
                                     lpwTmpLine =
-                                      DbgGlobalAlloc (GPTR, (uLineLen + strcountof (WS_CRLF) + 1)   // "+ 1" for the terminating zero
+                                      DbgGlobalAlloc (GPTR, (uPhyLineLen + strcountof (WS_CRLF) + 1)    // "+ 1" for the terminating zero
                                                            * sizeof (lpwTmpLine[0]));
 
                                     // Check for error
@@ -2033,14 +2033,14 @@ NORMAL_EXIT:
                                         return FALSE;
                                     } // End IF
 
-                                    // Copy a block of lines
+                                    // Copy a block of physical lines
                                     //   including a terminating zero if there's enough room
-                                    CopyBlockLines (hWndEC, uLineBeg, lpwTmpLine);
+                                    CopyBlockLinesFE (hWndEC, uPhyLineBeg, lpwTmpLine);
 
-                                    Assert (lpwTmpLine[uLineLen] EQ WC_EOS);
+                                    Assert (lpwTmpLine[uPhyLineLen] EQ WC_EOS);
 
 ////////////////////////////////////// Ensure properly terminated
-////////////////////////////////////lpwTmpLine[uLineLen] = WC_EOS;      // Unnecessary as GPTR fills with zeros
+////////////////////////////////////lpwTmpLine[uPhyLineLen] = WC_EOS;   // Unnecessary as GPTR fills with zeros
 
                                     // If it's not Ctrl-CR, ...
                                     if (!ksCtrl)
@@ -2050,11 +2050,11 @@ NORMAL_EXIT:
                                     // Move the text caret to the end of the buffer
                                     MoveCaretEOB (hWndEC);
 
-                                    // Get the # of the last line
-                                    uLastNum = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
+                                    // Get the # of the last physical line
+                                    uPhyLastNum = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
 
                                     // Replace the last line in the buffer
-                                    ReplaceLine (hWndEC, lpwTmpLine, uLastNum);
+                                    ReplaceLine (hWndEC, lpwTmpLine, uPhyLastNum);
 
                                     // We no longer need this storage
                                     DbgGlobalFree (lpwTmpLine); lpwTmpLine = NULL;
@@ -2070,8 +2070,8 @@ NORMAL_EXIT:
                                     // Lock the memory to get a ptr to it
                                     lpwCurLine = MyGlobalLockInt (lpMemPTD->hGlbCurLine);
 
-                                    // Restore the original of the current line
-                                    ReplaceLine (hWndEC, lpwCurLine, uLineNum);
+                                    // Restore the original of the current physical line
+                                    ReplaceLine (hWndEC, lpwCurLine, uPhyLineNum);
 
                                     // We no longer need this ptr
                                     MyGlobalUnlock (lpMemPTD->hGlbCurLine); lpwCurLine = NULL;
@@ -2080,8 +2080,8 @@ NORMAL_EXIT:
                                 // Move the text caret to the end of the buffer
                                 MoveCaretEOB (hWndEC);
 
-                                // Get the current line #
-                                uLineNum = uLastNum;
+                                // Get the current physical line #
+                                uPhyLineNum = uPhyLastNum;
                             } // End IF/ELSE
                         } // End IF
                     } // End IF
@@ -2090,35 +2090,35 @@ NORMAL_EXIT:
                     if (lpMemPTD->lpSISCur NE NULL
                      && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QQUAD)
                         // Format QQ input and save in global memory
-                        FormatQQuadInput (uLineNum, hWndEC, lpMemPTD);
+                        FormatQQuadInput (uPhyLineNum, hWndEC, lpMemPTD);
                     else
                     // Execute the line if no other program is active
                     //   and not a soft line-break,
                     //   and not copy w/o execute
                     if (!bRet && !ksShift && !ksCtrl)
-                        ImmExecLine (hWndEC, uLineNum);
+                        ImmExecLine (hWndEC, uPhyLineNum);
                     break;
 
                 case VK_UP:
-                    // If the next line is out of range, exit
-                    if (uLineNum < 1)
+                    // If the next physical line is out of range, exit
+                    if (uPhyLineNum < 1)
                         break;
 
-                    // Set (new) current line
-                    MoveToLine (--uLineNum, lpMemPTD, hWndEC);
+                    // Set (new) current physical line
+                    MoveToLine (--uPhyLineNum, lpMemPTD, hWndEC);
 
                     break;
 
                 case VK_DOWN:
-                    // Get the # lines in the Edit Ctrl
-                    uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
+                    // Get the # physical lines in the Edit Ctrl
+                    uPhyLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
-                    // If the next line is out of range, exit
-                    if (uLineCnt <= (uLineNum + 1))
+                    // If the next physical line is out of range, exit
+                    if (uPhyLineCnt <= (uPhyLineNum + 1))
                         break;
 
-                    // Set (new) current line
-                    MoveToLine (++uLineNum, lpMemPTD, hWndEC);
+                    // Set (new) current physical line
+                    MoveToLine (++uPhyLineNum, lpMemPTD, hWndEC);
 
                     break;
 
@@ -2128,29 +2128,29 @@ NORMAL_EXIT:
                     {
                         // Move the cursor to the top-of-page
 
-                        // Get the # of the topmost visible line
-                        uLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
+                        // Get the # of the topmost visible phyhsical line
+                        uPhyLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
 
-                        // Set (new) current line
-                        MoveToLine (uLineTop, lpMemPTD, hWndEC);
+                        // Set (new) current physical line
+                        MoveToLine (uPhyLineTop, lpMemPTD, hWndEC);
                     } else
                     // If it's PgUp, ...
                     if (!(ksCtrl || ksShift))
                     {
-                        // Calculate the # lines per page
-                        uLinesPerPage = (UINT) SendMessageW (hWndEC, MYEM_LINES_PER_PAGE, 0, 0);
+                        // Calculate the # physical lines per page
+                        uPhyLinesPerPage = (UINT) SendMessageW (hWndEC, MYEM_LINES_PER_PAGE, 0, 0);
 
-                        // Get the current line #
-                        uLineCur = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, -1, 0);
+                        // Get the current physical line #
+                        uPhyLineCur = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, -1, 0);
 
                         // Ensure we stay within bounds
-                        if (uLineCur >= uLinesPerPage)
-                            uLineCur -= uLinesPerPage;
+                        if (uPhyLineCur >= uPhyLinesPerPage)
+                            uPhyLineCur -= uPhyLinesPerPage;
                         else
-                            uLineCur = 0;
+                            uPhyLineCur = 0;
 
-                        // Set (new) current line
-                        MoveToLine (uLineCur, lpMemPTD, hWndEC);
+                        // Set (new) current physical line
+                        MoveToLine (uPhyLineCur, lpMemPTD, hWndEC);
                     } // End IF/ELSE
 
                     break;
@@ -2161,39 +2161,39 @@ NORMAL_EXIT:
                     {
                         // Move the cursor to the bottom-of-page
 
-                        // Get the # of the topmost visible line
-                        uLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
+                        // Get the # of the topmost visible Physical line
+                        uPhyLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
 
-                        // Calculate the # lines per page
-                        uLinesPerPage = (UINT) SendMessageW (hWndEC, MYEM_LINES_PER_PAGE, 0, 0);
+                        // Calculate the # Physical lines per page
+                        uPhyLinesPerPage = (UINT) SendMessageW (hWndEC, MYEM_LINES_PER_PAGE, 0, 0);
 
                         // Plus the # lines-per-page minus 1
-                        uLineCur = uLineTop + uLinesPerPage - 1;
+                        uPhyLineCur = uPhyLineTop + uPhyLinesPerPage - 1;
 
-                        // Set (new) current line
-                        MoveToLine (uLineCur, lpMemPTD, hWndEC);
+                        // Set (new) current Physical line
+                        MoveToLine (uPhyLineCur, lpMemPTD, hWndEC);
                     } else
                     // If it's PgDn, ...
                     if (!(ksCtrl || ksShift))
                     {
-                        // Calculate the # lines per page
-                        uLinesPerPage = (UINT) SendMessageW (hWndEC, MYEM_LINES_PER_PAGE, 0, 0);
+                        // Calculate the # Physical lines per page
+                        uPhyLinesPerPage = (UINT) SendMessageW (hWndEC, MYEM_LINES_PER_PAGE, 0, 0);
 
-                        // Get the current line #
-                        uLineCur = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, -1, 0);
+                        // Get the current Physical line #
+                        uPhyLineCur = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, -1, 0);
 
-                        // Add to get the new line #
-                        uLineCur += uLinesPerPage;
+                        // Add to get the new Physical line #
+                        uPhyLineCur += uPhyLinesPerPage;
 
-                        // Get the # lines in the Edit Ctrl
-                        uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
+                        // Get the # Physical lines in the Edit Ctrl
+                        uPhyLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
                         // Ensure we stay within bounds
-                        if (uLineCur >= uLineCnt)
-                            uLineCur = uLineCnt - 1;
+                        if (uPhyLineCur >= uPhyLineCnt)
+                            uPhyLineCur = uPhyLineCnt - 1;
 
-                        // Set (new) current line
-                        MoveToLine (uLineCur, lpMemPTD, hWndEC);
+                        // Set (new) current Physical line
+                        MoveToLine (uPhyLineCur, lpMemPTD, hWndEC);
                     } // End IF/ELSE
 
                     break;
@@ -2203,10 +2203,10 @@ NORMAL_EXIT:
                     if (ksCtrl)
                     {
                         // Move the cursor to the top-of-buffer
-                        uLineCur = 0;
+                        uPhyLineCur = 0;
 
-                        // Set (new) current line
-                        MoveToLine (uLineCur, lpMemPTD, hWndEC);
+                        // Set (new) current Physical line
+                        MoveToLine (uPhyLineCur, lpMemPTD, hWndEC);
                     } // End IF
 
                     break;
@@ -2217,11 +2217,11 @@ NORMAL_EXIT:
                     {
                         // Move the cursor to the bottom-of-buffer
 
-                        // Get the # lines in the text
-                        uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
+                        // Get the # Physical lines in the text
+                        uPhyLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
-                        // Set (new) current line
-                        MoveToLine (uLineCnt - 1, lpMemPTD, hWndEC);
+                        // Set (new) current Physical line
+                        MoveToLine (uPhyLineCnt - 1, lpMemPTD, hWndEC);
                     } // End IF
 
                     break;
@@ -2345,7 +2345,7 @@ NORMAL_EXIT:
 
             return FALSE;           // We handled the msg
         } // End MYWM_KEYDOWN
-#undef  uLineNum
+#undef  uPhyLineNum
 #undef  nVirtKey
 
         case WM_SYSCOLORCHANGE:
@@ -2528,20 +2528,20 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $MoveToLine
 //
-//  Common routine when moving the text cursor to a new line
+//  Common routine when moving the text cursor to a new Physical line
 //***************************************************************************
 
 void MoveToLine
-    (APLU3264     uLineNum,             // The given line #
+    (APLU3264     uPhyLineNum,          // The given Physical line #
      LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
      HWND         hWndEC)               // Edit Ctrl window handle
 
 {
-    UINT    uLineLen;                   // Line length
+    UINT    uPhyLineLen;                // Physical Line length
     LPWCHAR lpwCurLine;                 // Ptr to current line global memory
 
-    // Get the length of the (new) current line
-    uLineLen = GetLineLength (hWndEC, uLineNum);
+    // Get the length of the (new) current Physical line
+    uPhyLineLen = GetLineLengthFE (hWndEC, uPhyLineNum);
 
     // If there's a previous current line global memory handle,
     //   free it
@@ -2552,7 +2552,7 @@ void MoveToLine
 
     // Allocate space for the line including a terminating zero
     lpMemPTD->hGlbCurLine =
-      DbgGlobalAlloc (GHND, (uLineLen + 1) * sizeof (lpwCurLine[0]));
+      DbgGlobalAlloc (GHND, (uPhyLineLen + 1) * sizeof (lpwCurLine[0]));
 
     // Check for error
     if (lpMemPTD->hGlbCurLine EQ NULL)
@@ -2566,10 +2566,10 @@ void MoveToLine
     lpwCurLine = MyGlobalLockInt (lpMemPTD->hGlbCurLine);   // Might be only 1 byte
 
     // Tell EM_GETLINE maximum # chars in the buffer
-    ((LPWORD) lpwCurLine)[0] = uLineLen;
+    ((LPWORD) lpwCurLine)[0] = uPhyLineLen;
 
     // Save the (new) current line
-    SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwCurLine);
+    SendMessageW (hWndEC, EM_GETLINE, uPhyLineNum, (LPARAM) lpwCurLine);
 
     // We no longer need this ptr
     MyGlobalUnlock (lpMemPTD->hGlbCurLine); lpwCurLine = NULL;

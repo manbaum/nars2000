@@ -1078,6 +1078,12 @@ void FreeResultGlobalDfnStruc
         DbgGlobalFree (lpMemDfnHdr->hGlbMonInfo); lpMemDfnHdr->hGlbMonInfo = NULL;
     } // End IF
 
+    if (lpMemDfnHdr->hGlbAfoTxt NE NULL)
+    {
+        // We no longer need this storage
+        DbgGlobalFree (lpMemDfnHdr->hGlbAfoTxt); lpMemDfnHdr->hGlbAfoTxt = NULL;
+    } // End IF
+
     // Get the # lines in the function
     numFcnLines = lpMemDfnHdr->numFcnLines;
 

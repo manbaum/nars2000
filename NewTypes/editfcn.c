@@ -799,12 +799,12 @@ LRESULT APIENTRY FEWndProc
             DrawLineNumsFE (hWndEC);
 
             // Get the length of the function header line
-            uLineLen = GetLineLength (hWndEC, 0);
+            uLineLen = GetLineLengthFE (hWndEC, 0);
 
             // If it's an AFO, ...
             if (bAFO)
                 // Plus the line terminator and the length of the first line
-                uLineLen  = sizeof (WS_CRLF) + GetBlockLength (hWndEC, 1);
+                uLineLen  = sizeof (WS_CRLF) + GetBlockLengthFE (hWndEC, 1);
             // Set the caret to that character
             SendMessageW (hWndEC, EM_SETSEL, uLineLen, uLineLen);
 
@@ -845,21 +845,21 @@ LRESULT APIENTRY FEWndProc
 
         case MYWM_SAVE_FN:
             // Save the function (if well-formed)
-            SaveFunction (hWnd);
+            SaveFunctionFE (hWnd);
 
             return FALSE;           // We handled the msg
 
         case MYWM_SAVECLOSE_FN:
             // Save the function (if well-formed)
-            if (SaveFunction (hWnd))
+            if (SaveFunctionFE (hWnd))
                 // Close the function (if allowed)
-                CloseFunction (hWnd);
+                CloseFunctionFE (hWnd);
 
             return FALSE;           // We handled the msg
 
         case MYWM_CLOSE_FN:
             // Close the function (if allowed)
-            CloseFunction (hWnd);
+            CloseFunctionFE (hWnd);
 
             return FALSE;           // We handled the msg
 
@@ -1032,7 +1032,7 @@ LRESULT APIENTRY FEWndProc
                     //   have changed the localization status of a var,
                     //   so we need to repaint the whole window to reflect
                     //   the possible change in syntax colors.
-                    if (0 EQ GetBlockStartLine (hWndEC, iLineNum))
+                    if (0 EQ GetBlockStartLineFE (hWndEC, iLineNum))
                     {
                         // If the Changed flag didn't change, ...
                         if (bChanged)
@@ -1159,7 +1159,7 @@ UINT GetFunctionName
 
     // Get the overall block length
     //   not including a terminating zero
-    uLineLen = GetBlockLength (hWndEC, 0);
+    uLineLen = GetBlockLengthFE (hWndEC, 0);
 
     // Tell EM_GETLINE maximum # chars in the buffer
     // The output array is a temporary so we don't have to
@@ -1168,7 +1168,7 @@ UINT GetFunctionName
 
     // Copy a block of lines
     //   including a terminating zero if there's enough room
-    CopyBlockLines (hWndEC, 0, lpwszTemp);
+    CopyBlockLinesFE (hWndEC, 0, lpwszTemp);
 
     // Ensure the line is properly terminated
     lpwszTemp[uLineLen] = WC_EOS;
@@ -5800,7 +5800,7 @@ UBOOL QueryCloseFE
     switch (MessageBoxW (NULL, wszCloseMessage, lpwszAppName, MB_YESNOCANCEL | MB_ICONQUESTION))
     {
         case IDYES:         // Save the function
-            return SaveFunction (hWndFE);
+            return SaveFunctionFE (hWndFE);
 
         case IDNO:          // Do not save the function
             return TRUE;
@@ -5969,12 +5969,12 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $CloseFunction
+//  $CloseFunctionFE
 //
-//  Attempt to close a function
+//  Attempt to close a function from an EditCtrl
 //***************************************************************************
 
-UBOOL CloseFunction
+UBOOL CloseFunctionFE
     (HWND hWndFE)               // The window handle of the function to close
 
 {
@@ -5993,7 +5993,7 @@ UBOOL CloseFunction
     } // End IF
 
     return bRet;
-} // End CloseFunction
+} // End CloseFunctionFE
 
 
 //***************************************************************************

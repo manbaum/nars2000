@@ -2667,6 +2667,11 @@ UBOOL bDebugExecTrace
  = FALSE
 #endif
 ,
+      bDebugCSNew
+#ifdef DEFINE_VALUES
+ = FALSE
+#endif
+,
       bDebugFH
 #ifdef DEFINE_VALUES
  = FALSE

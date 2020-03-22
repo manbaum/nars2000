@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ typedef struct tagSF_FCNS
                 bRefRhtOper:1,      //      00000100:  TRUE iff ...                  {omega}{omega
                 bMFO:1,             //      00000200:  TRUE iff this is an MFO
                 bLclRL:1,           //      00000400:  TRUE iff []RL is localized in this function
-                bMakeAFE:1,         //      000008000  TRUE iff we're called from <SaveFunction> as an AFO
+                bMakeAFE:1,         //      000008000  TRUE iff we're called from <SaveFunctionFE> as an AFO
                 bMakeAFX:1,         //      000010000  TRUE iff we're called from <SysFnMonFX_EM> as an AFO
                 bNoFree:1,          //      000020000  TRUE iff we're *NOT* to free the old function (if present)
                 :18;                //      FFFFC000:  Available bits
@@ -59,24 +59,22 @@ typedef struct tagSF_FCNS
                 (HWND, struct tagSF_FCNS *, UINT, LPAPLCHAR);
     UBOOL     (*SF_IsLineCont)      // 1C:  Ptr to Is Line Continued function
                 (HWND, struct tagSF_FCNS *, UINT);
-    UINT      (*SF_NumPhyLines)     // 20:  Ptr to get # physical lines function
+    UINT      (*SF_NumLogLines)     // 20:  Ptr to get # logical function lines
                 (HWND, struct tagSF_FCNS *);
-    UINT      (*SF_NumLogLines)     // 24:  Ptr to get # logical  ...
-                (HWND, struct tagSF_FCNS *);
-    void      (*SF_CreationTime)    // 28:  Ptr to get function creation time
+    void      (*SF_CreationTime)    // 24:  Ptr to get function creation time
                 (struct tagSF_FCNS *, SYSTEMTIME *, FILETIME *);
-    void      (*SF_LastModTime)     // 2C:  Ptr to get function last mod time
+    void      (*SF_LastModTime)     // 28:  Ptr to get function last mod time
                 (struct tagSF_FCNS *, SYSTEMTIME *, FILETIME *);
-    HGLOBAL   (*SF_UndoBuffer)      // 30:  Ptr to get function Undo Buffer global memory handle
+    HGLOBAL   (*SF_UndoBuffer)      // 2C:  Ptr to get function Undo Buffer global memory handle
                 (HWND, struct tagSF_FCNS *);
-    HGLOBAL     hGlbDfnHdr;         // 34:  User-defined function/operator global memory handle
-    UINT        numLocalsSTE;       // 38:  # locals in AFO
-    LPSYMENTRY *lplpLocalSTEs;      // 3C:  Ptr to save area for local STEs (may be NULL during sizing)
-    LPHSHTABSTR lpHTS;              // 40:  Ptr to HshTabStr (may be NULL)
-    HSHTABSTR   htsDFN;             // 44:  Local HshTab struc for this AFO (124 bytes)
-    SF_TYPES    sfTypes;            // 48:  Caller type (see SF_TYPES above)
-    WCHAR       wszErrMsg[256];     // 4C:  Save area for error message
-                                    //24C:  Length of struc
+    HGLOBAL     hGlbDfnHdr;         // 30:  User-defined function/operator global memory handle
+    UINT        numLocalsSTE;       // 34:  # locals in AFO
+    LPSYMENTRY *lplpLocalSTEs;      // 38:  Ptr to save area for local STEs (may be NULL during sizing)
+    LPHSHTABSTR lpHTS;              // 3C:  Ptr to HshTabStr (may be NULL)
+    HSHTABSTR   htsDFN;             // 40:  Local HshTab struc for this AFO (124 bytes)
+    SF_TYPES    sfTypes;            // 44:  Caller type (see SF_TYPES above)
+    WCHAR       wszErrMsg[256];     // 48:  Save area for error message
+                                    //248:  Length of struc
 } SF_FCNS, *LPSF_FCNS;
 
 
@@ -88,17 +86,10 @@ typedef struct tagSF_FCNS
 #define SF_IsLineContLW     SF_IsLineContCom
 #define SF_IsLineContTF1    SF_IsLineContCom
 
-#define SF_NumPhyLinesM     SF_NumLinesM
 #define SF_NumLogLinesM     SF_NumLinesM
-#define SF_NumPhyLinesN     SF_NumLinesCom
 #define SF_NumLogLinesN     SF_NumLinesCom
-#define SF_NumPhyLinesAA    SF_NumLinesAA
 #define SF_NumLogLinesAA    SF_NumLinesAA
-#define SF_NumPhyLinesAN    SF_NumLinesAN
-#define SF_NumLogLinesAN    SF_NumLinesAN
-#define SF_NumPhyLinesLW    SF_NumLinesLW
 #define SF_NumLogLinesLW    SF_NumLinesLW
-#define SF_NumPhyLinesTF1   SF_NumLinesTF1
 #define SF_NumLogLinesTF1   SF_NumLinesTF1
 
 #define SF_CreationTimeM    SF_CreationTimeCom
@@ -133,7 +124,7 @@ typedef struct tagFX_PARAMS
 } FX_PARAMS, *LPFX_PARAMS;
 
 
-typedef struct tagLW_PARAMS         // LoadWorkspace & AFO struc
+typedef struct tagLW_PARAMS         // LoadWorkspace struc
 {
     LPWCHAR       lpwSectName,      // 00:  Ptr to section name [nnn.Name]
                   lpwBuffer,        // 04:  Ptr to temporary buffer
@@ -143,10 +134,16 @@ typedef struct tagLW_PARAMS         // LoadWorkspace & AFO struc
     FILETIME      ftCreation,       // 14:  Function Creation Time
                   ftLastMod;        // 18:  Function Last Modification Time
     LPWCHAR       lpwszVersion;     // 1C:  Ptr to workspace version text
-    LPPL_YYSTYPE  lpYYRht;          // 20:  Ptr to right brace YYSTYPE
-    LPPLLOCALVARS lpplLocalVars;    // 24:  Ptr to LocalVars
-                                    // 28:  Length
+                                    // 20:  Length
 } LW_PARAMS, *LPLW_PARAMS;
+
+
+typedef struct tagAN_PARAMS         // AFO struc
+{
+    LPPL_YYSTYPE  lpYYRht;          // 00:  Ptr to right brace YYSTYPE
+    LPPLLOCALVARS lpplLocalVars;    // 04:  Ptr to LocalVars
+                                    // 08:  Length
+} AN_PARAMS, *LPAN_PARAMS;
 
 
 typedef struct tagTF1_PARAMS

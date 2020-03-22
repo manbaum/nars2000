@@ -1050,6 +1050,8 @@ LPAPLCHAR SavedWsFormGlbFcn
                 {
                     LPWCHAR p;
 
+                    Assert (lpwszFcnName NE NULL);
+
                     // Find the '=' separator
                     p = SkipToCharW (lpwszFcnName, '=');
 
@@ -1061,9 +1063,6 @@ LPAPLCHAR SavedWsFormGlbFcn
 
                     // Restore the zapped char
                     *p = '=';
-
-                    // Return the pointer to the next char in the buffer
-                    lpwszFcnName = &lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)];
                 } else
                 {
                     // Skip over the leading part

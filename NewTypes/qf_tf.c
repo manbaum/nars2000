@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1286,7 +1286,6 @@ UBOOL TransferInverseFcn1_EM
     SF_Fcns.SF_LineLen      = SF_LineLenTF1;        // Ptr to line length function
     SF_Fcns.SF_ReadLine     = SF_ReadLineTF1;       // Ptr to read line function
     SF_Fcns.SF_IsLineCont   = SF_IsLineContTF1;     // Ptr to Is Line Continued function
-    SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesTF1;    // Ptr to # physical lines function
     SF_Fcns.SF_NumLogLines  = SF_NumLogLinesTF1;    // Ptr to # logical  ...
     SF_Fcns.SF_CreationTime = SF_CreationTimeTF1;   // Ptr to get function creation time
     SF_Fcns.SF_LastModTime  = SF_LastModTimeTF1;    // Ptr to get function last modification time

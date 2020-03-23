@@ -946,7 +946,7 @@ UBOOL IsLocalName
         return FALSE;
 
     // Get the block length
-    uLineLen = GetBlockLength (hWndEC, 0);
+    uLineLen = GetBlockLengthFE (hWndEC, 0);
 
     // Allocate storage for the block including
     //   the terminating zero
@@ -959,7 +959,7 @@ UBOOL IsLocalName
 
     // Copy the function header block
     //   including a terminating zero if there's enough room
-    uLineLen = CopyBlockLines (hWndEC, 0, lpwBlk);
+    uLineLen = CopyBlockLinesFE (hWndEC, 0, lpwBlk);
 
     // Copy the base of the line
     wp = lpwBlk;
@@ -1701,7 +1701,7 @@ UBOOL scAlpDone
 //***************************************************************************
 //  $fnDirIdent
 //
-//  End of direct identifier
+//  Start of direct identifier
 //***************************************************************************
 
 UBOOL fnDirIdent
@@ -1792,7 +1792,7 @@ UBOOL fnDirIdent
         bRet = AppendNewToken_EM (lptkLocalVars,
                                  &tkFlags,
                                  &tkData,
-                                  -lptkLocalVars->iStrLen);
+                                  0);   // At start of DirIdent
     } // End IF/ELSE
 
     // We no longer need this ptr
@@ -1808,7 +1808,7 @@ UBOOL fnDirIdent
 //***************************************************************************
 //  $scDirIdent
 //
-//  End of direct identifier
+//  Start of direct identifier
 //***************************************************************************
 
 UBOOL scDirIdent
@@ -3197,7 +3197,7 @@ UBOOL scOp2DoneX
 //***************************************************************************
 //  $fnDelDone
 //
-//  End of a del
+//  Start of a del
 //***************************************************************************
 
 UBOOL fnDelDone
@@ -3231,7 +3231,7 @@ UBOOL fnDelDone
           AppendNewToken_EM (lptkLocalVars,
                             &tkFlags,
                             &tkData,
-                             -1);
+                             0);                // At start of del del
         // Skip over the next char
         lptkLocalVars->uChar++;
     } else
@@ -3249,7 +3249,7 @@ UBOOL fnDelDone
           AppendNewToken_EM (lptkLocalVars,
                             &tkFlags,
                             &tkData,
-                             0);
+                             0);                // At start of del
     } // End IF/ELSE
 
     return bRet;
@@ -3259,7 +3259,7 @@ UBOOL fnDelDone
 //***************************************************************************
 //  $scDelDone
 //
-//  End of a del
+//  Start of a Del
 //***************************************************************************
 
 UBOOL scDelDone
@@ -4416,6 +4416,46 @@ UBOOL fnGroupDoneSub
 
         // and vice versa
         lptkNext->tkData.tkMatch = uPrevGroup;
+
+        // If this is an AFO, ...
+        if (tknTypePrev EQ TKT_LEFTBRACE)
+        {
+            UINT    iLftBrace,
+                    iRhtBrace;
+            HGLOBAL hGlbAfoTxt;
+            size_t  uChars;
+
+            // Get the indices into lptkLocalVars->lpwszOrig of the braces
+            iLftBrace = lptkLocalVars->lptkStart[uPrevGroup].tkCharIndex;
+            iRhtBrace = lptkNext->tkCharIndex;
+
+            // "+ 1" for trailing Brace, "+ 1" for terminating zero
+            uChars = iRhtBrace - iLftBrace + 1 + 1;
+
+            hGlbAfoTxt =
+            lptkLocalVars->lptkStart[uPrevGroup].tkhGlbAfoTxt =
+              // Allocate space for the text
+              DbgGlobalAlloc (GHND, uChars * sizeof (WCHAR));
+            // Check for error
+            if (hGlbAfoTxt NE NULL)
+            {
+                LPWCHAR lpwszAfoTxt;
+
+                // Lock the memory to get a ptr to it
+                lpwszAfoTxt = MyGlobalLock100 (hGlbAfoTxt);
+
+                // Copy the string to global memory
+                // Note that the string need not end with a terminating zero
+                CopyMemoryW (lpwszAfoTxt,
+                            &lptkLocalVars->lpwszOrig[iLftBrace],
+                             uChars - 1);
+                // Ensure properly terminated
+                lpwszAfoTxt[uChars - 1] = WC_EOS;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbAfoTxt); lpwszAfoTxt = NULL;
+            } // End IF
+        } // End IF
     } // End IF/ELSE
 
     return bRet;
@@ -5514,7 +5554,11 @@ void Untokenize
 
     // It's a token header
     Assert (lptkHdr->Sig.nature EQ TOKEN_HEADER_SIGNATURE);
-
+#ifdef DEBUG
+    if (bDebugExecTrace)
+        // Display the tokens so far
+        DisplayTokens (lptkHdr);
+#endif
     // Get the # tokens
     iLen = lptkHdr->TokenCnt;
 
@@ -5582,6 +5626,17 @@ void Untokenize
 
             break;
 
+        case TKT_LEFTBRACE:         // Left brace  ...
+            // If there's a string ptr, ...
+            if (lpToken->tkhGlbAfoTxt NE NULL)
+            {
+                // Free it
+                MyGlobalFree (lpToken->tkhGlbAfoTxt); lpToken->tkhGlbAfoTxt = NULL;
+
+            } // End IF
+
+            break;
+
         case TKT_ASSIGN:            // Assignment symbol (data is UTF16_LEFTARROW)
         case TKT_LISTSEP:           // List separator    (...     ';')
         case TKT_LABELSEP:          // Label ...         (...     ':')
@@ -5596,8 +5651,7 @@ void Untokenize
         case TKT_RIGHTPAREN:        // Right ...   ...
         case TKT_LEFTBRACKET:       // Left bracket ...
         case TKT_RIGHTBRACKET:      // Right ...   ...
-        case TKT_LEFTBRACE:         // Left brace  ...
-        case TKT_RIGHTBRACE:        // Right ...   ...
+        case TKT_RIGHTBRACE:        // Right brace ...
         case TKT_EOS:               // End-of-Stmt (data is length of stmt including this token)
         case TKT_EOL:               // End-of-Line (data is NULL)
         case TKT_SOS:               // Start-of-Stmt (data is NULL)
@@ -5768,7 +5822,6 @@ UBOOL AppendNewToken_EM
                                 soUNK,              // Default SynObj
                                lptkData,            // Ptr to token data (may be NULL)
                                iCharOffset);        // Offset from lpwszCur of the token (where the caret goes)
-
 } // End AppendNewToken_EM
 
 
@@ -6126,6 +6179,24 @@ UBOOL AppendNewCSToken_EM
             goto SKIP_EXIT;
         } // End IF
     } // End IF
+
+#ifdef DEBUG
+    if (bDebugCSNew)
+    {
+        WCHAR wszTemp[1024];
+
+        // Display CS token
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
+                   L"TknType = %S, Line#=%d, Stmt#=%d, Tkn#=%d, CharNdx=%d\r\n",
+                    GetTokenTypeName (TknType),
+                    uLineNum,
+                    uStmtNum,
+                    uTknNum,
+                    tkCharIndex);
+        DbgMsgW (wszTemp);
+    } // End IF
+#endif
 
     // Fill in the token values
     tkCS.tkFlags.TknType        = TknType;

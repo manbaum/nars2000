@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -806,7 +806,7 @@ LRESULT WINAPI LclTabCtrlWndProc
             while (hWndFENxt = lpMemPTD->hWndFENxt)
             {
                 // If the user doesn't want the window to close, ...
-                if (!CloseFunction (hWndFENxt))
+                if (!CloseFunctionFE (hWndFENxt))
                     // Ignore this action
                     return FALSE;
 

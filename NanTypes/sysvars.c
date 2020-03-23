@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1589,7 +1589,7 @@ UBOOL ValidateFloat_EM
     } // End IF/ELSE/SWITCH
 
     if (!bRet)
-        goto NORMAL_EXIT;
+        goto DOMAIN_EXIT;
 NORMAL_EXIT:
     // Save the value in the name
     lptkNamArg->tkData.tkSym->stData.stFloat = aplFloat;

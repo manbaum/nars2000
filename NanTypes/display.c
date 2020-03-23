@@ -6131,25 +6131,26 @@ UBOOL DisplayGlbVector
                      (uCnt < aplDimNCols) && (uCurPos < uQuadPW);
                      uCnt++, ((LPAPLCHAR) lpMemArr)++)
                 {
+                    APLUINT uSkip;
+
                     // Check for Ctrl-Break
                     if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Check for Terminal Control chars
-                    if (CheckTermCodes ((LPAPLCHAR) lpMemArr,   // Ptr to current char to test
-                                        lpMemArrIni,            // ...    initial ...
-                                        hWndEC,                 // EditCtrl window handle
-                                        lpaplCharIni,           // Ptr to initial output save area
-                                       &lpaplChar,              // Ptr to ptr to output save area
-                                       &uCurPos,                // Ptr to current position
-                                       &uMaxPos,                // Ptr to maximum position
-                                       &uIniPos,                // Ptr to initial position
-                                       &bLineCont))             // Ptr to TRUE iff a continued line
-                    {
-                        // Skip over the next two chars
-                        uCnt                   += 2;
-                        ((LPAPLCHAR) lpMemArr) += 2;
-                    } // End IF
+                    uSkip =
+                      CheckTermCodes ((LPAPLCHAR) lpMemArr, // Ptr to current char to test
+                                      lpMemArrIni,          // ...    initial ...
+                                      hWndEC,               // EditCtrl window handle
+                                      lpaplCharIni,         // Ptr to initial output save area
+                                     &lpaplChar,            // Ptr to ptr to output save area
+                                     &uCurPos,              // Ptr to current position
+                                     &uMaxPos,              // Ptr to maximum position
+                                     &uIniPos,              // Ptr to initial position
+                                     &bLineCont);           // Ptr to TRUE iff a continued line
+                    // Skip over chars (as necessary)
+                    uCnt                   += uSkip;
+                    ((LPAPLCHAR) lpMemArr) += uSkip;
                 } // End FOR
 
                 // Ensure properly terminated at the maximum width
@@ -6330,7 +6331,7 @@ ERROR_EXIT:
 //  Check a character for terminal Codes
 //***************************************************************************
 
-UBOOL CheckTermCodes
+APLUINT CheckTermCodes
     (LPWCHAR    lpwc,           // Ptr to Temp var
      LPWCHAR    lpwcIni,        // Ptr to initial ...
      HWND       hWndEC,         // Window handle of the EditCtrl
@@ -6342,9 +6343,9 @@ UBOOL CheckTermCodes
      LPUBOOL    lpbLineCont)    // Ptr to TRUE iff a continued line
 
 {
-    APLUINT uSpaces;            // # spaces to fill in for HT
-    UBOOL   bRet = FALSE,       // TRUE iff the caller is to skip over CR, LF
-            bPrevCR;            // TRUE iff the preceding char is WC_CR
+    APLUINT uSpaces,            // # spaces to fill in for HT
+            uSkip = 0;          // # chars to skip over
+    UBOOL   bPrevCR;            // TRUE iff the preceding char is WC_CR
 
     // Split cases based upon the char value
     switch (*lpwc)
@@ -6383,14 +6384,13 @@ UBOOL CheckTermCodes
                     // Get the current position
                     SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &uCharPos, 0);
 
-                    // End the line with CR/CR
-                    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) WS_CRCR);
+                    // End the line with CR/CR/LF
+                    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) WS_CRCRLF);
 
-                    bRet = TRUE;
+                    uSkip = 2;
+                } // End IF
 
-                    // Fall through to common code
-                } else
-                    break;
+                break;
             } else
             {
                 // Fall through to common code
@@ -6508,7 +6508,7 @@ UBOOL CheckTermCodes
             break;
     } // End SWITCH
 
-    return bRet;
+    return uSkip;
 } // End CheckTermCodes
 
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -93,9 +93,10 @@ typedef struct tagAFO_ACTSTR
 
 typedef struct tagAFOLINE_STR
 {
-    UINT uLineOff,                  // 00:  Line offset of a physical line
-         uLineLen;                  // 04:  ...  length ...
-    UINT bLineCont:1,               // 08:  00000001:  TRUE iff this physical line is continued
+    UINT uPhyLineOff,               // 00:  Line offset of a physical line (in WCHARs)
+         uPhyLineLen,               // 04:  ...  length ...                 ...
+         uLogLineNum;               // 08:  Logical line #
+    UINT bLineCont:1,               // 0C:  00000001:  TRUE iff this physical line is continued
                                     //                 onto the next physical line
          :31;
 } AFOLINE_STR, *LPAFOLINE_STR;

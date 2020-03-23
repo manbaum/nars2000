@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -231,7 +231,6 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                 SF_Fcns.SF_LineLen      = SF_LineLenN;      // Ptr to line length function
                 SF_Fcns.SF_ReadLine     = SF_ReadLineN;     // Ptr to read line function
                 SF_Fcns.SF_IsLineCont   = SF_IsLineContN;   // Ptr to Is Line Continued function
-                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesN;  // Ptr to get # physical lines in the function
                 SF_Fcns.SF_NumLogLines  = SF_NumLogLinesN;  // Ptr to get # logical  ...
                 SF_Fcns.SF_CreationTime = SF_CreationTimeN; // Ptr to get function creation time
                 SF_Fcns.SF_LastModTime  = SF_LastModTimeN;  // Ptr to get function last modification time
@@ -249,7 +248,6 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                 SF_Fcns.SF_LineLen      = SF_LineLenSV;     // Ptr to line length function
                 SF_Fcns.SF_ReadLine     = SF_ReadLineSV;    // Ptr to read line function
                 SF_Fcns.SF_IsLineCont   = SF_IsLineContSV;  // Ptr to Is Line Continued function
-                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesSV; // Ptr to get # physical lines in the function
                 SF_Fcns.SF_NumLogLines  = SF_NumLogLinesSV; // Ptr to get # logical  ...
                 SF_Fcns.SF_CreationTime = SF_CreationTimeSV;// Ptr to get function creation time
                 SF_Fcns.SF_LastModTime  = SF_LastModTimeSV; // Ptr to get function last modification time
@@ -271,15 +269,13 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
             {
                 SF_Fcns.SF_LineLen      = SF_LineLenSV;         // Ptr to line length function
                 SF_Fcns.SF_ReadLine     = SF_ReadLineSV;        // Ptr to read line function
-                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesSV;     // Ptr to get # physical lines in the function
-                SF_Fcns.SF_NumLogLines  = SF_NumLogLinesSV;     // Ptr to get # logical  ...
+                SF_Fcns.SF_NumLogLines  = SF_NumLogLinesSV;     // Ptr to # logical  ...
                 SF_Fcns.SF_IsLineCont   = SF_IsLineContSV;      // Ptr to Is Line Continued function
             } else
             {
                 SF_Fcns.SF_LineLen      = SF_LineLenM;          // Ptr to line length function
                 SF_Fcns.SF_ReadLine     = SF_ReadLineM;         // Ptr to read line function
-                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesM;      // Ptr to get # physical lines in the function
-                SF_Fcns.SF_NumLogLines  = SF_NumLogLinesM;      // Ptr to get # logical  ...
+                SF_Fcns.SF_NumLogLines  = SF_NumLogLinesM;      // Ptr to # logical  ...
                 SF_Fcns.SF_IsLineCont   = SF_IsLineContM;       // Ptr to Is Line Continued function
             } // End IF/ELSE
 
@@ -751,7 +747,7 @@ UBOOL CheckAfoFcnName
     if (lpSF_Fcns->bAFO)
     {
         UINT    uLineLen,           // Line length
-                uLineOff;           // ...  offset
+                uPhyLineOff;        // Physical line offset
         STFLAGS stFlags = {0};      // STE flags
         LPFX_PARAMS       lpFX_Params;          // Ptr to common struc
         LPAFODETECT_STR   lpafoDetectStr;       // Ptr to AFODETECT_STR
@@ -762,13 +758,13 @@ UBOOL CheckAfoFcnName
 
         // Get the precomputed line length & offset
         uLineLen = SF_LineLenSV (NULL, lpSF_Fcns, 0);
-        uLineOff = lpafoDetectStr->lpafoLineStr[0].uLineOff;
+        uPhyLineOff = lpafoDetectStr->lpafoLineStr[0].uPhyLineOff;
 
         // Lookup the name in the symbol table
         // SymTabLookupName sets the .ObjName enum,
         //   and the .Inuse flag
         lpSF_Fcns->lpSymName =
-          SymTabLookupNameLength (&lpMemRht[uLineOff],       // Ptr to value
+          SymTabLookupNameLength (&lpMemRht[uPhyLineOff],   // Ptr to value
                                    uLineLen,
                                   &stFlags);
         // If the name isn't already in the SymTab, ...
@@ -777,15 +773,15 @@ UBOOL CheckAfoFcnName
             WCHAR wcZap;
 
             // Save and zap the ending char
-            wcZap = lpMemRht[uLineOff + uLineLen];
-                    lpMemRht[uLineOff + uLineLen] = WC_EOS;
+            wcZap = lpMemRht[uPhyLineOff + uLineLen];
+                    lpMemRht[uPhyLineOff + uLineLen] = WC_EOS;
 
             // Append the name to get a new LPSYMENTRY
             lpSF_Fcns->lpSymName =
-              SymTabAppendName_EM (&lpMemRht[uLineOff],
+              SymTabAppendName_EM (&lpMemRht[uPhyLineOff],
                                    &stFlags);
             // Restore the zapped char
-            lpMemRht[uLineOff + uLineLen] = wcZap;
+            lpMemRht[uPhyLineOff + uLineLen] = wcZap;
 
             if (lpSF_Fcns->lpSymName EQ NULL)
                 // Mark as not successful

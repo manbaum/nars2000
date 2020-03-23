@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ typedef struct tagFCNLINE               // Function line structure, one per func
 {
     HGLOBAL hGlbTxtLine;                // 00:  Text of the line (APLCHAR) global memory handle
     UINT    offTknLine,                 // 04:  Offset to tokenized line (TOKEN_HEADER)
-            numNxtLabel1;               // 08:  Line # of next labeled line (origin-1) (0 = none)
+            numNxtLabel1;               // 08:  Logical line # of next labeled line (origin-1) (0 = none)
     UINT    bStop:1,                    // 0C:  00000001:  Stop on this line
             bTrace:1,                   //      00000002:  Trace this line
             bEmpty:1,                   //      00000004:  Empty line
@@ -62,7 +62,7 @@ typedef struct tagFCNLINE               // Function line structure, one per func
 typedef struct tagLBLENTRY              // Line label entries
 {
     LPSYMENTRY lpSymEntry;              // 00:  Ptr to line label SYMENTRY
-    UINT       uLineNum1;               // 04:  Line # (origin-1)
+    UINT       uLogLineNum1;            // 04:  Logical line # (origin-1)
 } LBLENTRY, *LPLBLENTRY;
 
 typedef enum tagFCN_VALENCES            // User-Defined Function/Operator Valence
@@ -83,8 +83,8 @@ typedef enum tagFCN_VALENCES            // User-Defined Function/Operator Valenc
 
 typedef struct tagSYSLBL_ENTRY
 {
-    UINT sysLblLine,                    // 00:  Line # of the entry point (Origin-1)
-         sysLblTkn;                     // 04:  Token # ...               (Origin-0)
+    UINT sysLblLine,                    // 00:  Logical line # of the entry point (Origin-1)
+         sysLblTkn;                     // 04:  Token # ...                       (Origin-0)
 } SYSLBLENTRY, *LPSYSLBLENTRY;
 
 // User-defined function/operator header signature
@@ -121,25 +121,25 @@ typedef struct tagDFN_HEADER            // Function header structure
                      numLocalsSTE,      // 28:  # right arg STEs (may be zero if niladic)
                      offLocalsSTE,      // 2C:  Offset to start of function lines (FCNLINE[nLines])
                      numFcnLines,       // 30:  # Logical lines in the function (not counting the header)
-                     numPhyLines,       // 34:  # Physical ...
-                     offFcnLines,       // 38:  Offset to start of function lines (FCNLINE[nLines])
-                     offTknLines,       // 3C:  Offset to start of tokenized function lines
-                     numLblLines,       // 40:  # labeled lines in the function
-                     num1stLabel1;      // 44:  Line # of 1st labeled line (origin-1)
-    SYSLBLENTRY      aSysLblId,         // 48:  Line/token #s of the []ID  label (0 if not present) (8 bytes)
-                     aSysLblInv,        // 50:  Line/token #s of the []INV ...
-                     aSysLblMs,         // 58:  Line/token #s of the []MS  ...
-                     aSysLblPro;        // 60:  Line/token #s of the []PRO ...
-    LPSYMENTRY       steLftOpr,         // 68:  Left operand STE (may be NULL if not an operator)
-                     steFcnName,        // 6C:  Function name STE
-                     steAxisOpr,        // 70:  Axis operator STE
-                     steRhtOpr,         // 74:  Right operand STE (may be NULL if monadic operator or not an operator)
-                     steDel,            // 78:  Del function STE
-                     steDelDel;         // 7C:  DelDel operator STE
-    HGLOBAL          hGlbTxtHdr,        // 80:  Text of function header (APLCHAR) global memory handle
-                     hGlbTknHdr,        // 84:  Tokenized function header (TOKEN) ...
-                     hGlbUndoBuff,      // 88:  Undo buffer (UNDO_BUF)            ... (may be NULL)
-                     hGlbMonInfo;       // 8C:  Function line monitor info (MONINFO)
+                     offFcnLines,       // 34:  Offset to start of function lines (FCNLINE[nLines])
+                     offTknLines,       // 38:  Offset to start of tokenized function lines
+                     numLblLines,       // 3C:  # labeled lines in the function
+                     num1stLabel1;      // 40:  Logical line # of 1st labeled line (origin-1)
+    SYSLBLENTRY      aSysLblId,         // 44:  Logical line/token #s of the []ID  label (0 if not present) (8 bytes)
+                     aSysLblInv,        // 4C:  Logical line/token #s of the []INV ...
+                     aSysLblMs,         // 54:  Logical line/token #s of the []MS  ...
+                     aSysLblPro;        // 5C:  Logical line/token #s of the []PRO ...
+    LPSYMENTRY       steLftOpr,         // 64:  Left operand STE (may be NULL if not an operator)
+                     steFcnName,        // 68:  Function name STE
+                     steAxisOpr,        // 6C:  Axis operator STE
+                     steRhtOpr,         // 70:  Right operand STE (may be NULL if monadic operator or not an operator)
+                     steDel,            // 74:  Del function STE
+                     steDelDel;         // 78:  DelDel operator STE
+    HGLOBAL          hGlbTxtHdr,        // 7C:  Text of function header (APLCHAR) global memory handle
+                     hGlbTknHdr,        // 80:  Tokenized function header (TOKEN) ...
+                     hGlbUndoBuff,      // 84:  Undo buffer (UNDO_BUF)            ... (may be NULL)
+                     hGlbMonInfo,       // 88:  Function line monitor info (MONINFO)
+                     hGlbAfoTxt;        // 8C:  Handle to WCHAR string of AFO text incl braces
     FILETIME         ftCreation,        // 90:  Time of creation (8 bytes)
                      ftLastMod;         // 98:  Time of last modification (8 bytes)
     HSHTABSTR        htsDFN;            // A0:  Local HTS (htsDFN.lpHshTab may be NULL if none) (124 = 0x7C bytes)
@@ -150,7 +150,7 @@ typedef struct tagDFN_HEADER            // Function header structure
 // Whenever changing the above struct, be sure to make a
 //   corresponding change to
 //   <CalcSymentrySize> in <qf_at.c>,
-//   <SaveFunction> in <savefcn.c>,
+//   <SaveFunctionFE> in <savefcn.c>,
 //   <FEWndProc:WM_CREATE> in <editfcn.c>, and
 //   <FreeResultGlobalDfn> in <free.c>.
 

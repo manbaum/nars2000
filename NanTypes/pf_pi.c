@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1226,7 +1226,8 @@ APLMPI PrimeFactor
 {
     APLMPI       mpzFactor1 = {0},      // Factor #1
                  mpzFactor2 = {0},      // ...     2
-                 mpzRes     = {0};      // Result
+                 mpzRes     = {0},      // Result
+                 tmp        = {0};      // Temp
     APLUINT      uVal,                  // Temporary unsigned value
                  digs,                  // # digits in the value
                  bits;                  // # bits in the value
@@ -1254,6 +1255,7 @@ APLMPI PrimeFactor
     mpz_init_set (&mpzRes, &mpzNumber);
     mpz_init     (&mpzFactor1);
     mpz_init     (&mpzFactor2);
+    mpz_init     (&tmp       );
 
     if (bits <= (SMALL_COMPOSITE_CUTOFF_BITS + 15))     // = 85 + 15 = 100
     {
@@ -1419,15 +1421,17 @@ APLMPI PrimeFactor
 #define TryECM(Method,dB1,dB2,iCnt,N)                                                                           \
     ecmParams->method    = Method;                                                                              \
     mpz_set_d (ecmParams->B2, dB2);                                                                             \
+    mpz_set_ui (ecmParams->sigma, 0);                                                                           \
                                                                                                                 \
     dprintfWL0 (L"Trying %S %u of %u", szMethods[Method], iCnt, N);                                             \
     DPRINTF (dB1, dB2, N);                                                                                      \
                                                                                                                 \
     /* Try ECM */                                                                                               \
+    mpz_urandomm (&tmp, ecmParams->rng, &mpzRes);                                                               \
     iVal = ecm_factor (&mpzFactor1, &mpzRes, dB1, ecmParams);                                                   \
                                                                                                                 \
     /* Check for Ctrl-Break */                                                                                  \
-    if (CheckCtrlBreak (lpProcPrime->lpbCtrlBreak))                                                            \
+    if (CheckCtrlBreak (lpProcPrime->lpbCtrlBreak))                                                             \
         goto BREAK_EXIT;                                                                                        \
                                                                                                                 \
     /* If there was an error, ... */                                                                            \
@@ -1461,6 +1465,7 @@ APLMPI PrimeFactor
     ecm_init (ecmParams); uEcmInit++;
     ecmParams->stop_asap = &StopASAP;
     ecmParams->B1done    = PRECOMPUTED_PRIME_MAX;
+    mpz_set_d (ecmParams->B2, B2);
 
     // Try P-1 once with 10*B1 and B2
     TryECM (ECM_PM1, 10*B1, B2, 0, 0);
@@ -1470,17 +1475,25 @@ APLMPI PrimeFactor
     TryECM (ECM_PP1,  5*B1, B2, 1, 3);
     TryECM (ECM_PP1,  5*B1, B2, 2, 3);
 
-    // LIMIT N to 2 ***FIXME***
-    N = min (N, 2);
+////// LIMIT N to 32 ***FIXME***
+////N = min (N, 32);
+////
+    ecm_clear (ecmParams);
+    ecm_init  (ecmParams);
+    ecmParams->stop_asap = &StopASAP;
+    ecmParams->B1done    = PRECOMPUTED_PRIME_MAX;
+    mpz_set_d (ecmParams->B2, B2);
 
     // Try ECM N(B1, B2, D) times
     for (iCnt = 0; iCnt < N; iCnt++)
     {
+        ecm_clear (ecmParams);
+        ecm_init  (ecmParams);
+        ecmParams->stop_asap = &StopASAP;
+////////ecmParams->B1done    = PRECOMPUTED_PRIME_MAX;   // DO NOT UNCOMMENT
+////////mpz_set_d (ecmParams->B2, B2);                  //  "  "      "
         TryECM (ECM_ECM, B1, B2, iCnt, N);
     } // End FOR
-
-    /* Uninitialize ecmParams */
-    ecm_clear (ecmParams); uEcmInit--;
 NONCE_EXIT:
 ERROR_EXIT:
     // Mark as a NONCE ERROR
@@ -1492,6 +1505,7 @@ NORMAL_EXIT:
         // Clear the ECM params
         ecm_clear (ecmParams);
 
+    Myz_clear (&tmp       );
     Myz_clear (&mpzFactor1);
     Myz_clear (&mpzFactor2);
 

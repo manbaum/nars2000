@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1446,15 +1446,23 @@ void DisplayTokens
 
     for (i = 0; i < iLen; i++, lpMemTknLine++)
     {
-        UINT TknType = lpMemTknLine->tkFlags.TknType;
+        UINT    TknType = lpMemTknLine->tkFlags.TknType;
         LPWCHAR lpwName;
 
         if (IsTknTypeNamedVar (TknType))
         {
             MySprintfW (wszName,
                         sizeof (wszName),
-                       L"Name = %s,  ",
+                       L"Name = %s, ",
                         lpMemTknLine->tkData.tkSym->stHshEntry->lpwCharName);
+            lpwName = &wszName[0];
+        } else
+        if (IsTknTypeFcnOpr (TknType) && IsTknImmed (lpMemTknLine))
+        {
+            MySprintfW (wszName,
+                        sizeof (wszName),
+                       L"Name = '%c', ",
+                        lpMemTknLine->tkData.tkChar);
             lpwName = &wszName[0];
         } else
             lpwName = L"";
@@ -2751,6 +2759,25 @@ LPWCHAR FillDfnName
      LPSAVEDWSGLBFCNPARM lpSavedWsGlbFcnParm)   // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
 
 {
+    // If the function name starts with a {del}, ...
+    if (IsSymDel (((LPDFN_HEADER) lpMemData)->steFcnName))
+    {
+        LPWCHAR lpwszAfoTxt;
+
+        // Use the hGlbAfoTxt text
+
+        // Lock the memory to get a ptr to it
+        lpwszAfoTxt = MyGlobalLockInt (((LPDFN_HEADER) lpMemData)->hGlbAfoTxt);
+
+        // Copy the text to the output buffer
+        lstrcpyW (lpaplChar, lpwszAfoTxt);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (((LPDFN_HEADER) lpMemData)->hGlbAfoTxt);
+
+        // Skip over the text
+        return &lpaplChar[lstrlenW (lpwszAfoTxt)];
+    } else
     // If there's a callback function, use it
     if (lpSavedWsGlbFcnConv NE NULL)
         return

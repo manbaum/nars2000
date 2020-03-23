@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -4843,8 +4843,8 @@ PARSELINE_REDUCE:
                  && lstSynObj EQ soHY)
                 {
 #ifdef DEBUG
-                if (bDebugPLTrace)
-                    TRACE (L"ConvHY2PF", L"", curSynObj, rhtSynObj);
+                    if (bDebugPLTrace)
+                        TRACE (L"ConvHY2PF", L"", curSynObj, rhtSynObj);
 #endif
                     // Convert the HY to a primitive function
                     ConvertHY2PFO (lpplYYLstRht,

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -113,86 +113,86 @@ VOID CALLBACK WaitForImmExecStmt
 
 
 //***************************************************************************
-//  $GetBlockStartLine
+//  $GetBlockStartLineFE
 //
-//  Return the starting line of a block of continued lines
+//  Return the starting physical line of a block of continued physical lines
 //***************************************************************************
 
-UINT GetBlockStartLine
+UINT GetBlockStartLineFE
     (HWND hWndEC,                           // Handle of Edit Ctrl window
-     UINT uLineNum)                         // Line #
+     UINT uPhyLineNum)                      // Physical line #
 
 {
     // While the preceding physical line continues to the current line, ...
-    while (uLineNum NE 0
-        && SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum - 1, 0) EQ TRUE)
+    while (uPhyLineNum NE 0
+        && SendMessageW (hWndEC, MYEM_ISLINECONT, uPhyLineNum - 1, 0) EQ TRUE)
         // Back off to previous line #
-        uLineNum--;
+        uPhyLineNum--;
 
-    return uLineNum;
-} // End GetBlockStartLine
+    return uPhyLineNum;
+} // End GetBlockStartLineFE
 
 
 //***************************************************************************
-//  $GetBlockEndLine
+//  $GetBlockEndLineFE
 //
-//  Return the ending line of a block of continued lines
+//  Return the ending physical line of a block of continued physical lines
 //***************************************************************************
 
-UINT GetBlockEndLine
+UINT GetBlockEndLineFE
     (HWND hWndEC,                           // Handle of Edit Ctrl window
-     UINT uLineNum)                         // Line #
+     UINT uPhyLineNum)                      // Physical line #
 
 {
-    // While the current physical line continues to the next line, ...
-    while (SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum, 0) EQ TRUE)
-        // Skip to next line #
-        uLineNum++;
+    // While the current physical line continues to the next physical line, ...
+    while (SendMessageW (hWndEC, MYEM_ISLINECONT, uPhyLineNum, 0) EQ TRUE)
+        // Skip to next physical line #
+        uPhyLineNum++;
 
-    return uLineNum;
-} // End GetBlockEndLine
+    return uPhyLineNum;
+} // End GetBlockEndLineFE
 
 
 //***************************************************************************
-//  $GetBlockLength
+//  $GetBlockLengthFE
 //
-//  Return the length in WCHARs of a block including CR/CR/LFs
+//  Return the length in WCHARs of an EditCtrl block including CR/CR/LFs
 //
 //  Note that this function does not include a terminating zero
 //    in the returned length
 //***************************************************************************
 
-UINT GetBlockLength
+UINT GetBlockLengthFE
     (HWND hWndEC,           // Handle of Edit Ctrl window
-     UINT uLineNum)         // Starting line #
+     UINT uPhyLineNum)      // Starting physical line #
 
 {
     UINT uLinePos,          // Char position of start of line
          uLineLen = 0;      // Line length
 
     // While the current physical line continues to the next line, ...
-    while (SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum, 0) EQ TRUE)
+    while (SendMessageW (hWndEC, MYEM_ISLINECONT, uPhyLineNum, 0) EQ TRUE)
     {
         // Get the position of the start of the line
-        uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+        uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uPhyLineNum, 0);
 
         // Get the line length including the trailing WS_CRCRLF
         uLineLen += strcountof (WS_CRCRLF) + (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 
         // Skip to the next line
-        uLineNum++;
+        uPhyLineNum++;
     } // End WHILE
 
     // Once more to get the length of the last (non-continued) line
 
     // Get the position of the start of the line
-    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uPhyLineNum, 0);
 
     // Get the line length
     uLineLen += (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 
     return uLineLen;
-} // End GetBlockLength
+} // End GetBlockLengthFE
 
 
 //***************************************************************************
@@ -206,35 +206,35 @@ UINT GetLogicalLineCountFE
     (HWND    hWndEC)                        // Handle of FE Edit Ctrl window
 
 {
-    UINT    uLineNum = 0,                   // Line # counter
-            uLineCnt,                       // # physical lines in the function
-            uLineLog = 0;                   // # logical lines in the function
+    UINT    uPhyLineNum = 0,                // Physical line # counter
+            uPhyLineCnt,                    // # physical lines in the function
+            uLogLineCnt = 0;                // # logical lines in the function
 
     Assert (IzitFE (GetParent (hWndEC)));
 
     // Get the # physical lines in the function including the header
-    uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
+    uPhyLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
     // Loop through the physical lines
-    for (uLineNum = 0; uLineNum < uLineCnt; uLineNum++)
+    for (uPhyLineNum = 0; uPhyLineNum < uPhyLineCnt; uPhyLineNum++)
     // If the current physical line does not continue to the next line, ...
-    if (SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum, 0) EQ FALSE)
-        uLineLog++;
+    if (SendMessageW (hWndEC, MYEM_ISLINECONT, uPhyLineNum, 0) EQ FALSE)
+        uLogLineCnt++;
 
-    return uLineLog - 1;
+    return uLogLineCnt - 1;
 } // End GetLogicalLineCountFE
 
 
 //***************************************************************************
-//  $CopyBlockLines
+//  $CopyBlockLinesFE
 //
-//  Copy a block of lines
+//  Copy a block of physical lines from an EditCtrl
 //
 //  Note that this function copies a terminating zero if there's enough room
 //    but it is not included in the returned length
 //***************************************************************************
 
-UINT CopyBlockLines
+UINT CopyBlockLinesFE
     (HWND    hWndEC,                        // Handle of Edit Ctrl window
      UINT    uPhyLineNum,                   // Starting physical line #
      LPWCHAR lpwszLine)                     // Ptr to output buffer
@@ -290,7 +290,7 @@ UINT CopyBlockLines
 
     // Accumulate in result
     return uBlockLen + uLineLen;
-} // End CopyBlockLines
+} // End CopyBlockLinesFE
 
 
 //***************************************************************************
@@ -315,12 +315,12 @@ void ImmExecLine
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    // Get the line # of the start of a block of a Line Continuations
-    uLineBeg = GetBlockStartLine (hWndEC, uLineNum);
+    // Get the physical line # of the start of a block of a Line Continuations
+    uLineBeg = GetBlockStartLineFE (hWndEC, uLineNum);
 
     // Get the overall block length
     //   not including a terminating zero
-    uLineLen = GetBlockLength (hWndEC, uLineBeg);
+    uLineLen = GetBlockLengthFE (hWndEC, uLineBeg);
 
     // Allocate virtual memory for the line (along with its continuations)
     lpwszCompLine =
@@ -338,7 +338,7 @@ void ImmExecLine
 
     // Copy a block of lines
     //   including a terminating zero if there's enough room
-    CopyBlockLines (hWndEC, uLineBeg, lpwszCompLine);
+    CopyBlockLinesFE (hWndEC, uLineBeg, lpwszCompLine);
 
     // Ensure properly terminated
     lpwszCompLine[uLineLen] = WC_EOS;

@@ -1,0 +1,128 @@
+Build #2334 -- Version 0.6.2.xx
+-------------------------------
+
+* Rename Function Editor-specific Functions To Include A Suffix Of 'FE'
+* Use Local Parameter Struc For <MakeAfo> Instead Of One Shared With <LoadWorkspace>
+* Remove References To <SF_NumPhyLines> As We Now Calculate That Value
+* Rename Vars As Physical As Necessary For Better Documentation
+* In Various Functions Make Clear The Distinction Between Physical And Logical
+* Remove Vars For Physical Lines As They Are No Longer Needed
+* Fix Bug In <CheckTermCodes> Where Leading Line Continuations Are Mishandled
+* Fix Bug In MFO For Extended Dyadic Iota If The Left Arg Is A Scalar
+* Improve The Probability Of A Result From ECM By Adjusting The Initial Conditions For Each Call
+* Fix Bug in <ValidateFloat_EM> When <ValidateFloatTest> Fails
+* Fix Bug When Trying To Name An Unnamed AFO
+
+Directory branches/bsmith/NanTypes:
+
+AFOFNS.C:
+  Use local parameter struc for <MakeAfo> instead of one shared with <LoadWorkspace>.
+  Remove references to <SF_NumPhyLines> as we now calculate that value.
+  Duplicate the HGLOBAL string from the LeftBrace to the DFN_HEADER.
+  Rename AFOLINE_STR members as Physical values and define a new member for Logical line #.
+
+AFOFNS.H:
+  Rename AFOLINE_STR members as Physical values and define a new member for Logical line #.
+
+COMMON.C:
+  Define function to duplicate a simple HGLOBAL handle.
+
+DEFINES.H:
+  Update the copyright years.
+  Rename Function Editor-specific functions to include a suffix of 'FE'.
+
+DISPDBG.C:
+  When displaying tokens in DEBUG, display the function/operator character in the ouput if immediate.
+  In <FillDfnName>, if the function name starts with a {del}, use the text in <hGlbAfoTxt> as the function name.
+
+DISPLAY.C:
+  Fix bug in <CheckTermCodes> where leading Line Continuations are mishandled.
+
+EDITFCN.C:
+  Rename Function Editor-specific functions to include a suffix of 'FE'.
+
+EXECMFN.C:
+  Remove vars for Physical Lines as they are no longer needed.
+  Convert loop through a function's lines from Physical to Logical.
+
+EXTERNS.H:
+  Define DEBUG var for when saving a new Control Structure.
+
+FH_PARSE.H:
+  Remove vars for Physical Lines as they are no longer needed.
+  Include new handle for AFO text.
+  Rename Function Editor-specific functions to include a suffix of 'FE'.
+
+FH_PARSE.Y:
+  After calling <fh_yyparse>, display the resulting tokens if <bDebugFH> set.
+
+FREE.C:
+  In <FreeResultGlobalDfnStruc>, free <hGlbAfoTxt> if it was allocated.
+
+IMMEXEC.C:
+  Rename Function Editor-specific functions to include a suffix of 'FE'.
+
+MAIN.RC:
+  Update the copyright years.
+
+MF_IOTA.H:
+  Fix bug in MFO for Extended Dyadic Iota if the Left Arg is a scalar.
+
+PARSELINE.C:
+  Fix indentation to match the current level.
+
+PF_PI.C:
+  Improve the probability of a result from ECM by adjusting the initial conditions for each call.
+
+QF_FX.C:
+  Remove references to <SF_NumPhyLines> as we now calculate that value.
+  Rename vars as Physical as necessary for better documentation.
+
+QF_TF.C:
+  Remove references to <SF_NumPhyLines> as we now calculate that value.
+
+SAVEFCN.C:
+  Rename Function Editor-specific functions to include a suffix of 'FE'.
+  Remove references to <SF_NumPhyLines> as we now calculate that value.
+  In <CopyUDFO> remove <NoCopy> flag is AFO as we now need an AFO to be copied.
+  In various functions make clear the distinction between Physical and Logical.
+
+SAVEFCN.H:
+  Rename Function Editor-specific functions to include a suffix of 'FE'.
+  Remove references to <SF_NumPhyLines> as we now calculate that value.
+
+SC_DEBUG.C:
+  Define DEBUG var for when saving a new Control Structure.
+
+SC_INASCII.C:
+SC_LOAD.C:
+  Remove references to <SF_NumPhyLines> as we now calculate that value.
+
+SC_SAVE.C:
+  In <SavedWsFormGlbFcn>, ensure that <lpwszFcnName> is not NULL.
+  Delete unused code.
+
+SESSMAN.C:
+  Rename Function Editor-specific functions to include a suffix of 'FE'.
+  In various functions make clear the distinction between Physical and Logical.
+
+STARTADDR.H:
+  Rename Function Editor-specific functions to include a suffix of 'FE'.
+
+SYSVARS.C:
+  Fix bug in <ValidateFloat_EM> when <ValidateFloatTest> fails.
+
+TABCTRL.C:
+  Rename Function Editor-specific functions to include a suffix of 'FE'.
+
+TOKENIZE.C:
+  Rename Function Editor-specific functions to include a suffix of 'FE'.
+  Fix bug when calculating the character index for <AppendNewToken> for <fnDirIdent> and <fnDelDone>.
+  Fix bug when trying to name an unnamed AFO.
+  In <fnGroupDoneSub>, if the function is an AFO (the grouping symbols are braces), save the text as an HGLOBAL in a new field in the Left Brace.
+  In <Untokenize>, display the tokens we're freeing if <bDebugExecTrace> is set.
+  In <Untokenize>, free the <hGlbAfoTxt> handle if it is allocated.
+  In <AppendNewCSToken_EM>, display the token we're appending if <bDebugCSNew> is set.
+
+TOKENS.H:
+  In <TOKEN> define a new field to hold the HGLOBAL of the AFO text if it's a Left Brace.

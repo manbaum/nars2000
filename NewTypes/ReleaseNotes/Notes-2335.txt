@@ -1,0 +1,44 @@
+Build #2335 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix Bug When Initializing An Operand As A Function Array Or UDFO
+* Fix Bug When Creating a Dyadic Prototype Not Handling Global Numerics
+* Fix Bug When Calling Scalar Functions On Nested Args Whose Elements Are Empty
+* Fix Bug When Saving A Function In Memory Always Create The AFO Text
+* Fix Bug When Saving A Function From )LOAD Pass On The Function Name
+
+Directory branches/bsmith/NewTypes:
+
+EXECDFN.C:
+  In <InitFcnSTEs>, if the Function Count is > 1, split out Unnamed UDFOs so as to run them
+    through <CopyUDFO>.
+
+PRIMFNS.C:
+  In <TokenTypeFV>, handle <TKT_SYS_NS> instead of as an error.
+  In <MakeDydPrototype_EM_PTB>, if neither arg is immediate, as we loop through the
+    elements of the result, test for Simple *or Global Numeric* instead of just Simple.
+
+PRIMSPEC.C:
+  In <PrimFnDydNestSiSc_EM> and <PrimFnDydSiScNest_EM> handle the case where
+    the nested arg is empty so as to create the prototype.
+
+SAVEFCN.C:
+  In <SaveFunctionFE>, remove reference to Local Params as they are unused.
+  Improve comments.
+  In <SaveFunctionCom>, if called from <LoadWorkspace_EM>, fill in the function STE from the caller.
+  In <SaveFunctionCom>, if called from <SysFnMonFX_EM_YY> and it's an AFO and the function
+    name is valid, but <hGlbAfoTxt> is not filled in, do so.
+  In <SaveFunctionCom>, if called from <CopyUDFO>, copy the old <hGlbAfoTxt> to the new UDFO.
+  In <SaveFunctionCom>, if this is an AFO which needs surrounding braces, create and fill
+    in the <hGlbAfoTxt> handle.
+
+SAVEFCN.H:
+  Rename <UDFO_LOAD> tyo <UDFO_LW> to be consistent with the other names.
+  In <LW_PARAMS>, define a new member to point to the function name.
+
+SC_LOAD.C:
+  Rename <UDFO_LOAD> tyo <UDFO_LW> to be consistent with the other names.
+  In <LW_PARAMS>, define a new member to point to the function name.
+
+SC_SAVE.C:
+  In <SavedWsFormGlbFcn>, if this is a UDFO, handle the case where the function name ptr is invalid.

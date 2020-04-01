@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2019 Sudley Place Software
+    Copyright (C) 2006-2020 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3913,6 +3913,11 @@ RESTART_EXCEPTION:
 #undef  lpAPA
     } // End IF
 
+    // If the left arg is nested, ...
+    if (IsNested (aplTypeLft))
+        // Handle nested prototypes
+        aplNELMLft = max (aplNELMLft, 1);
+
     // Loop through the left arg/result
     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMLft; uRes++)
     {
@@ -4746,6 +4751,11 @@ RESTART_EXCEPTION:
         apaMulRht = lpAPA->Mul;
 #undef  lpAPA
     } // End IF
+
+    // If the right arg is nested, ...
+    if (IsNested (aplTypeRht))
+        // Handle nested prototypes
+        aplNELMRht = max (aplNELMRht, 1);
 
     // Loop through the right arg/result
     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)

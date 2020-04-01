@@ -2509,7 +2509,7 @@ UBOOL InitFcnSTEs
                     (*lplpSymEntry)->stFlags.DfnAxis    = (*lplpSymEntry)->stFlags.UsrDfn ? lpMemDfnHdr->DfnAxis : FALSE;
 ////////////////////(*lplpSymEntry)->stFlags.FcnDir     = FALSE;            // Already zero from above
 
-                    // If the object is a UDFO, ...
+                    // If the object is an unnamed UDFO, ...
                     if (lpYYArg->tkToken.tkFlags.TknType EQ TKT_FCNDFN
                      || lpYYArg->tkToken.tkFlags.TknType EQ TKT_OP1DFN
                      || lpYYArg->tkToken.tkFlags.TknType EQ TKT_OP2DFN)
@@ -2534,6 +2534,7 @@ UBOOL InitFcnSTEs
                     break;
             } // End SWITCH
         } else
+////////if (TknCount NE 1)
         {
             APLUINT           ByteRes;              // # bytes in the result
             HGLOBAL           hGlbRes;              // Result global memory handle
@@ -2604,15 +2605,24 @@ UBOOL InitFcnSTEs
 
                     break;
 
-                case TKT_FCNAFO:
-                case TKT_OP1AFO:
-                case TKT_OP2AFO:
-                case TKT_FCNDFN:
-                case TKT_OP1DFN:
-                case TKT_OP2DFN:
+                case TKT_FCNDFN:    // Unnamed UDFO
+                case TKT_OP1DFN:    // ...
+                case TKT_OP2DFN:    // ...
                     // Copy the UDFO (e.g., "+mop mop" where "mop" is a monadic UDFO operator, not an AFO which is handled differently)
-                    if (!SetGlbHandle (&lpYYArg->tkToken, CopyUDFO (GetGlbHandle (&lpYYArg->tkToken), *lplpSymEntry, TRUE)))
-                        goto WSFULL_EXIT;
+                    (*lplpSymEntry)->stData.stGlbData =
+                      CopyUDFO (GetGlbHandle (&lpYYArg->tkToken), *lplpSymEntry, TRUE);
+
+////////////////////if (!SetGlbHandle (&lpYYArg->tkToken, CopyUDFO (GetGlbHandle (&lpYYArg->tkToken), *lplpSymEntry, TRUE)))
+////////////////////    goto WSFULL_EXIT;
+
+                    // Fall through to common code
+
+                case TKT_FCNAFO:    // Unnamed AFO
+                case TKT_OP1AFO:    // ...
+                case TKT_OP2AFO:    // ...
+                    // Increment the RefCnt
+                    DbgIncrRefCntDir_PTB (GetGlbHandle (&lpYYArg->tkToken));    // EXAMPLE:  Localize in InitFcnSTEs
+
                     break;
 
                 case TKT_AXISIMMED:

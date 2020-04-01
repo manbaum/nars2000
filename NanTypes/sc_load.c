@@ -2349,13 +2349,14 @@ HGLOBAL LoadWorkspaceGlobal_EM
 ////////////////SF_Fcns.numLocalsSTE    = 0;                // # locals in AFO (Already zero from = {0})
 ////////////////SF_Fcns.lplpLocalSTEs   = NULL;             // Ptr to save area for local STEs          (Already zero from = {0})
                 SF_Fcns.LclParams       = &LW_Params;       // Ptr to local parameters
-                SF_Fcns.sfTypes         = SFTYPES_LOAD;     // Ptr to local parameters
+                SF_Fcns.sfTypes         = SFTYPES_LW;       // Ptr to local parameters
 
                 // Fill in local values
                 LW_Params.lpwSectName   = lpwSectName;      // Ptr to section name
                 LW_Params.lpDict        = lpDict;           // Ptr to workspace dictionary
                 LW_Params.lpwBuffer     = lpwSrc + 1;       // Ptr to buffer
                 LW_Params.lpMemUndoTxt  = lpwszProf;        // Ptr to Undo Buffer in text format
+                LW_Params.lpwFcnName    = lpwFcnName;       // Ptr to function name
                 LW_Params.iMaxSize      = iMaxSize - ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart); // Maximum size of lpwSrc
                 LW_Params.ftCreation    = ftCreation;       // Function Creation Time
                 LW_Params.ftLastMod     = ftLastMod;        // Function Last Modification Time

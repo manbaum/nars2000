@@ -78,7 +78,6 @@ UBOOL SaveFunctionFE
     SF_FCNS      SF_Fcns = {0};     // SaveFunctionCom local vars
     HGLOBAL      hGlbDfnHdr;        // User-defined function/operator header global memory handle
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
-    LW_PARAMS    LW_Params = {0};   // Local  ...
 
     // Get the previous function global memory handle (if any)
     hGlbDfnHdr = (HGLOBAL) GetWindowLongPtrW (hWndFE, GWLSF_HGLBDFNHDR);
@@ -123,7 +122,7 @@ UBOOL SaveFunctionFE
     SF_Fcns.SF_CreationTime = SF_CreationTimeCom;   // Ptr to get function creation time
     SF_Fcns.SF_LastModTime  = SF_LastModTimeCom;    // Ptr to get function last modification time
     SF_Fcns.SF_UndoBuffer   = SF_UndoBufferFE;      // Ptr to get function Undo Buffer global memory handle
-    SF_Fcns.LclParams       = &LW_Params;           // Ptr to local parameters in case it's an AFO
+    SF_Fcns.LclParams       = NULL;                 // Ptr to local parameters
     SF_Fcns.sfTypes         = SFTYPES_FE;           // Caller type
 
     // Call common routine
@@ -146,7 +145,7 @@ HGLOBAL CopyUDFO
 {
     SF_FCNS      SF_Fcns = {0};     // SaveFunctionCom local vars
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
-    UDFO_PARAMS  UDFO_Params = {0}; // Local  ...
+    UDFO_PARAMS  UDFO_Params = {0}; // Local parameters
     UBOOL        bAFO;              // TRUE iff this function is an AFO
 
     Assert (hGlbDfnHdr NE NULL);
@@ -174,7 +173,7 @@ HGLOBAL CopyUDFO
     SF_Fcns.SF_CreationTime = SF_CreationTimeCom;   // Ptr to get function creation time
     SF_Fcns.SF_LastModTime  = SF_LastModTimeCom;    // Ptr to get function last modification time
     SF_Fcns.SF_UndoBuffer   = SF_UndoBufferUDFO;    // Ptr to get function Undo Buffer global memory handle
-    SF_Fcns.LclParams       = &UDFO_Params;         // Ptr to local parameters in case it's an AFO
+    SF_Fcns.LclParams       = &UDFO_Params;         // Ptr to local parameters
     SF_Fcns.sfTypes         = SFTYPES_UDFO;         // Caller type
     SF_Fcns.bNoFree         = bNoFree;              // TRUE iff we're *NOT* to free the old function (if present)
 
@@ -236,7 +235,7 @@ UINT SF_IsLineContSV
     // If it's an AFO, ...
     if (lpSF_Fcns->bAFO)
     {
-        LPFX_PARAMS     lpFX_Params;    // Ptr to common struc
+        LPFX_PARAMS     lpFX_Params;    // Ptr to local parameters
         LPAFODETECT_STR lpafoDetectStr; // Ptr to AFODETECT_STR
 
         // Save local params
@@ -262,7 +261,7 @@ UINT SF_IsLineContUDFO
      UINT        uLogLineNum)       // Logical function line # (0 = header)
 
 {
-    LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to common struc
+    LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to local parameters
     LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header global memory
     HGLOBAL        hGlbTxtLine;     // Text global memory handle
     LPMEMTXT_UNION lpMemTxtLine;    // Ptr to text line
@@ -349,7 +348,7 @@ UINT SF_LineLenAN
      UINT      uLogLineNum)         // Logical function line # (0 = header)
 
 {
-    LPAN_PARAMS lpAN_Params;        // Ptr to common struc
+    LPAN_PARAMS lpAN_Params;        // Ptr to local parameters
 
     // Save local params
     lpAN_Params = lpSF_Fcns->LclParams;
@@ -454,7 +453,7 @@ UINT SF_LineLenLW
      UINT      uLogLineNum)         // Logical function line # (0 = header)
 
 {
-    LPLW_PARAMS lpLW_Params;        // Ptr to common struc
+    LPLW_PARAMS lpLW_Params;        // Ptr to local parameters
 
     // Save local params
     lpLW_Params = lpSF_Fcns->LclParams;
@@ -489,7 +488,7 @@ UINT SF_LineLenM
     LPAPLCHAR         lpMemRht;             // Ptr to right arg global memory
     UINT              uRowOff,              // Offset to start of row
                       uLogLineLen;          // Logical line length
-    LPFX_PARAMS       lpFX_Params;          // Ptr to common struc
+    LPFX_PARAMS       lpFX_Params;          // Ptr to local parameters
 
     // Save local params
     lpFX_Params = lpSF_Fcns->LclParams;
@@ -546,7 +545,7 @@ UINT SF_LineLenN
     LPAPLNESTED       lpMemRht;             // Ptr to right arg global memory
     HGLOBAL           hGlbItmRht;           // Right arg item global memory handle
     APLNELM           aplNELMItmRht;        // Right arg item NELM
-    LPFX_PARAMS       lpFX_Params;          // Ptr to common struc
+    LPFX_PARAMS       lpFX_Params;          // Ptr to local parameters
 
     // Save local params
     lpFX_Params = lpSF_Fcns->LclParams;
@@ -606,7 +605,7 @@ UINT SF_LineLenAFO
      LPUINT    lpuLineOff)          // Ptr to line offset (may be NULL)
 
 {
-    LPFX_PARAMS       lpFX_Params;          // Ptr to common struc
+    LPFX_PARAMS       lpFX_Params;          // Ptr to local parameters
     LPVARARRAY_HEADER lpMemHdrRht = NULL;   // Ptr to right arg header
     LPAPLCHAR         lpMemRht;             // Ptr to right arg global memory
     UINT              uLineLen,             // Length of the object
@@ -729,7 +728,7 @@ UINT SF_LineLenSV
     // If it's an AFO, ...
     if (lpSF_Fcns->bAFO)
     {
-        LPFX_PARAMS     lpFX_Params;    // Ptr to common struc
+        LPFX_PARAMS     lpFX_Params;    // Ptr to local parameters
         LPAFODETECT_STR lpafoDetectStr; // Ptr to AFODETECT_STR
         UINT            uPhyLineLen,    // The Physical line length
                         uPhyLineNum;    // Physical line #
@@ -767,7 +766,7 @@ UINT SF_LineLenTF1
      UINT      uLogLineNum)         // Logical function line # (0 = header)
 
 {
-    LPTF1_PARAMS lpTF1_Params;      // Ptr to common struc
+    LPTF1_PARAMS lpTF1_Params;      // Ptr to local parameters
 
     // Save local params
     lpTF1_Params = lpSF_Fcns->LclParams;
@@ -790,7 +789,7 @@ UINT SF_LineLenAA
      UINT      uLogLineNum)         // Logical function line # (0 = header)
 
 {
-    LPAA_PARAMS lpAA_Params;        // Ptr to common struc
+    LPAA_PARAMS lpAA_Params;        // Ptr to local parameters
     LPWCHAR     lpw;
 
     // Save local params
@@ -830,7 +829,7 @@ UINT SF_LineLenUDFO
      UINT      uLogLineNum)         // Logical function line # (0 = header)
 
 {
-    LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to common struc
+    LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to local parameters
     LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header global memory
     HGLOBAL        hGlbTxtLine;     // Text global memory handle
     LPMEMTXT_UNION lpMemTxtLine;    // Ptr to text line
@@ -878,7 +877,7 @@ void SF_ReadLineAN
      LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
 
 {
-    LPAN_PARAMS lpAN_Params;        // Ptr to common struc
+    LPAN_PARAMS lpAN_Params;        // Ptr to local parameters
 
     // Save local params
     lpAN_Params = lpSF_Fcns->LclParams;
@@ -1027,7 +1026,7 @@ void SF_ReadLineLW
 {
     WCHAR       wszLineNum[8];      // Save area for formatted line #
     LPWCHAR     lpwszProf;          // Ptr to profile string
-    LPLW_PARAMS lpLW_Params;        // Ptr to common struc
+    LPLW_PARAMS lpLW_Params;        // Ptr to local parameters
 
     // Save local params
     lpLW_Params = lpSF_Fcns->LclParams;
@@ -1075,7 +1074,7 @@ void SF_ReadLineM
     LPAPLCHAR         lpMemRht;             // Ptr to right arg global memory
     UINT              uRowOff,              // Offset to start of row
                       uLineLen;             // Line length
-    LPFX_PARAMS       lpFX_Params;          // Ptr to common struc
+    LPFX_PARAMS       lpFX_Params;          // Ptr to local parameters
 
     // Save local params
     lpFX_Params = lpSF_Fcns->LclParams;
@@ -1140,7 +1139,7 @@ void SF_ReadLineN
     LPAPLCHAR         lpMemItmRht;              // Ptr to right arg item global memory
     HGLOBAL           hGlbItmRht;               // Right arg item global memory handle
     UINT              uLineLen;                 // Line length
-    LPFX_PARAMS       lpFX_Params;              // Ptr to common struc
+    LPFX_PARAMS       lpFX_Params;              // Ptr to local parameters
 
     // Save local params
     lpFX_Params = lpSF_Fcns->LclParams;
@@ -1218,7 +1217,7 @@ void SF_ReadLineSV
     UINT              uLineLen,             // The line length
                       uLineOff,             // The line offset
                       uPhyLineNum;          // Physical line number
-    LPFX_PARAMS       lpFX_Params;          // Ptr to common struc
+    LPFX_PARAMS       lpFX_Params;          // Ptr to local parameters
     LPAFODETECT_STR   lpafoDetectStr;       // Ptr to AFODETECT_STR
 
     // Save local params
@@ -1278,7 +1277,7 @@ void SF_ReadLineTF1
      LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
 
 {
-    LPTF1_PARAMS lpTF1_Params;      // Ptr to common struc
+    LPTF1_PARAMS lpTF1_Params;      // Ptr to local parameters
 
     // Save local params
     lpTF1_Params = lpSF_Fcns->LclParams;
@@ -1306,7 +1305,7 @@ void SF_ReadLineAA
 
 {
     LPWCHAR     lpw;
-    LPAA_PARAMS lpAA_Params;        // Ptr to common struc
+    LPAA_PARAMS lpAA_Params;        // Ptr to local parameters
 
     // Save local params
     lpAA_Params = lpSF_Fcns->LclParams;
@@ -1348,7 +1347,7 @@ void SF_ReadLineUDFO
      LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
 
 {
-    LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to common struc
+    LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to local parameters
     LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header global memory
     HGLOBAL        hGlbTxtLine;     // Text global memory handle
     LPMEMTXT_UNION lpMemTxtLine;    // Ptr to text line
@@ -1390,7 +1389,7 @@ UINT SF_NumLinesCom
      LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
 
 {
-    LPFX_PARAMS lpFX_Params;        // Ptr to common struc
+    LPFX_PARAMS lpFX_Params;        // Ptr to local parameters
 
     // Save local params
     lpFX_Params = lpSF_Fcns->LclParams;
@@ -1438,7 +1437,7 @@ void SF_NumLinesAN
      LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
 
 {
-    LPAN_PARAMS  lpAN_Params;       // Ptr to common struc
+    LPAN_PARAMS  lpAN_Params;       // Ptr to local parameters
     LPTOKEN      lptkNext,
                  lptkLftBrace,
                  lptkRhtBrace;
@@ -1523,7 +1522,7 @@ UINT SF_NumLinesLW
      LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
 
 {
-    LPLW_PARAMS lpLW_Params;       // Ptr to common struc
+    LPLW_PARAMS lpLW_Params;       // Ptr to local parameters
 
     // Save local params
     lpLW_Params = lpSF_Fcns->LclParams;
@@ -1548,7 +1547,7 @@ UINT SF_NumLinesM
      LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
 
 {
-    LPFX_PARAMS lpFX_Params;       // Ptr to common struc
+    LPFX_PARAMS lpFX_Params;       // Ptr to local parameters
 
     // Save local params
     lpFX_Params = lpSF_Fcns->LclParams;
@@ -1571,7 +1570,7 @@ UINT SF_NumLinesTF1
      LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
 
 {
-    LPTF1_PARAMS lpTF1_Params;     // Ptr to common struc
+    LPTF1_PARAMS lpTF1_Params;     // Ptr to local parameters
 
     // Save local params
     lpTF1_Params = lpSF_Fcns->LclParams;
@@ -1595,7 +1594,7 @@ UINT SF_NumLinesAA
      LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
 
 {
-    LPAA_PARAMS lpAA_Params;        // Ptr to common struc
+    LPAA_PARAMS lpAA_Params;        // Ptr to local parameters
 
     // Save local params
     lpAA_Params = lpSF_Fcns->LclParams;
@@ -1618,7 +1617,7 @@ UINT SF_NumLogLinesSV
      LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
 
 {
-    LPFX_PARAMS lpFX_Params;        // Ptr to common struc
+    LPFX_PARAMS lpFX_Params;        // Ptr to local parameters
 
     // Save local params
     lpFX_Params = lpSF_Fcns->LclParams;
@@ -1645,7 +1644,7 @@ UINT SF_NumLogLinesUDFO
      LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
 
 {
-    LPUDFO_PARAMS lpUDFO_Params;    // Ptr to common struc
+    LPUDFO_PARAMS lpUDFO_Params;    // Ptr to local parameters
     LPDFN_HEADER  lpMemDfnHdr;      // Ptr to user-defined function/operator header global memory
     UINT          uCnt;             // # logical lines
 
@@ -1701,7 +1700,7 @@ void SF_CreationTimeLW
      FILETIME   *lpftCreation)      // Ptr to output save area
 
 {
-    LPLW_PARAMS lpLW_Params;        // Ptr to common struc
+    LPLW_PARAMS lpLW_Params;        // Ptr to local parameters
 
     // Save local params
     lpLW_Params = lpSF_Fcns->LclParams;
@@ -1747,7 +1746,7 @@ void SF_LastModTimeLW
      FILETIME   *lpftLastMod)       // Ptr to output save area
 
 {
-    LPLW_PARAMS lpLW_Params;        // Ptr to common struc
+    LPLW_PARAMS lpLW_Params;        // Ptr to local parameters
 
     // Save local params
     lpLW_Params = lpSF_Fcns->LclParams;
@@ -1873,7 +1872,7 @@ HGLOBAL SF_UndoBufferLW
     UINT        uUndoCount,         // # entries in the Undo Buffer
                 uFields;            // # fields parsed by sscanfW
     HGLOBAL     hGlbUndoBuff;       // Undo Buffer global memory handle
-    LPLW_PARAMS lpLW_Params;        // Ptr to common struc
+    LPLW_PARAMS lpLW_Params;        // Ptr to local parameters
 
     // Save local params
     lpLW_Params = lpSF_Fcns->LclParams;
@@ -2068,7 +2067,7 @@ HGLOBAL SF_UndoBufferUDFO
      LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
 
 {
-    LPUDFO_PARAMS lpUDFO_Params;    // Ptr to common struc
+    LPUDFO_PARAMS lpUDFO_Params;    // Ptr to local parameters
     LPDFN_HEADER  lpMemDfnHdr;      // Ptr to user-defined function/operator header global memory
     HGLOBAL       hGlbUndoBuff;     // Undo Buffer global memory handle
 
@@ -2150,7 +2149,7 @@ UBOOL SaveFunctionCom
     UINT           uLineLen,                // Line length
                    uLogLineNum,             // Current logical line # in the Edit Ctrl (0 = header)
                    uOffset,                 // Cumulative offset
-                   numLogLines;             // # logical  ...
+                   numLogLines;             // # logical  lines
     HGLOBAL        hGlbTxtHdr = NULL,       // Header text global memory handle
                    hGlbTknHdr = NULL,       // Tokenized header text ...
                    hGlbDfnHdr = NULL;       // User-defined function/operator header ...
@@ -2163,6 +2162,7 @@ UBOOL SaveFunctionCom
     WCHAR          wszTemp[1024];           // Save area for error message text
     MEMVIRTSTR     lclMemVirtStr[1] = {0};  // Room for one GuardAlloc
     LPTOKEN        lptkCSBeg;               // Ptr to next token on the CS stack
+    UBOOL          bMakeBraces;             // TRUE iff this is an AFO which needs surrounding braces
 
     Assert (lpSF_Fcns->sfTypes NE SFTYPES_UNK);
 
@@ -2763,6 +2763,30 @@ UBOOL SaveFunctionCom
             // Save as the correct SYMENTRY
             lpMemDfnHdr->steFcnName = ((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->lpSymEntry;
         } else
+        // If we're called from LoadWorkspace_EM, ...
+        if (lpSF_Fcns->sfTypes EQ SFTYPES_LW)
+        {
+            STFLAGS stFlags = {0};          // STE flags
+
+            // Set the flags for what we're looking up/appending
+            stFlags.Inuse   = TRUE;
+            stFlags.ObjName = OBJNAME_USR;  // Tell 'em we're looking for user names
+
+            // Lookup the STE
+            lpMemDfnHdr->steFcnName =
+              SymTabLookupName (((LPLW_PARAMS) lpSF_Fcns->LclParams)->lpwFcnName,
+                                &stFlags);
+            // If the name is not found, append it as a user name
+            if (lpMemDfnHdr->steFcnName EQ NULL)
+            {
+                // Append the name to get a new LPSYMENTRY
+                lpMemDfnHdr->steFcnName =
+                  SymTabAppendName_EM (((LPLW_PARAMS) lpSF_Fcns->LclParams)->lpwFcnName,
+                                       &stFlags);
+                if (lpMemDfnHdr->steFcnName EQ NULL)
+                    goto ERROR_EXIT;
+            } // End IF
+        } else
             // Save as the correct SYMENTRY
             lpMemDfnHdr->steFcnName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
 
@@ -3092,25 +3116,158 @@ UBOOL SaveFunctionCom
             SetFETitle (hWndFE);
         } // End IF
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
-
         lpSF_Fcns->lpSymName  = lpSymName;
         lpSF_Fcns->hGlbDfnHdr = MakePtrTypeGlb (hGlbDfnHdr);
         lpSF_Fcns->bRet       = TRUE;
 
+        // If this is an AFO, and
+        //   the function name is valid, and
+        //   we haven't filled in the AfoTxt handle, ...
+        if (lpMemDfnHdr->bAFO
+         && !IsSymDel (lpMemDfnHdr->steFcnName)
+         && lpMemDfnHdr->hGlbAfoTxt EQ NULL)
+        {
+            size_t  uNameLen;               // Function name length if named
+            LPWCHAR lpwszLine,              // Ptr to function line text
+                    lpMemName;              // Ptr to function name
+
+            // Lock the memory to get a ptr to it
+            lpMemName = MyGlobalLockWsz (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName);
+
+            // Get its length
+            uNameLen = lstrlenW (lpMemName);
+
+            lpMemDfnHdr->hGlbAfoTxt =
+              // Allocate space for the text
+              //   "+ 1" for the terminating zero
+              DbgGlobalAlloc (GHND, (uNameLen + 1 )* sizeof (WCHAR));
+
+            if (lpMemDfnHdr->hGlbAfoTxt NE NULL)
+            {
+                // Lock the memory to get a ptr to it
+                lpwszLine = MyGlobalLock000 (lpMemDfnHdr->hGlbAfoTxt);
+
+                // Copy it to our save area
+                CopyMemory (lpwszLine, lpMemName, uNameLen);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (lpMemDfnHdr->hGlbAfoTxt); lpwszLine = NULL;
+            } // End IF
+
+            // We no longer need this ptr
+            MyGlobalUnlock (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName); lpMemName = NULL;
+        } else
         // If we're called from CopyUDFO, ...
         if (lpSF_Fcns->sfTypes EQ SFTYPES_UDFO)
         {
+            LPDFN_HEADER   lpMemDfnHdrOld;          // Ptr to user-defined function/operator header ...
+
             // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLockDfn (((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->hGlbDfnHdr);
+            lpMemDfnHdrOld = MyGlobalLockDfn (((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->hGlbDfnHdr);
 
             // Tell the free-er to save the function name STE flags
-            lpMemDfnHdr->SaveSTEFlags = TRUE;
+            lpMemDfnHdrOld->SaveSTEFlags = TRUE;
+
+            // If the old AFO text is valid, ...
+            if (lpMemDfnHdrOld->hGlbAfoTxt NE NULL)
+                // Copy it to the new DFN_HEADER
+                lpMemDfnHdr->hGlbAfoTxt = MyGlobalDup (lpMemDfnHdrOld->hGlbAfoTxt);
 
             // We no longer need this ptr
-            MyGlobalUnlock (((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->hGlbDfnHdr); lpMemDfnHdr = NULL;
+            MyGlobalUnlock (((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->hGlbDfnHdr); lpMemDfnHdrOld = NULL;
         } // End IF
+
+        // If this is an AFO which needs surrounding braces, ...
+        bMakeBraces = (lpSF_Fcns NE NULL
+                   &&  lpSF_Fcns->bAFO
+                   && !lpSF_Fcns->bMakeAFO
+                   && !lpSF_Fcns->bMakeAFE
+                   && !lpSF_Fcns->bMakeAFX);
+
+        // If we're about to tokenize an AFO which needs surrounding braces,
+        //    not a Magic Function,
+        //    not already set, ...
+        if (bMakeBraces
+         && !lpMemDfnHdr->bMFO
+         && lpMemDfnHdr->hGlbAfoTxt EQ NULL)
+        {
+            size_t  uLineLen,               // Line length
+                    uNameLen,               // Function name length if named
+                    numLogLines;            // # logical  lines
+            LPWCHAR lpwszLine,              // Ptr to function line text
+                    lpMemName;              // Ptr to function name
+
+            // If this AFO is named, ...
+            if (!IsSymDel (lpMemDfnHdr->steFcnName))
+            {
+                // Lock the memory to get a ptr to it
+                lpMemName = MyGlobalLockWsz (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName);
+
+                // Get its length including the trailing {assign}
+                uNameLen = lstrlenW (lpMemName) + 1;
+            } else
+                // Mark as no name
+                uNameLen = 0;
+
+            // Get the # logical lines
+            numLogLines = (*lpSF_Fcns->SF_NumLogLines) (hWndEC, lpSF_Fcns);
+
+            Assert (numLogLines EQ 1);
+
+            // The logical line # (not counting the header)
+            uLogLineNum = 1;
+
+            // Get the length of the function line
+            uLineLen = (*lpSF_Fcns->SF_LineLen) (hWndEC, lpSF_Fcns, uLogLineNum);
+
+            // Allocate global memory to hold this text
+            // The "uNameLen" is for the function name length with trailing {assign}
+            //   the "uLineLen" is for the line length
+            //   the "+ 1" is for the terminating zero
+            //   the "+ 2" is for the extra left/right braces
+            lpMemDfnHdr->hGlbAfoTxt = DbgGlobalAlloc (GHND, (uNameLen + uLineLen + 1 + 2) * sizeof (WCHAR));
+            if (lpMemDfnHdr->hGlbAfoTxt NE NULL)
+            {
+                // Lock the memory to get a ptr to it
+                lpwszLine = MyGlobalLock000 (lpMemDfnHdr->hGlbAfoTxt);
+
+                // If there's a function name, ...
+                if (uNameLen NE 0)
+                {
+                    // Copy it to our save area
+                    CopyMemory (lpwszLine, lpMemName, uNameLen - 1);
+
+                    // Followed by {assign}
+                    lpwszLine[uNameLen - 1] = UTF16_LEFTARROW;
+                } // End IF
+
+                // Read in the (single) line of text
+                (*lpSF_Fcns->SF_ReadLine) (hWndEC, lpSF_Fcns, uLogLineNum, &lpwszLine[uNameLen + 1]);
+
+                // Insert a leading left brace
+                lpwszLine[uNameLen    ] = UTF16_LEFTBRACE;
+
+                // Append a trailing right brace & EOS
+                lpwszLine[uNameLen + uLineLen + 1] = UTF16_RIGHTBRACE;
+////////////////lpwszLine[uNameLen + uLineLen + 2] = WC_EOS;            // Already zero from GHND
+
+                // We no longer need this ptr
+                MyGlobalUnlock (lpMemDfnHdr->hGlbAfoTxt); lpwszLine = NULL;
+            } else
+                DbgBrk ();
+
+            // If there's a function name, ...
+            if (uNameLen NE 0)
+            {
+                 // We no longer need this ptr
+                 MyGlobalUnlock (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName); lpMemName = NULL;
+            } // End IF
+        } // End IF
+
+        Assert (!lpMemDfnHdr->bAFO || IsSymDel (lpMemDfnHdr->steFcnName) || lpMemDfnHdr->hGlbAfoTxt NE NULL);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
         goto NORMAL_EXIT;
     } else
@@ -3242,7 +3399,7 @@ UINT SaveFunctionLine
     //   the "+ uLen" is for the extra left/right braces (in WCHARs) in case we need them for AFOs
     //   as well as to handle GlobalLock's aversion to locking
     //   zero-length arrays
-    hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1 + uLen) * sizeof (APLCHAR));
+    hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1 + uLen) * sizeof (WCHAR));
     if (hGlbTxtLine EQ NULL)
     {
         if (hWndFE NE NULL)
@@ -3296,7 +3453,7 @@ UINT SaveFunctionLine
             // If we're about to tokenize an AFO which needs surrounding braces, ...
             if (bMakeBraces)
             {
-                Assert (lpSF_Fcns->sfTypes EQ SFTYPES_LOAD || lpSF_Fcns->sfTypes EQ SFTYPES_UDFO);
+                Assert (lpSF_Fcns->sfTypes EQ SFTYPES_LW || lpSF_Fcns->sfTypes EQ SFTYPES_UDFO);
 
                 // Make room for a leading left brace
                 MoveMemory (&lpwszLine[1], lpwszLine, (uLineLen + 1) * sizeof (lpwszLine[0]));

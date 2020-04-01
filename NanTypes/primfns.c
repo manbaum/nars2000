@@ -373,6 +373,7 @@ char TokenTypeFV
         case TKT_NOP:                       // NOP
         case TKT_AFOGUARD:                  // AFO guard
         case TKT_AFORETURN:                 // AFO return
+        case TKT_SYS_NS:                    // System namespace
             return '?';
 
         defstop
@@ -1857,10 +1858,10 @@ HGLOBAL MakeDydPrototype_EM_PTB
                     uRht = mod64 (uRes, aplNELMRht);
                 } // End IF/ELSE
 
-                // If the left arg element is simple or an STE,
+                // If the left arg element is simple or global numeric or an STE,
                 //   the result element is the prototype
                 //   of the right arg element
-                if (IsSimple (aplTypeLft)
+                if (IsSimpleGlbNum (aplTypeLft)
                  || GetPtrTypeDir (lpMemLft[uLft]) EQ PTRTYPE_STCONST)
                 {
                     hGlbSub =
@@ -1872,10 +1873,10 @@ HGLOBAL MakeDydPrototype_EM_PTB
                         goto ERROR_EXIT;
                     *lpMemRes++ = hGlbSub;
                 } else
-                // If the right arg element is simple or an STE,
+                // If the right arg element is simple or global numeric or an STE,
                 //   the result element is the prototype
                 //   of the left arg element
-                if (IsSimple (aplTypeRht)
+                if (IsSimpleGlbNum (aplTypeRht)
                  || GetPtrTypeDir (lpMemRht[uRht]) EQ PTRTYPE_STCONST)
                 {
                     hGlbSub =
@@ -2234,11 +2235,13 @@ HGLOBAL CopyArray_EM_PTB
                     case ARRAY_HC8F:
                         break;
 
-                    case ARRAY_HETERO:
                     case ARRAY_NESTED:
                         // Handle the empty case
                         aplNELM = max (aplNELM, 1);
 
+                        // Fall through to common code
+
+                    case ARRAY_HETERO:
                         // Loop through the source and destin arrays
                         for (u = 0;
                              u < aplNELM;

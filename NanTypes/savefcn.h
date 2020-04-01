@@ -27,7 +27,7 @@ typedef enum tagSF_TYPES
     SFTYPES_AFO     ,               // 02:  ...         AFO
     SFTYPES_TF      ,               // 03:  ...         []TF
     SFTYPES_AA      ,               // 04:  ...         )INASCII
-    SFTYPES_LOAD    ,               // 05:  ...         )LOAD/...
+    SFTYPES_LW      ,               // 05:  ...         )LOAD/...
     SFTYPES_FE      ,               // 06:  ...         Function Editor
     SFTYPES_UDFO    ,               // 07:  ...         Copying a UDFO
 } SF_TYPES, *LPSF_TYPES;
@@ -128,13 +128,14 @@ typedef struct tagLW_PARAMS         // LoadWorkspace struc
 {
     LPWCHAR       lpwSectName,      // 00:  Ptr to section name [nnn.Name]
                   lpwBuffer,        // 04:  Ptr to temporary buffer
-                  lpMemUndoTxt;     // 08:  Ptr to Undo Buffer in text format
-    LPDICTIONARY  lpDict;           // 0C:  Ptr to workspace dictionary
-    APLI3264      iMaxSize;         // 10:  Maximum size of lpwBuffer
-    FILETIME      ftCreation,       // 14:  Function Creation Time
-                  ftLastMod;        // 18:  Function Last Modification Time
-    LPWCHAR       lpwszVersion;     // 1C:  Ptr to workspace version text
-                                    // 20:  Length
+                  lpMemUndoTxt,     // 08:  Ptr to Undo Buffer in text format
+                  lpwFcnName;       // 0C:  Ptr to function name
+    LPDICTIONARY  lpDict;           // 10:  Ptr to workspace dictionary
+    APLI3264      iMaxSize;         // 14:  Maximum size of lpwBuffer
+    FILETIME      ftCreation,       // 18:  Function Creation Time
+                  ftLastMod;        // 1C:  Function Last Modification Time
+    LPWCHAR       lpwszVersion;     // 20:  Ptr to workspace version text
+                                    // 24:  Length
 } LW_PARAMS, *LPLW_PARAMS;
 
 

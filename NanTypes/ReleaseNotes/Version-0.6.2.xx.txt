@@ -1,6 +1,17 @@
 Version 0.6.2.xx consists of the following Builds:
 
 
+Build #2340 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug In Previous Build Leaving In Spurious Statement
+
+Directory branches/bsmith/NanTypes:
+
+DISPDBG.C:
+  Fix bug in <DisplayFcnSub> where a statement meant to be replaced was left in.
+
+
 Build #2338 -- Version 0.6.2.xx
 -------------------------------
 

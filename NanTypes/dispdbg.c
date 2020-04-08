@@ -2216,7 +2216,6 @@ LPWCHAR DisplayFcnSub
                                  lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
                 // If the item should surrounded by parens, ...
                 if (bParens)
-                if (lpYYMem[TknRhtCount].TknCount > 1)
                     *lpaplChar++ = L')';
             } // End IF
 

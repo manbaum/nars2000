@@ -4320,11 +4320,34 @@ UBOOL IsTknFopDir
 
 
 //***************************************************************************
+//  $IsTknUnnamedNumVector
+//
+//  Return TRUE iff the given token is an Unnamed Multi-element Numeric Vector
+//***************************************************************************
+
+UBOOL IsTknUnnamedNumVector
+    (LPTOKEN lptkVar)                       // Ptr to token
+
+{
+    APLSTYPE aplTypeVar;
+    APLNELM  aplNELMVar;
+    APLRANK  aplRankVar;
+
+    AttrsOfToken (lptkVar, &aplTypeVar, &aplNELMVar, &aplRankVar, NULL);
+
+    return (!IsTknNamed (lptkVar)
+         && IsNumeric   (aplTypeVar)
+         && IsVector    (aplRankVar)
+         && IsMultiNELM (aplNELMVar));
+} // End IsTknUnnamedNumVector
+
+
+//***************************************************************************
 //  $mod64
 //
 //  Return the modulus of a 64-bit integer by a 64-bit integer
 //
-//  I'd like to use C's bulltin function a % b, but it signals a
+//  I'd like to use C's builtin function a % b, but it signals a
 //    Divide By Zero error if b EQ 0.
 //
 //  This routine is marked "static" because mpir defines the same routine

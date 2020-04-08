@@ -1,0 +1,13 @@
+Build #2338 -- Version 0.6.2.xx
+-------------------------------
+
+* Fix Bug When Displaying A Right Operand Unnamed Multi-element Numeric Vector
+
+Directory branches/bsmith/NanTypes:
+
+DISPDBG.C:
+  When displaying a right operand which is an unnamed multi-element numeric vector,
+    surround it with parens.
+
+PRIMFNS.C:
+  Define function to detect unnamed multi-element numeric vectors.

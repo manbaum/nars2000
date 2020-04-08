@@ -1887,7 +1887,8 @@ LPWCHAR DisplayFcnSub
     NAME_TYPES   fnNameType;        // Function array name type
     LPPL_YYSTYPE lpMemFcnArr;       // Ptr to function array data
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to AFO global memory header
-    UBOOL        bAxisOper;         // TRUE iff there an axis operator
+    UBOOL        bAxisOper,         // TRUE iff there an axis operator
+                 bParens;           // TRUE iff the item should be surrounded by parens
 
     // Check for axis operator
     bAxisOper = (tknNELM > 1
@@ -1990,7 +1991,12 @@ LPWCHAR DisplayFcnSub
             lpaplChar = StrCpySkipW (lpaplChar, TranslateFcnOprToStr (&lpYYMem[0].tkToken.tkData.tkChar));  // Op2
 
             // If the right operand has multiple tokens, ...
-            if (lpYYMem[TknRhtCount].TknCount > 1)
+            //   or is an unnamed multi-element numeric vector
+            bParens = (lpYYMem[TknRhtCount].TknCount > 1
+                    || IsTknUnnamedNumVector (&lpYYMem[TknRhtCount].tkToken)
+                      );
+            // If the item should surrounded by parens, ...
+            if (bParens)
                 *lpaplChar++ = L'(';
             // Display the right operand
             lpaplChar =
@@ -2001,8 +2007,8 @@ LPWCHAR DisplayFcnSub
                              lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                              lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
                              lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
-            // If the right operand has multiple tokens, ...
-            if (lpYYMem[TknRhtCount].TknCount > 1)
+            // If the item should surrounded by parens, ...
+            if (bParens)
                 *lpaplChar++ = L')';
             break;
 
@@ -2136,7 +2142,12 @@ LPWCHAR DisplayFcnSub
             if (TknRhtCount NE 0)
             {
                 // If the right operand has multiple tokens, ...
-                if (lpYYMem[TknRhtCount].TknCount > 1)
+                //   or is an unnamed multi-element numeric vector
+                bParens = (lpYYMem[TknRhtCount].TknCount > 1
+                        || IsTknUnnamedNumVector (&lpYYMem[TknRhtCount].tkToken)
+                          );
+                // If the item should surrounded by parens, ...
+                if (bParens)
                     *lpaplChar++ = L'(';
                 else
                     *lpaplChar++ = L' ';
@@ -2149,7 +2160,8 @@ LPWCHAR DisplayFcnSub
                                  lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                                  lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
                                  lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
-                // If the right operand has multiple tokens, ...
+                // If the item should surrounded by parens, ...
+                if (bParens)
                 if (lpYYMem[TknRhtCount].TknCount > 1)
                     *lpaplChar++ = L')';
             } // End IF
@@ -2343,7 +2355,12 @@ LPWCHAR DisplayFcnSub
                                            lpSavedWsGlbFcnConv,     // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
                                            lpSavedWsGlbFcnParm);    // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
                             // If the right operand has multiple tokens, ...
-                            if (lpYYMem[TknRhtCount].TknCount > 1)
+                            //   or is an unnamed multi-element numeric vector
+                            bParens = (lpYYMem[TknRhtCount].TknCount > 1
+                                    || IsTknUnnamedNumVector (&lpYYMem[TknRhtCount].tkToken)
+                                      );
+                            // If the item should surrounded by parens, ...
+                            if (bParens)
                                 *lpaplChar++ = L'(';
                             else
                                 *lpaplChar++ = L' ';
@@ -2355,8 +2372,8 @@ LPWCHAR DisplayFcnSub
                                              lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                                              lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
                                              lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
-                            // If the right operand has multiple tokens, ...
-                            if (lpYYMem[TknRhtCount].TknCount > 1)
+                            // If the item should surrounded by parens, ...
+                            if (bParens)
                                 *lpaplChar++ = L')';
                             break;
 
@@ -2523,7 +2540,12 @@ LPWCHAR DisplayFcnSub
                            lpSavedWsGlbFcnConv,     // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
                            lpSavedWsGlbFcnParm);    // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
             // If the right operand has multiple tokens, ...
-            if (lpYYMem[TknRhtCount].TknCount > 1)
+            //   or is an unnamed multi-element numeric vector
+            bParens = (lpYYMem[TknRhtCount].TknCount > 1
+                    || IsTknUnnamedNumVector (&lpYYMem[TknRhtCount].tkToken)
+                      );
+            // If the item should surrounded by parens, ...
+            if (bParens)
                 *lpaplChar++ = L'(';
             else
                 *lpaplChar++ = L' ';
@@ -2536,8 +2558,8 @@ LPWCHAR DisplayFcnSub
                              lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                              lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
                              lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
-            // If the right operand has multiple tokens, ...
-            if (lpYYMem[TknRhtCount].TknCount > 1)
+            // If the item should surrounded by parens, ...
+            if (bParens)
                 *lpaplChar++ = L')';
 
             // We no longer need this ptr

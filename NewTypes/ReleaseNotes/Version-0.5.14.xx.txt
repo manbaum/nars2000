@@ -1,6 +1,21 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2337 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix Bug When Displaying A Right Operand Unnamed Multi-element Numeric Vector
+
+Directory branches/bsmith/NewTypes:
+
+DISPDBG.C:
+  When displaying a right operand which is an unnamed multi-element numeric vector,
+    surround it with parens.
+
+PRIMFNS.C:
+  Define function to detect unnamed multi-element numeric vectors.
+
+
 Build #2335 -- Version 0.5.14.xx
 --------------------------------
 

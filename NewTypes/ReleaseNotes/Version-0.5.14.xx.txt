@@ -1,6 +1,17 @@
 Version 0.5.14.xx consists of the following Builds:
 
 
+Build #2339 -- Version 0.5.14.xx
+--------------------------------
+
+* Fix Bug In Previous Build Leaving In Spurious Statement
+
+Directory branches/bsmith/NewTypes:
+
+DISPDBG.C:
+  Fix bug in <DisplayFcnSub> where a statement meant to be replaced was left in.
+
+
 Build #2337 -- Version 0.5.14.xx
 --------------------------------
 
